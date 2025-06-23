@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import countriesData from "@/lib/countries.json";
-import { AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
+import { AVAILABLE_SKILLS } from "@/types/Student";
 import {
   Briefcase,
   Check,
@@ -21,7 +21,7 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 // Country code to flag emoji mapping
 const countryToFlag = (countryCode: string) => {
@@ -34,34 +34,12 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
 
-  // Stable randomization instead of Math.random() anti-pattern
-  const randomizedSkills = useMemo(() => {
-    const skills = [...AVAILABLE_SKILLS];
-    // Use a simple but stable shuffle
-    for (let i = skills.length - 1; i > 0; i--) {
-      const j = Math.floor((i + 1) * 0.7); // Deterministic but mixed
-      [skills[i], skills[j]] = [skills[j], skills[i]];
-    }
-    return skills;
-  }, []);
-
-  const randomizedLookingFor = useMemo(() => {
-    const options = [...LOOKING_FOR_OPTIONS];
-    // Use a different stable shuffle
-    for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor((i + 1) * 0.3); // Different deterministic pattern
-      [options[i], options[j]] = [options[j], options[i]];
-    }
-    return options;
-  }, []);
-
   const [formData, setFormData] = useState({
     name: "",
     country: "",
     university: "",
     profileImage: "",
     skills: [] as string[],
-    lookingFor: [] as string[],
     summerGoals: "",
     currentProject: "",
     linkedinUrl: "",
@@ -70,7 +48,6 @@ export default function OnboardingPage() {
     githubUsername: "",
   });
 
-  // Country autocomplete state
   const [countryInput, setCountryInput] = useState("");
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<{
@@ -78,22 +55,61 @@ export default function OnboardingPage() {
     code: string;
   } | null>(null);
 
-  // Memoized country suggestions based on input
-  const countrySuggestions = useMemo(() => {
-    if (!countryInput.trim()) return [];
-    return countriesData
-      .filter((country) =>
-        country.name.toLowerCase().includes(countryInput.toLowerCase())
-      )
-      .slice(0, 5); // Show max 5 suggestions
-  }, [countryInput]);
+  const steps = [
+    {
+      number: 1,
+      title: "Welcome",
+      subtitle: "Basic Information",
+      icon: TreePine,
+      completed: currentStep > 1,
+    },
+    {
+      number: 2,
+      title: "Skills",
+      subtitle: "Your Expertise",
+      icon: Target,
+      completed: currentStep > 2,
+    },
+    {
+      number: 3,
+      title: "Current Project",
+      subtitle: "What You're Building",
+      icon: Briefcase,
+      completed: currentStep > 3,
+    },
+    {
+      number: 4,
+      title: "Goals",
+      subtitle: "Your Aspirations",
+      icon: Check,
+      completed: currentStep > 4,
+    },
+    {
+      number: 5,
+      title: "Socials",
+      subtitle: "Connect With You",
+      icon: Users,
+      completed: currentStep > 5,
+    },
+    {
+      number: 6,
+      title: "Profile Photo",
+      subtitle: "Add Your Picture",
+      icon: User,
+      completed: false,
+    },
+  ];
 
-  // Country input handlers
-  const handleCountryInputChange = useCallback((value: string) => {
+  const countrySuggestions = countriesData
+    .filter((country) =>
+      country.name.toLowerCase().includes(countryInput.toLowerCase())
+    )
+    .slice(0, 5);
+
+  const handleCountryInputChange = (value: string) => {
     setCountryInput(value);
     setShowCountrySuggestions(value.length > 0);
 
-    // Check if the input exactly matches a country
     const exactMatch = countriesData.find(
       (country) => country.name.toLowerCase() === value.toLowerCase()
     );
@@ -105,120 +121,54 @@ export default function OnboardingPage() {
       setSelectedCountry(null);
       setFormData((prev) => ({ ...prev, country: value }));
     }
-  }, []);
+  };
 
-  const handleCountrySelect = useCallback(
-    (country: { name: string; code: string }) => {
-      setCountryInput(country.name);
-      setSelectedCountry(country);
-      setShowCountrySuggestions(false);
-      setFormData((prev) => ({ ...prev, country: country.name }));
-    },
-    []
-  );
+  const handleCountrySelect = (country: { name: string; code: string }) => {
+    setCountryInput(country.name);
+    setSelectedCountry(country);
+    setShowCountrySuggestions(false);
+    setFormData((prev) => ({ ...prev, country: country.name }));
+  };
 
-  // Memoized steps to prevent recreation
-  const steps = useMemo(
-    () => [
-      {
-        number: 1,
-        title: "Welcome",
-        subtitle: "Basic Information",
-        icon: TreePine,
-        completed: currentStep > 1,
-      },
-      {
-        number: 2,
-        title: "Skills",
-        subtitle: "Your Expertise",
-        icon: Target,
-        completed: currentStep > 2,
-      },
-      {
-        number: 3,
-        title: "Current Project",
-        subtitle: "What You're Building",
-        icon: Briefcase,
-        completed: currentStep > 3,
-      },
-      {
-        number: 4,
-        title: "Goals",
-        subtitle: "Your Aspirations",
-        icon: Check,
-        completed: currentStep > 4,
-      },
-      {
-        number: 5,
-        title: "Socials",
-        subtitle: "Connect With You",
-        icon: Users,
-        completed: currentStep > 5,
-      },
-      {
-        number: 6,
-        title: "Profile Photo",
-        subtitle: "Add Your Picture",
-        icon: User,
-        completed: false,
-      },
-    ],
-    [currentStep]
-  );
-
-  // Optimized handlers with useCallback
-  const handleSkillToggle = useCallback((skill: string) => {
+  const handleSkillToggle = (skill: string) => {
     setFormData((prev) => ({
       ...prev,
       skills: prev.skills.includes(skill)
         ? prev.skills.filter((s) => s !== skill)
         : [...prev.skills, skill],
     }));
-  }, []);
+  };
 
-  const handleLookingForToggle = useCallback((option: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      lookingFor: prev.lookingFor.includes(option)
-        ? prev.lookingFor.filter((o) => o !== option)
-        : [...prev.lookingFor, option],
-    }));
-  }, []);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData((prev) => ({
+          ...prev,
+          profileImage: e.target?.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const handleImageUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setFormData((prev) => ({
-            ...prev,
-            profileImage: e.target?.result as string,
-          }));
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    []
-  );
-
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
       router.push("/");
       console.log("Student profile completed:", formData);
     }
-  }, [currentStep, formData]);
+  };
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  }, [currentStep]);
+  };
 
-  // Memoized validation
-  const isStepValid = useMemo(() => {
+  const isStepValid = () => {
     switch (currentStep) {
       case 1:
         return (
@@ -233,48 +183,33 @@ export default function OnboardingPage() {
       case 4:
         return formData.summerGoals.trim() !== "";
       case 5:
-        return true; // Social links are optional, always valid
+        return true;
       case 6:
         return formData.profileImage.trim() !== "";
       default:
         return false;
     }
-  }, [currentStep, formData]);
+  };
 
-  const progressPercentage = useMemo(
-    () => ((currentStep - 1) / (steps.length - 1)) * 100,
-    [currentStep, steps.length]
-  );
+  const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
 
-  // Memoized name parsing for performance
-  const nameParts = useMemo(() => {
-    const parts = formData.name.split(" ");
-    return {
-      firstName: parts[0] || "",
-      lastName: parts.slice(1).join(" ") || "",
-    };
-  }, [formData.name]);
+  const nameParts = formData.name.split(" ");
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || "";
 
-  const handleNameChange = useCallback(
-    (field: "first" | "last", value: string) => {
-      setFormData((prev) => {
-        if (field === "first") {
-          return {
-            ...prev,
-            name: nameParts.lastName ? `${value} ${nameParts.lastName}` : value,
-          };
-        } else {
-          return {
-            ...prev,
-            name: nameParts.firstName
-              ? `${nameParts.firstName} ${value}`
-              : value,
-          };
-        }
-      });
-    },
-    [nameParts.firstName, nameParts.lastName]
-  );
+  const handleNameChange = (field: "first" | "last", value: string) => {
+    if (field === "first") {
+      setFormData((prev) => ({
+        ...prev,
+        name: lastName ? `${value} ${lastName}` : value,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        name: firstName ? `${firstName} ${value}` : value,
+      }));
+    }
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -308,7 +243,7 @@ export default function OnboardingPage() {
                   </Label>
                   <Input
                     id="firstName"
-                    value={nameParts.firstName}
+                    value={firstName}
                     onChange={(e) => handleNameChange("first", e.target.value)}
                     placeholder="First Name"
                     className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
@@ -323,7 +258,7 @@ export default function OnboardingPage() {
                   </Label>
                   <Input
                     id="lastName"
-                    value={nameParts.lastName}
+                    value={lastName}
                     onChange={(e) => handleNameChange("last", e.target.value)}
                     placeholder="Last Name"
                     className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
@@ -349,7 +284,6 @@ export default function OnboardingPage() {
                   }
                   placeholder="Start typing your university..."
                   className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
-                  list="universities"
                 />
               </div>
 
@@ -371,11 +305,10 @@ export default function OnboardingPage() {
                     setTimeout(() => setShowCountrySuggestions(false), 200)
                   }
                   placeholder="Start typing your country..."
-                  className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                  className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   autoComplete="off"
                 />
 
-                {/* Autocomplete suggestions */}
                 {showCountrySuggestions && countrySuggestions.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
                     {countrySuggestions.map((country) => (
@@ -393,7 +326,6 @@ export default function OnboardingPage() {
                   </div>
                 )}
 
-                {/* Selected country flag display */}
                 {selectedCountry && (
                   <div className="mt-1 ml-1 flex items-center gap-2 text-sm text-gray-600">
                     <span className="text-2xl">
@@ -421,7 +353,7 @@ export default function OnboardingPage() {
 
             <div>
               <div className="flex flex-wrap gap-2">
-                {randomizedSkills.map((skill) => (
+                {AVAILABLE_SKILLS.map((skill) => (
                   <Badge
                     key={skill}
                     variant={
@@ -504,10 +436,6 @@ export default function OnboardingPage() {
             </div>
 
             <div>
-              <Label
-                htmlFor="goals"
-                className="text-lg font-semibold text-gray-700"
-              ></Label>
               <Textarea
                 id="goals"
                 value={formData.summerGoals}
@@ -538,7 +466,6 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-4 sm:space-y-6">
-              {/* LinkedIn */}
               <div>
                 <Label
                   htmlFor="linkedinUrl"
@@ -561,7 +488,6 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              {/* Instagram */}
               <div>
                 <Label
                   htmlFor="instagramHandle"
@@ -584,7 +510,6 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              {/* Twitter */}
               <div>
                 <Label
                   htmlFor="twitterHandle"
@@ -607,7 +532,6 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              {/* GitHub */}
               <div>
                 <Label
                   htmlFor="githubUsername"
@@ -723,16 +647,13 @@ export default function OnboardingPage() {
             <div className="bg-red-600 p-2 rounded-lg">
               <TreePine className="w-5 h-5 text-white" />
             </div>
-            <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              Treematch
-            </div>
+            <div className="text-xl font-bold text-gray-900">Treematch</div>
           </div>
           <div className="text-sm text-gray-500">
             {currentStep} of {steps.length}
           </div>
         </div>
 
-        {/* Progress Bar */}
         <div className="space-y-2">
           <Progress
             value={progressPercentage}
@@ -752,9 +673,7 @@ export default function OnboardingPage() {
             <div className="bg-red-600 p-2 rounded-lg">
               <TreePine className="w-6 h-6 text-white" />
             </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Treematch
-            </div>
+            <div className="text-2xl font-bold text-gray-900">Treematch</div>
           </div>
 
           <div className="space-y-1">
@@ -788,9 +707,7 @@ export default function OnboardingPage() {
                   </div>
                   <div>
                     <div className="font-medium text-sm">{step.title}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {step.subtitle}
-                    </div>
+                    <div className="text-xs text-gray-500">{step.subtitle}</div>
                   </div>
                 </div>
               );
@@ -824,7 +741,7 @@ export default function OnboardingPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!isStepValid}
+            disabled={!isStepValid()}
             className={`px-6 sm:px-8 font-semibold h-11 ${
               currentStep === 6
                 ? "bg-red-600 hover:bg-red-700 text-white"
