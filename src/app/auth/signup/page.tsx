@@ -5,10 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { OnboardingStorage } from "@/lib/onboarding-storage";
 import { CheckCircle, Lock, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../AuthProvider";
 
 export default function SignupPage() {
@@ -18,9 +19,16 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [hasOnboardingData, setHasOnboardingData] = useState(false);
   const router = useRouter();
   const { signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setHasOnboardingData(
+      OnboardingStorage.exists() && !OnboardingStorage.isExpired()
+    );
+  }, []);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +81,17 @@ export default function SignupPage() {
               <p className="text-muted-foreground">
                 We've sent you a confirmation link at <strong>{email}</strong>
               </p>
+              {hasOnboardingData && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
+                  <p className="font-medium">
+                    Great! Your profile information is saved.
+                  </p>
+                  <p>
+                    Once you verify your email and sign in, your profile will be
+                    automatically created.
+                  </p>
+                </div>
+              )}
               <Button asChild className="w-full">
                 <Link href="/auth/login">Back to Sign In</Link>
               </Button>
@@ -92,12 +111,29 @@ export default function SignupPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Join TreeMatch</h1>
           <p className="text-muted-foreground">
-            Start connecting with Stanford students today
+            {hasOnboardingData
+              ? "Almost done! Create your account to complete your profile."
+              : "Start connecting with Stanford students today"}
           </p>
         </div>
 
+        {hasOnboardingData && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+            <p className="font-medium">✨ Your profile information is saved!</p>
+            <p>
+              Create your account below and we'll set everything up for you.
+            </p>
+          </div>
+        )}
+
         <Card className="border-0 shadow-xl bg-card/95 backdrop-blur">
           <CardContent className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleEmailSignup} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
@@ -165,7 +201,7 @@ export default function SignupPage() {
               </Button>
             </form>
 
-            <div className="text-center">
+            <div className="text-center space-y-3">
               <p className="text-sm text-muted-foreground">
                 Already have an account?{" "}
                 <Link
@@ -175,6 +211,18 @@ export default function SignupPage() {
                   Sign in
                 </Link>
               </p>
+
+              {!hasOnboardingData && (
+                <p className="text-xs text-muted-foreground">
+                  New here?{" "}
+                  <Link
+                    href="/onboarding"
+                    className="font-medium text-primary hover:text-primary/80 transition-colors"
+                  >
+                    Start with our quick setup
+                  </Link>
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

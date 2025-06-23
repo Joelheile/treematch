@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { OnboardingStorage } from "@/lib/onboarding-storage";
 import { AlertCircle, Lock, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -39,6 +40,18 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
+      // Check if user has onboarding data that needs to be processed
+      const hasOnboardingData =
+        OnboardingStorage.exists() && !OnboardingStorage.isExpired();
+
+      if (hasOnboardingData) {
+        // Let the post-auth hook handle the redirect and data saving
+        toast({
+          title: "Welcome back!",
+          description: "Setting up your profile...",
+        });
+      }
+
       router.push("/");
     } catch (err: any) {
       setError(err.message);
@@ -119,7 +132,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-3">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
                 <Link
@@ -129,9 +142,18 @@ export default function LoginPage() {
                   Sign up
                 </Link>
               </p>
+              <p className="text-xs text-muted-foreground">
+                New here?{" "}
+                <Link
+                  href="/onboarding"
+                  className="font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  Start with our quick setup
+                </Link>
+              </p>
               <Link
                 href="/auth/reset-password"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors block"
               >
                 Forgot your password?
               </Link>

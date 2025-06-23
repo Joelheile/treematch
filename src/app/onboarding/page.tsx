@@ -1,23 +1,15 @@
 "use client";
-import { useAuth } from "@/app/auth/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { useCurrentStudent } from "@/hooks/useCurrentStudent";
-import {
-  useCreateStudent,
-  useUpdateStudent,
-  useSkills,
-  useAddSkill,
-} from "@/integrations/supabase/student-queries";
-import type {
-  StudentInsert,
-  StudentUpdate,
-} from "@/integrations/supabase/student-service";
 import countriesData from "@/lib/countries.json";
+import {
+  OnboardingStorage,
+  type OnboardingData,
+} from "@/lib/onboarding-storage";
 import {
   Briefcase,
   Check,
@@ -30,11 +22,9 @@ import {
   Twitter,
   User,
   Users,
-  Loader2,
-  CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const countryToFlag = (countryCode: string) => {
@@ -47,13 +37,8 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
-  const { student, refetch } = useCurrentStudent();
-  const createStudentMutation = useCreateStudent();
-  const updateStudentMutation = useUpdateStudent();
-  const { data: skills = [] } = useSkills(user?.id);
-  const addSkillMutation = useAddSkill(user?.id || '');
-  const [newSkill, setNewSkill] = useState('');
+  const [skills, setSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -69,6 +54,26 @@ export default function OnboardingPage() {
     githubUsername: "",
   });
 
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = OnboardingStorage.load();
+    if (savedData) {
+      setFormData({
+        name: savedData.name || "",
+        country: savedData.country || "",
+        university: savedData.university || "",
+        profileImage: savedData.profileImage || "",
+        skills: savedData.skills || [],
+        summerGoals: savedData.summerGoals || "",
+        currentProject: savedData.currentProject || "",
+        linkedinUrl: savedData.linkedinUrl || "",
+        instagramHandle: savedData.instagramHandle || "",
+        twitterHandle: savedData.twitterHandle || "",
+        githubUsername: savedData.githubUsername || "",
+      });
+    }
+  }, []);
+
   const [countryInput, setCountryInput] = useState("");
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<{
@@ -77,10 +82,12 @@ export default function OnboardingPage() {
   } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const normalizedSkills = skills.map(s => s.trim().toLowerCase());
-  const normalizedSelected = formData.skills.map(s => s.trim().toLowerCase());
+  const normalizedSkills = skills.map((s) => s.trim().toLowerCase());
+  const normalizedSelected = formData.skills.map((s) => s.trim().toLowerCase());
   const normalizedNewSkill = newSkill.trim().toLowerCase();
-  const isDuplicate = normalizedSkills.includes(normalizedNewSkill) || normalizedSelected.includes(normalizedNewSkill);
+  const isDuplicate =
+    normalizedSkills.includes(normalizedNewSkill) ||
+    normalizedSelected.includes(normalizedNewSkill);
 
   const steps = [
     {
@@ -184,86 +191,38 @@ export default function OnboardingPage() {
   );
 
   const handleCompleteProfile = useCallback(async () => {
-    if (!user?.email) {
-      toast.error("User email not found. Please try logging in again.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const formatSocialUrl = (platform: string, input: string) => {
-        if (!input.trim()) return null;
-
-        switch (platform) {
-          case "linkedin":
-            return input.startsWith("http")
-              ? input
-              : `https://www.linkedin.com/in/${input.replace("@", "")}`;
-          case "github":
-            return input.startsWith("http")
-              ? input
-              : `https://github.com/${input.replace("@", "")}`;
-          case "twitter":
-            return input.startsWith("http")
-              ? input
-              : `https://twitter.com/${input.replace("@", "")}`;
-          case "instagram":
-            return input.startsWith("http")
-              ? input
-              : `https://instagram.com/${input.replace("@", "")}`;
-          default:
-            return input;
-        }
-      };
-
-      const studentData: StudentInsert = {
+      const onboardingData: OnboardingData = {
         name: formData.name,
-        email: user.email,
         country: formData.country,
-        profile_image: formData.profileImage || null,
+        university: formData.university,
+        profileImage: formData.profileImage,
         skills: formData.skills,
-        summer_goals: [formData.summerGoals],
-        current_project: formData.currentProject,
-        phone_number: null,
-        linkedin: formatSocialUrl("linkedin", formData.linkedinUrl),
-        github: formatSocialUrl("github", formData.githubUsername),
-        website: formatSocialUrl("twitter", formData.twitterHandle), // Using website field for Twitter for now
-        isOnboarded: true,
+        summerGoals: formData.summerGoals,
+        currentProject: formData.currentProject,
+        linkedinUrl: formData.linkedinUrl,
+        instagramHandle: formData.instagramHandle,
+        twitterHandle: formData.twitterHandle,
+        githubUsername: formData.githubUsername,
       };
 
-      if (student) {
-        const updateData: StudentUpdate = {
-          ...studentData,
-          id: undefined,
-        };
-        await updateStudentMutation.mutateAsync({
-          id: student.id,
-          updates: updateData,
-        });
-        toast.success("Profile updated successfully!");
-      } else {
-        await createStudentMutation.mutateAsync(studentData);
-        toast.success("Profile created successfully!");
-      }
+      // Save to localStorage
+      OnboardingStorage.save(onboardingData);
 
-      await refetch();
+      toast.success(
+        "Profile information saved! Now let's create your account."
+      );
 
-      router.push("/");
+      // Redirect to signup page
+      router.push("/auth/signup");
     } catch (error) {
-      console.error("Error completing profile:", error);
-      toast.error("Failed to complete profile. Please try again.");
+      console.error("Error saving profile:", error);
+      toast.error("Failed to save profile. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    user?.email,
-    formData,
-    student,
-    updateStudentMutation,
-    createStudentMutation,
-    refetch,
-    router,
-  ]);
+  }, [formData, router]);
 
   const handleNext = useCallback(() => {
     if (currentStep < 6) {
@@ -478,31 +437,33 @@ export default function OnboardingPage() {
                 <Input
                   ref={inputRef}
                   value={newSkill}
-                  onChange={e => setNewSkill(e.target.value)}
+                  onChange={(e) => setNewSkill(e.target.value)}
                   placeholder="Add a new skill..."
                   className="w-56"
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && newSkill.trim() && !isDuplicate) {
-                      addSkillMutation.mutate(newSkill.trim(), {
-                        onSuccess: () => {
-                          setFormData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }))
-                          setNewSkill('')
-                          setTimeout(() => inputRef.current?.focus(), 100)
-                        }
-                      })
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newSkill.trim() && !isDuplicate) {
+                      const trimmedSkill = newSkill.trim();
+                      setSkills((prev) => [...prev, trimmedSkill]);
+                      setFormData((prev) => ({
+                        ...prev,
+                        skills: [...prev.skills, trimmedSkill],
+                      }));
+                      setNewSkill("");
+                      setTimeout(() => inputRef.current?.focus(), 100);
                     }
                   }}
                 />
                 <Button
                   onClick={() => {
                     if (newSkill.trim() && !isDuplicate) {
-                      addSkillMutation.mutate(newSkill.trim(), {
-                        onSuccess: () => {
-                          setFormData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }))
-                          setNewSkill('')
-                          setTimeout(() => inputRef.current?.focus(), 100)
-                        }
-                      })
+                      const trimmedSkill = newSkill.trim();
+                      setSkills((prev) => [...prev, trimmedSkill]);
+                      setFormData((prev) => ({
+                        ...prev,
+                        skills: [...prev.skills, trimmedSkill],
+                      }));
+                      setNewSkill("");
+                      setTimeout(() => inputRef.current?.focus(), 100);
                     }
                   }}
                   disabled={!newSkill.trim() || isDuplicate}
@@ -513,7 +474,9 @@ export default function OnboardingPage() {
                 </Button>
               </div>
               {isDuplicate && newSkill.trim() && (
-                <div className="text-xs text-red-500 mb-1 ml-1">Skill already exists or is selected</div>
+                <div className="text-xs text-red-500 mb-1 ml-1">
+                  Skill already exists or is selected
+                </div>
               )}
               <div className="border-b border-gray-200 mb-2" />
               <div className="flex flex-wrap gap-2">
@@ -521,7 +484,9 @@ export default function OnboardingPage() {
                   return (
                     <Badge
                       key={skill}
-                      variant={formData.skills.includes(skill) ? "default" : "outline"}
+                      variant={
+                        formData.skills.includes(skill) ? "default" : "outline"
+                      }
                       className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
                         formData.skills.includes(skill)
                           ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
@@ -531,7 +496,7 @@ export default function OnboardingPage() {
                     >
                       {skill}
                     </Badge>
-                  )
+                  );
                 })}
               </div>
             </div>
