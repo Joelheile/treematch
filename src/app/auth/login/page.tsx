@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 import { AlertCircle, Lock, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,11 +20,22 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signInWithGoogle } = useAuth();
+  const { toast } = useToast();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (!email.endsWith("@stanford.edu")) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Email Domain",
+        description: "Please use your Stanford email address (@stanford.edu)",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       await signIn(email, password);
