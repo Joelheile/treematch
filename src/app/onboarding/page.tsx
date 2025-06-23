@@ -20,6 +20,7 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 // Country code to flag emoji mapping
@@ -31,6 +32,7 @@ const countryToFlag = (countryCode: string) => {
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const router = useRouter();
 
   // Stable randomization instead of Math.random() anti-pattern
   const randomizedSkills = useMemo(() => {
@@ -204,7 +206,7 @@ export default function OnboardingPage() {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Simple completion without complex Student type
+      router.push("/");
       console.log("Student profile completed:", formData);
     }
   }, [currentStep, formData]);
