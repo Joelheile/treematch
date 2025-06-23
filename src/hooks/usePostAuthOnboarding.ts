@@ -1,5 +1,5 @@
 import { useAuth } from '@/app/auth/AuthProvider'
-import { onboardingService } from '@/integrations/supabase/onboarding-service'
+import { onboardingService } from '@/hooks/onboarding/onboarding-service'
 import { OnboardingStorage } from '@/lib/onboarding-storage'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'

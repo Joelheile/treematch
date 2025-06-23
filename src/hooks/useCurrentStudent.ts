@@ -1,5 +1,5 @@
 import { useAuth } from '@/app/auth/AuthProvider'
-import { useStudentByEmail } from '@/integrations/supabase/student-queries'
+import { useStudentByEmail } from '@/integrations/supabase/useStudentByEmail'
 
 export const useCurrentStudent = () => {
   const { user } = useAuth()
