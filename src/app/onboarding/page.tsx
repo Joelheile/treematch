@@ -1,10 +1,20 @@
 "use client";
+import { useAuth } from "@/app/auth/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import {
+  useCreateStudent,
+  useUpdateStudent,
+} from "@/integrations/supabase/student-queries";
+import type {
+  StudentInsert,
+  StudentUpdate,
+} from "@/integrations/supabase/student-service";
 import countriesData from "@/lib/countries.json";
 import {
   Briefcase,
@@ -22,12 +32,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, useRef } from "react";
-import { useAuth } from "@/app/auth/AuthProvider";
-import { useCreateStudent, useUpdateStudent, useSkills, useAddSkill } from "@/integrations/supabase/student-queries";
-import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { StudentInsert, StudentUpdate } from "@/integrations/supabase/student-service";
 
 const countryToFlag = (countryCode: string) => {
   return countryCode
@@ -185,16 +191,24 @@ export default function OnboardingPage() {
     try {
       const formatSocialUrl = (platform: string, input: string) => {
         if (!input.trim()) return null;
-        
+
         switch (platform) {
-          case 'linkedin':
-            return input.startsWith('http') ? input : `https://www.linkedin.com/in/${input.replace('@', '')}`;
-          case 'github':
-            return input.startsWith('http') ? input : `https://github.com/${input.replace('@', '')}`;
-          case 'twitter':
-            return input.startsWith('http') ? input : `https://twitter.com/${input.replace('@', '')}`;
-          case 'instagram':
-            return input.startsWith('http') ? input : `https://instagram.com/${input.replace('@', '')}`;
+          case "linkedin":
+            return input.startsWith("http")
+              ? input
+              : `https://www.linkedin.com/in/${input.replace("@", "")}`;
+          case "github":
+            return input.startsWith("http")
+              ? input
+              : `https://github.com/${input.replace("@", "")}`;
+          case "twitter":
+            return input.startsWith("http")
+              ? input
+              : `https://twitter.com/${input.replace("@", "")}`;
+          case "instagram":
+            return input.startsWith("http")
+              ? input
+              : `https://instagram.com/${input.replace("@", "")}`;
           default:
             return input;
         }
@@ -209,18 +223,21 @@ export default function OnboardingPage() {
         summer_goals: [formData.summerGoals],
         current_project: formData.currentProject,
         phone_number: null,
-        linkedin: formatSocialUrl('linkedin', formData.linkedinUrl),
-        github: formatSocialUrl('github', formData.githubUsername),
-        website: formatSocialUrl('twitter', formData.twitterHandle), // Using website field for Twitter for now
-        isOnboarded: true
+        linkedin: formatSocialUrl("linkedin", formData.linkedinUrl),
+        github: formatSocialUrl("github", formData.githubUsername),
+        website: formatSocialUrl("twitter", formData.twitterHandle), // Using website field for Twitter for now
+        isOnboarded: true,
       };
 
       if (student) {
         const updateData: StudentUpdate = {
           ...studentData,
-          id: undefined
+          id: undefined,
         };
-        await updateStudentMutation.mutateAsync({ id: student.id, updates: updateData });
+        await updateStudentMutation.mutateAsync({
+          id: student.id,
+          updates: updateData,
+        });
         toast.success("Profile updated successfully!");
       } else {
         await createStudentMutation.mutateAsync(studentData);
@@ -228,9 +245,8 @@ export default function OnboardingPage() {
       }
 
       await refetch();
-      
-      router.push('/');
-      
+
+      router.push("/");
     } catch (error) {
       console.error("Error completing profile:", error);
       toast.error("Failed to complete profile. Please try again.");
@@ -244,7 +260,7 @@ export default function OnboardingPage() {
     updateStudentMutation,
     createStudentMutation,
     refetch,
-    router
+    router,
   ]);
 
   const handleNext = useCallback(() => {
@@ -885,12 +901,11 @@ export default function OnboardingPage() {
                 : "bg-gray-900 hover:bg-black text-white"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isSubmitting 
-              ? "Saving..." 
-              : currentStep === 6 
-                ? "Complete Profile" 
-                : "Continue"
-            }
+            {isSubmitting
+              ? "Saving..."
+              : currentStep === 6
+              ? "Complete Profile"
+              : "Continue"}
           </Button>
         </div>
       </div>
