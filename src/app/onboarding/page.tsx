@@ -206,14 +206,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <div className="bg-red-600 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                 <TreePine className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
                 Welcome to Treematch!
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg lg:text-xl leading-relaxed mb-4 sm:mb-6 px-4">
+              <p className="text-gray-600 text-base sm:text-lg lg:text-xl leading-relaxed mb-4 sm:mb-6 px-4">
                 Connect with fellow students for projects, collaboration, and
                 friendship.
               </p>
-              <p className="text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 text-sm sm:text-base px-4">
+              <p className="text-gray-500 mb-6 sm:mb-8 text-sm sm:text-base px-4">
                 Let's start with some basic information to build your profile.
               </p>
             </div>
@@ -223,7 +223,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <div>
                   <Label
                     htmlFor="firstName"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="text-sm font-medium text-gray-700"
                   >
                     First Name*
                   </Label>
@@ -243,13 +243,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                       }));
                     }}
                     placeholder="First Name"
-                    className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                    className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
                 </div>
                 <div>
                   <Label
                     htmlFor="lastName"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="text-sm font-medium text-gray-700"
                   >
                     Last Name*
                   </Label>
@@ -266,7 +266,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                       }));
                     }}
                     placeholder="Last Name"
-                    className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                    className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
                 </div>
               </div>
@@ -274,7 +274,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <div>
                 <Label
                   htmlFor="university"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="text-sm font-medium text-gray-700"
                 >
                   University*
                 </Label>
@@ -288,7 +288,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     }))
                   }
                   placeholder="Start typing your university..."
-                  className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                  className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   list="universities"
                 />
                 <datalist id="universities">
@@ -301,7 +301,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <div>
                 <Label
                   htmlFor="city"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="text-sm font-medium text-gray-700"
                 >
                   Hometown*
                 </Label>
@@ -312,7 +312,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     setFormData((prev) => ({ ...prev, city: e.target.value }))
                   }
                   placeholder="Where are you from?"
-                  className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                  className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   list="cities"
                 />
                 <datalist id="cities">
@@ -329,10 +329,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                 What are your skills?
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base px-4">
+              <p className="text-gray-600 text-sm sm:text-base px-4">
                 Select the areas where you have experience or expertise. This
                 helps others find you for the right projects.
               </p>
@@ -349,7 +349,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
                       formData.skills.includes(skill)
                         ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
-                        : "hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-200 border-gray-300 dark:border-gray-600 dark:text-gray-300"
+                        : "hover:bg-red-50 hover:border-red-200 border-gray-300"
                     }`}
                     onClick={() => handleSkillToggle(skill)}
                   >
@@ -357,7 +357,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   </Badge>
                 ))}
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
+              <p className="text-sm text-gray-500 mt-4 text-center">
                 Selected {formData.skills.length} skills
               </p>
             </div>
@@ -368,10 +368,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                 What's the coolest passion/project/thing you've done/have?
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base px-4">
+              <p className="text-gray-600 mb-6 text-sm sm:text-base px-4">
                 This is your chance to showcase what makes you unique! Share
                 something you're proud of - whether it's a current project, past
                 achievement, hobby, or passion. Think of something that would
@@ -382,7 +382,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <div>
               <Label
                 htmlFor="currentProject"
-                className="text-lg font-semibold text-gray-700 dark:text-gray-300"
+                className="text-lg font-semibold text-gray-700"
               >
                 Your Coolest Thing*
               </Label>
@@ -396,10 +396,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   }))
                 }
                 placeholder="Tell us about something awesome you've done or are working on..."
-                className="min-h-[120px] mt-2 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                className="min-h-[120px] mt-2 border-gray-300 focus:border-red-500 focus:ring-red-500"
               />
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mx-4 mb-6">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-gray-50 rounded-lg p-4 mx-4 mb-6">
+                <p className="text-sm text-gray-600">
                   <strong>Examples:</strong> Built a viral TikTok channel,
                   started a startup, part of Excel world championship, built a
                   community event, etc.
@@ -413,10 +413,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                 What do you hope to achieve this semester?*
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base px-4">
+              <p className="text-gray-600 mb-6 text-sm sm:text-base px-4">
                 Tell others about what you want to achieve? Build something,
                 meet VCs, get inspired, learn a new skill, etc.
               </p>
@@ -425,7 +425,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <div>
               <Label
                 htmlFor="goals"
-                className="text-lg font-semibold text-gray-700 dark:text-gray-300"
+                className="text-lg font-semibold text-gray-700"
               ></Label>
               <Textarea
                 id="goals"
@@ -437,7 +437,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   }))
                 }
                 placeholder="e.g., Launch my startup, complete my CS thesis, find an internship, build my network, learn new skills..."
-                className="min-h-[120px] mt-2 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                className="min-h-[120px] mt-2 border-gray-300 focus:border-red-500 focus:ring-red-500"
               />
             </div>
           </div>
@@ -447,10 +447,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         return (
           <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                 Add Your Profile Photo*
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base px-4">
+              <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base px-4">
                 Upload a ✨friendly ✨ photo so others can recognize you around
                 campus. We have over 500 students and there's no way to match
                 anybody without a photo haha.
@@ -461,7 +461,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   <img
                     src={formData.profileImage}
                     alt="Profile"
-                    className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-red-100 dark:border-red-900 mx-auto"
+                    className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-red-100 mx-auto"
                   />
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                     <Button
@@ -492,8 +492,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-6">
-                    <User className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500" />
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                    <User className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400" />
                   </div>
                   <input
                     type="file"
@@ -510,7 +510,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                       <span>Upload Photo</span>
                     </Button>
                   </Label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                  <p className="text-sm text-gray-500 mt-4">
                     JPG, PNG or GIF • Max 5MB
                   </p>
                 </div>
@@ -525,19 +525,19 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+      <div className="lg:hidden bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="bg-red-600 p-2 rounded-lg">
               <TreePine className="w-5 h-5 text-white" />
             </div>
-            <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="text-xl font-bold text-gray-900">
               Treematch
             </div>
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-sm text-gray-500">
             {currentStep} of {steps.length}
           </div>
         </div>
@@ -548,7 +548,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             value={progressPercentage}
             className="h-2 [&>div]:bg-red-600"
           />
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex justify-between text-xs text-gray-500">
             <span>{steps[currentStep - 1]?.title}</span>
             <span>{Math.round(progressPercentage)}%</span>
           </div>
@@ -556,13 +556,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex w-80 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700">
+      <div className="hidden lg:flex w-80 bg-white shadow-lg border-r border-gray-200">
         <div className="p-6 w-full">
           <div className="flex items-center space-x-3 mb-8">
             <div className="bg-red-600 p-2 rounded-lg">
               <TreePine className="w-6 h-6 text-white" />
             </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="text-2xl font-bold text-gray-900">
               Treematch
             </div>
           </div>
@@ -575,10 +575,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   key={step.number}
                   className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
                     step.number === currentStep
-                      ? "bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800"
+                      ? "bg-red-50 border border-red-200"
                       : step.completed
-                      ? "text-gray-700 dark:text-gray-300"
-                      : "text-gray-400 dark:text-gray-500"
+                      ? "text-gray-700"
+                      : "text-gray-400"
                   }`}
                 >
                   <div
@@ -587,7 +587,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                         ? "bg-red-600 text-white"
                         : step.completed
                         ? "bg-green-500 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                        : "bg-gray-200 text-gray-500"
                     }`}
                   >
                     {step.completed ? (
@@ -598,7 +598,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   </div>
                   <div>
                     <div className="font-medium text-sm">{step.title}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500">
                       {step.subtitle}
                     </div>
                   </div>
@@ -611,19 +611,19 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 pb-24">
-        <div className="w-full max-w-2xl  dark:bg-gray-900">
+        <div className="w-full max-w-2xl  ">
           <div className="p-6 sm:p-8 lg:p-12">{renderStepContent()}</div>
         </div>
       </div>
 
       {/* Fixed Navigation Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
         <div className="flex justify-between max-w-2xl mx-auto">
           {currentStep > 1 ? (
             <Button
               variant="outline"
               onClick={handleBack}
-              className="flex items-center space-x-2 px-4 sm:px-6 h-11 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex items-center space-x-2 px-4 sm:px-6 h-11 border-gray-300 hover:bg-gray-50"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Back</span>
@@ -638,7 +638,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             className={`px-6 sm:px-8 font-semibold h-11 ${
               currentStep === 5
                 ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-gray-900 dark:bg-gray-100 hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900"
+                : "bg-gray-900 hover:bg-black text-white"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {currentStep === 5 ? "Complete Profile" : "Continue"}
