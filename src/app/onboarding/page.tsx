@@ -1,3 +1,4 @@
+"use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ interface OnboardingFlowProps {
   onComplete: (student: Student) => void;
 }
 
-export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
+export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(1);
 
   // Randomize skills and looking for options
@@ -645,4 +646,4 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       </div>
     </div>
   );
-};
+}
