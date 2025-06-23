@@ -1,50 +1,64 @@
 import { useAuth } from "@/app/auth/AuthProvider";
 import { StudentCard } from "@/components/StudentCard";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAddSkill } from "@/integrations/supabase/useAddSkill";
 import { useSkills } from "@/integrations/supabase/useSkills";
 import type { StudentFilters } from "@/integrations/supabase/useStudents";
 import { useStudents } from "@/integrations/supabase/useStudents";
+import countries from "@/lib/countries.json";
 import {
-  Award,
-  BarChart3,
-  Filter,
-  Globe2,
+  ArrowUpDown,
+  Check,
+  ChevronDown,
+  Github,
+  Linkedin,
   Loader2,
+  MapPin,
   Search,
+  SlidersHorizontal,
+  Sparkles,
   TreePine,
   Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+// Placeholder analytics hook since the original was undefined
+const useStudentAnalytics = () => ({
+  data: null,
+  isLoading: false,
+});
+
+const POPULAR_SKILLS = [
+  "Web Development",
+  "Mobile Development",
+  "Data Science",
+  "Machine Learning",
+  "UI/UX Design",
+  "Product Management",
+  "Marketing",
+  "Business Development",
+];
+
+const QUICK_FILTERS = [
+  { id: "hasLinkedIn", label: "Has LinkedIn", icon: Linkedin },
+  { id: "hasGithub", label: "Has GitHub", icon: Github },
+];
 
 export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,34 +68,37 @@ export const StudentOverview = () => {
     undefined
   );
   const [hasGithub, setHasGithub] = useState<boolean | undefined>(undefined);
-  const [hasWebsite, setHasWebsite] = useState<boolean | undefined>(undefined);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [sortBy, setSortBy] = useState<
+    "newest" | "alphabetical" | "mostSkills"
+  >("newest");
+
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { data: skills = [] } = useSkills(user?.id);
-  const addSkillMutation = useAddSkill(user?.id || "");
-  const [newSkill, setNewSkill] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const countryOptions = useMemo(() => {
+    return countries.map((country) => ({
+      value: country.name,
+      label: country.name,
+      flag: country.code,
+    }));
+  }, []);
 
   // Build filters object
   const filters: StudentFilters = useMemo(() => {
     const result: StudentFilters = {};
-
     if (searchTerm.trim()) result.search = searchTerm.trim();
     if (selectedCountry) result.country = selectedCountry;
-    if (selectedSkills.length > 0) result.skills = selectedSkills;
+    if (selectedSkills.length > 0) result.skillIds = selectedSkills;
     if (hasLinkedIn !== undefined) result.hasLinkedIn = hasLinkedIn;
     if (hasGithub !== undefined) result.hasGithub = hasGithub;
-    if (hasWebsite !== undefined) result.hasWebsite = hasWebsite;
-
     return result;
-  }, [
-    searchTerm,
-    selectedCountry,
-    selectedSkills,
-    hasLinkedIn,
-    hasGithub,
-    hasWebsite,
-  ]);
+  }, [searchTerm, selectedCountry, selectedSkills, hasLinkedIn, hasGithub]);
 
   // Fetch students with filters
   const {
@@ -89,23 +106,47 @@ export const StudentOverview = () => {
     isLoading,
     error,
     refetch,
-  } = useStudents(filters, {
+  } = useStudents({
+    filters,
     limit: 50,
-    orderBy: "created_at",
-    orderDirection: "desc",
+    orderBy:
+      sortBy === "newest"
+        ? "created_at"
+        : sortBy === "alphabetical"
+        ? "name"
+        : "created_at",
+    orderDirection: sortBy === "newest" ? "desc" : "asc",
   });
-
-  // Fetch analytics
-  const { data: analytics, isLoading: analyticsLoading } =
-    useStudentAnalytics();
 
   const students = studentsResponse?.data || [];
   const totalCount = studentsResponse?.totalCount || 0;
+
+  // Get unique countries from actual students
+  const availableCountries = useMemo(() => {
+    const countrySet = new Set<string>();
+    students.forEach((student) => {
+      if (student.country) {
+        countrySet.add(student.country);
+      }
+    });
+    return Array.from(countrySet).sort();
+  }, [students]);
 
   const handleSkillSelect = (skill: string) => {
     setSelectedSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     );
+  };
+
+  const handleQuickFilter = (filterType: string) => {
+    switch (filterType) {
+      case "hasLinkedIn":
+        setHasLinkedIn((prev) => (prev === true ? undefined : true));
+        break;
+      case "hasGithub":
+        setHasGithub((prev) => (prev === true ? undefined : true));
+        break;
+    }
   };
 
   const clearAllFilters = () => {
@@ -114,7 +155,6 @@ export const StudentOverview = () => {
     setSelectedSkills([]);
     setHasLinkedIn(undefined);
     setHasGithub(undefined);
-    setHasWebsite(undefined);
   };
 
   const hasActiveFilters =
@@ -122,244 +162,355 @@ export const StudentOverview = () => {
     selectedCountry ||
     selectedSkills.length > 0 ||
     hasLinkedIn !== undefined ||
-    hasGithub !== undefined ||
-    hasWebsite !== undefined;
+    hasGithub !== undefined;
 
-  const uniqueCountries = useMemo(() => {
-    if (!analytics?.data?.studentsByCountry) return [];
-    return Object.keys(analytics.data.studentsByCountry).sort();
-  }, [analytics]);
+  const activeFilterCount =
+    [
+      searchTerm,
+      selectedCountry,
+      selectedSkills.length > 0,
+      hasLinkedIn !== undefined,
+      hasGithub !== undefined,
+    ].filter(Boolean).length +
+    selectedSkills.length -
+    (selectedSkills.length > 0 ? 1 : 0);
 
-  const renderAnalytics = () => {
-    if (!analytics?.data) return null;
+  // Focus search on mobile when component mounts
+  useEffect(() => {
+    if (isMobile && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isMobile]);
 
-    const {
-      totalStudents,
-      studentsByCountry,
-      topSkills,
-      studentsWithSocialLinks,
-    } = analytics.data;
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Students
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalStudents}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Countries</CardTitle>
-            <Globe2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {Object.keys(studentsByCountry).length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              With Social Links
-            </CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{studentsWithSocialLinks}</div>
-            <div className="text-xs text-muted-foreground">
-              {totalStudents > 0
-                ? Math.round((studentsWithSocialLinks / totalStudents) * 100)
-                : 0}
-              % of total
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Top Skill</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {topSkills[0]?.skill || "None"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {topSkills[0]?.count || 0} students
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
-
-  const renderFilters = () => (
-    <div className="space-y-6">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <Input
-          placeholder="Search by name, email, project, or skills..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 border-gray-300 focus:border-red-500 focus:ring-red-500"
-        />
-      </div>
-
-      {/* Country Filter */}
-      <div>
-        <label className="text-sm font-medium text-gray-700 mb-2 block">
-          Filter by Country
-        </label>
-        <Select
-          value={selectedCountry || "all"}
-          onValueChange={(value) =>
-            setSelectedCountry(value === "all" ? "" : value)
-          }
-        >
-          <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
-            <SelectValue placeholder="All countries" />
-          </SelectTrigger>
-          <SelectContent className="bg-white max-h-60">
-            <SelectItem value="all">All countries</SelectItem>
-            {uniqueCountries.map((country) => (
-              <SelectItem key={country} value={country}>
-                {country} ({analytics?.data?.studentsByCountry[country] || 0})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Social Media Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            LinkedIn
-          </label>
-          <Select
-            value={hasLinkedIn === undefined ? "any" : hasLinkedIn.toString()}
-            onValueChange={(value) =>
-              setHasLinkedIn(value === "any" ? undefined : value === "true")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Any" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any</SelectItem>
-              <SelectItem value="true">Has LinkedIn</SelectItem>
-              <SelectItem value="false">No LinkedIn</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            GitHub
-          </label>
-          <Select
-            value={hasGithub === undefined ? "any" : hasGithub.toString()}
-            onValueChange={(value) =>
-              setHasGithub(value === "any" ? undefined : value === "true")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Any" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any</SelectItem>
-              <SelectItem value="true">Has GitHub</SelectItem>
-              <SelectItem value="false">No GitHub</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Website
-          </label>
-          <Select
-            value={hasWebsite === undefined ? "any" : hasWebsite.toString()}
-            onValueChange={(value) =>
-              setHasWebsite(value === "any" ? undefined : value === "true")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Any" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any</SelectItem>
-              <SelectItem value="true">Has Website</SelectItem>
-              <SelectItem value="false">No Website</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Skills Selection */}
-      <div className="mb-2 flex gap-2">
-        <Input
-          value={newSkill}
-          onChange={(e) => setNewSkill(e.target.value)}
-          placeholder="Add custom skill"
-          className="w-48"
-        />
-        <Button
-          onClick={() => {
-            if (newSkill.trim()) {
-              addSkillMutation.mutate(newSkill.trim());
-              setNewSkill("");
-            }
-          }}
-          disabled={addSkillMutation.isPending || !newSkill.trim()}
-          variant="outline"
-          size="sm"
-        >
-          Add
-        </Button>
-      </div>
-      <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-        {skills.map((skill) => (
-          <Badge
-            key={skill}
-            variant={selectedSkills.includes(skill) ? "default" : "outline"}
-            className={`cursor-pointer transition-all hover:scale-105 ${
-              selectedSkills.includes(skill)
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+  const renderMobileSearch = () => (
+    <div className="relative">
+      <div
+        className={`transition-all duration-300 ${
+          searchFocused
+            ? "bg-white shadow-lg rounded-2xl border-2 border-red-500"
+            : "bg-gray-50 rounded-2xl border border-gray-200"
+        }`}
+      >
+        <div className="flex items-center px-4 py-3">
+          <Search
+            className={`w-5 h-5 mr-3 transition-colors ${
+              searchFocused ? "text-red-500" : "text-gray-400"
             }`}
-            onClick={() => handleSkillSelect(skill)}
-          >
-            {skill}
-          </Badge>
-        ))}
+          />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search students, skills, projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
+            className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500 text-lg"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="ml-2 p-1 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          )}
+        </div>
       </div>
-      {selectedSkills.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {selectedSkills.map((skill) => (
-            <Badge key={skill} className="bg-red-100 text-red-800 text-xs">
-              {skill}
-              <X
-                className="w-3 h-3 ml-1 cursor-pointer"
-                onClick={() => handleSkillSelect(skill)}
-              />
-            </Badge>
-          ))}
+
+      {searchFocused && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 max-h-64 overflow-y-auto">
+          <div className="p-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <Sparkles className="w-4 h-4 mr-2 text-yellow-500" />
+              Popular Skills
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {POPULAR_SKILLS.map((skill) => (
+                <button
+                  key={skill}
+                  onClick={() => {
+                    handleSkillSelect(skill);
+                    setSearchFocused(false);
+                  }}
+                  className="px-3 py-1.5 text-sm bg-red-50 text-red-700 rounded-full border border-red-200 hover:bg-red-100 transition-colors"
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 
+  const renderQuickFilters = () => (
+    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      {/* Sort button */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-300 hover:border-gray-400 transition-colors whitespace-nowrap">
+            <ArrowUpDown className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">
+              {sortBy === "newest"
+                ? "Newest"
+                : sortBy === "alphabetical"
+                ? "A-Z"
+                : "Most Skills"}
+            </span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-48 p-2">
+          <div className="space-y-1">
+            {[
+              { value: "newest", label: "Newest First" },
+              { value: "alphabetical", label: "Alphabetical" },
+              { value: "mostSkills", label: "Most Skills" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSortBy(option.value as any)}
+                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                  sortBy === option.value
+                    ? "bg-red-50 text-red-700"
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Country filter */}
+      <Popover open={showCountryDropdown} onOpenChange={setShowCountryDropdown}>
+        <PopoverTrigger asChild>
+          <button
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap ${
+              selectedCountry
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {selectedCountry || "Country"}
+            </span>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-0">
+          <Command>
+            <CommandInput placeholder="Search countries..." />
+            <CommandList>
+              <CommandEmpty>No countries found.</CommandEmpty>
+              <CommandGroup>
+                <CommandItem
+                  onSelect={() => {
+                    setSelectedCountry("");
+                    setShowCountryDropdown(false);
+                  }}
+                >
+                  <span>All Countries</span>
+                </CommandItem>
+                {availableCountries.map((country) => (
+                  <CommandItem
+                    key={country}
+                    onSelect={() => {
+                      setSelectedCountry(country);
+                      setShowCountryDropdown(false);
+                    }}
+                  >
+                    <span>{country}</span>
+                    {selectedCountry === country && (
+                      <Check className="ml-auto w-4 h-4 text-red-600" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+
+      {/* Quick social filters */}
+      {QUICK_FILTERS.map((filter) => {
+        const isActive =
+          (filter.id === "hasLinkedIn" && hasLinkedIn) ||
+          (filter.id === "hasGithub" && hasGithub);
+        const Icon = filter.icon;
+
+        return (
+          <button
+            key={filter.id}
+            onClick={() => handleQuickFilter(filter.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap ${
+              isActive
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            <span className="text-sm font-medium">{filter.label}</span>
+          </button>
+        );
+      })}
+
+      {/* Skills filter */}
+      <Popover open={showSkillsDropdown} onOpenChange={setShowSkillsDropdown}>
+        <PopoverTrigger asChild>
+          <button
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap relative ${
+              selectedSkills.length > 0
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="text-sm font-medium">Skills</span>
+            {selectedSkills.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {selectedSkills.length}
+              </span>
+            )}
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0 max-h-96 overflow-hidden">
+          <Command>
+            <CommandInput placeholder="Search skills..." />
+            <CommandList>
+              <CommandEmpty>No skills found.</CommandEmpty>
+              <CommandGroup>
+                <CommandItem
+                  onSelect={() => {
+                    setSelectedSkills([]);
+                  }}
+                >
+                  <span>Clear all skills</span>
+                </CommandItem>
+              </CommandGroup>
+              {POPULAR_SKILLS.length > 0 && (
+                <CommandGroup heading="Popular Skills">
+                  {POPULAR_SKILLS.map((skill) => (
+                    <CommandItem
+                      key={skill}
+                      onSelect={() => handleSkillSelect(skill)}
+                    >
+                      <span>{skill}</span>
+                      {selectedSkills.includes(skill) && (
+                        <Check className="ml-auto w-4 h-4 text-red-600" />
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+              {skills.length > 0 && (
+                <CommandGroup heading="All Skills">
+                  {skills
+                    .filter((skill) => !POPULAR_SKILLS.includes(skill.name))
+                    .map((skill) => (
+                      <CommandItem
+                        key={skill.id}
+                        onSelect={() => handleSkillSelect(skill.name)}
+                      >
+                        <span>{skill.name}</span>
+                        {selectedSkills.includes(skill.name) && (
+                          <Check className="ml-auto w-4 h-4 text-red-600" />
+                        )}
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+
+  const renderActiveFilters = () => {
+    if (!hasActiveFilters) return null;
+
+    return (
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
+          <span className="text-sm text-gray-600 whitespace-nowrap">
+            Active:
+          </span>
+
+          {searchTerm && (
+            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
+              <Search className="w-3 h-3" />
+              <span className="text-sm font-medium">"{searchTerm}"</span>
+              <button onClick={() => setSearchTerm("")} className="ml-1">
+                <X className="w-3 h-3 hover:text-blue-900" />
+              </button>
+            </div>
+          )}
+
+          {selectedCountry && (
+            <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-200">
+              <MapPin className="w-3 h-3" />
+              <span className="text-sm font-medium">{selectedCountry}</span>
+              <button onClick={() => setSelectedCountry("")} className="ml-1">
+                <X className="w-3 h-3 hover:text-green-900" />
+              </button>
+            </div>
+          )}
+
+          {selectedSkills.map((skill) => (
+            <div
+              key={skill}
+              className="flex items-center gap-1 bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-200"
+            >
+              <span className="text-sm font-medium">{skill}</span>
+              <button onClick={() => handleSkillSelect(skill)} className="ml-1">
+                <X className="w-3 h-3 hover:text-purple-900" />
+              </button>
+            </div>
+          ))}
+
+          {hasLinkedIn && (
+            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
+              <Linkedin className="w-3 h-3" />
+              <span className="text-sm font-medium">Has LinkedIn</span>
+              <button
+                onClick={() => setHasLinkedIn(undefined)}
+                className="ml-1"
+              >
+                <X className="w-3 h-3 hover:text-blue-900" />
+              </button>
+            </div>
+          )}
+
+          {hasGithub && (
+            <div className="flex items-center gap-1 bg-gray-50 text-gray-700 px-3 py-1 rounded-full border border-gray-200">
+              <Github className="w-3 h-3" />
+              <span className="text-sm font-medium">Has GitHub</span>
+              <button onClick={() => setHasGithub(undefined)} className="ml-1">
+                <X className="w-3 h-3 hover:text-gray-900" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={clearAllFilters}
+          className="flex items-center gap-1 bg-red-50 text-red-700 px-3 py-1 rounded-full border border-red-200 hover:bg-red-100 transition-colors whitespace-nowrap shrink-0"
+        >
+          <X className="w-3 h-3" />
+          <span className="text-sm font-medium">Clear All</span>
+        </button>
+      </div>
+    );
+  };
+
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <div className="text-red-500 mb-4">
             <Users className="w-12 h-12 mx-auto mb-4" />
@@ -382,121 +533,41 @@ export const StudentOverview = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+      {/* Mobile-optimized header */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-red-600 p-2 rounded-lg">
+              <div className="bg-red-600 p-2 rounded-xl">
                 <TreePine className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Treematch</h1>
-                <p className="text-gray-500 text-sm hidden md:block">
+                <h1 className="text-xl font-bold text-gray-900">Treematch</h1>
+                <p className="text-gray-500 text-sm hidden sm:block">
                   Connect with Stanford students
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAnalytics(!showAnalytics)}
-                className="hidden md:flex items-center space-x-2"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Analytics</span>
+            <Link href="/meet" passHref>
+              <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Meet in Person</span>
+                <span className="sm:hidden">Meet</span>
               </Button>
-              <Link href="/meet" passHref>
-                <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700">
-                  <Users className="w-4 h-4" />
-                  <span className="hidden sm:inline">Meet in Person</span>
-                </Button>
-              </Link>
-              {isMobile && (
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="relative">
-                      <Filter className="w-4 h-4" />
-                      {hasActiveFilters && (
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-white" />
-                      )}
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent className="flex flex-col">
-                    <SheetHeader>
-                      <SheetTitle>Filters</SheetTitle>
-                      <SheetDescription>
-                        Find your perfect match.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="flex-grow overflow-y-auto pr-6 -mr-6">
-                      {renderFilters()}
-                    </div>
-                    <SheetFooter className="mt-auto pt-4">
-                      <div className="flex justify-between w-full items-center">
-                        <Button
-                          variant="ghost"
-                          onClick={clearAllFilters}
-                          className="text-red-600 hover:text-red-700 px-2"
-                        >
-                          Clear All
-                        </Button>
-                        <SheetClose asChild>
-                          <Button>Apply Filters</Button>
-                        </SheetClose>
-                      </div>
-                    </SheetFooter>
-                  </SheetContent>
-                </Sheet>
-              )}
-            </div>
+            </Link>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Analytics */}
-        {showAnalytics && !analyticsLoading && renderAnalytics()}
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Mobile-first search */}
+        {renderMobileSearch()}
 
-        {/* Filters */}
-        {!isMobile ? (
-          <Accordion
-            type="single"
-            collapsible
-            defaultValue="item-1"
-            className="mb-6"
-          >
-            <AccordionItem value="item-1">
-              <AccordionTrigger>
-                <div className="flex items-center justify-between w-full pr-4">
-                  <div className="flex items-center space-x-2">
-                    <Filter className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-lg font-semibold">Filter and Sort</h2>
-                  </div>
-                  {hasActiveFilters && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearAllFilters();
-                      }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      Clear All Filters
-                    </Button>
-                  )}
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <Card>
-                  <CardContent className="pt-6">{renderFilters()}</CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        ) : null}
+        {/* Quick filters */}
+        {renderQuickFilters()}
+
+        {/* Active filters */}
+        {renderActiveFilters()}
 
         {/* Results */}
         <div className="space-y-4">
@@ -505,12 +576,10 @@ export const StudentOverview = () => {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Loading students...</span>
+                  <span>Loading...</span>
                 </div>
               ) : (
-                `${students.length} ${
-                  students.length === 1 ? "Student" : "Students"
-                } Found`
+                `${students.length} Student${students.length !== 1 ? "s" : ""}`
               )}
             </h2>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -544,15 +613,6 @@ export const StudentOverview = () => {
                   Try adjusting your search terms or filters to find more
                   matches
                 </p>
-                {hasActiveFilters && (
-                  <Button
-                    variant="outline"
-                    onClick={clearAllFilters}
-                    className="mt-4"
-                  >
-                    Clear All Filters
-                  </Button>
-                )}
               </div>
             </Card>
           ) : (
@@ -564,6 +624,16 @@ export const StudentOverview = () => {
           )}
         </div>
       </div>
+
+      <style jsx global>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
