@@ -451,8 +451,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 Add Your Profile Photo*
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base px-4">
-                Upload a friendly photo so others can recognize you around
-                campus.
+                Upload a ✨friendly ✨ photo so others can recognize you around
+                campus. We have over 500 students and there's no way to match
+                anybody without a photo haha.
               </p>
 
               {formData.profileImage ? (
