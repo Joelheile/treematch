@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, RefreshCw, Users } from "lucide-react";
+import { Search, Filter, RefreshCw, Users, Heart } from "lucide-react";
 import { Student, AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import { StudentCard } from "@/components/StudentCard";
+import { SwipeInterface } from "@/components/SwipeInterface";
 
 interface StudentOverviewProps {
   students: Student[];
@@ -18,6 +19,7 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
   const [searchTerm, setSearchTerm] = useState("");
   const [skillFilter, setSkillFilter] = useState("all");
   const [lookingForFilter, setLookingForFilter] = useState("all");
+  const [showSwipeMode, setShowSwipeMode] = useState(false);
 
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
@@ -34,6 +36,10 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
     });
   }, [students, searchTerm, skillFilter, lookingForFilter]);
 
+  if (showSwipeMode) {
+    return <SwipeInterface students={filteredStudents} onBack={() => setShowSwipeMode(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
       {/* Header */}
@@ -49,6 +55,13 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
                 <Users className="w-4 h-4" />
                 <span>{students.length} students</span>
               </div>
+              <Button
+                onClick={() => setShowSwipeMode(true)}
+                className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
+              >
+                <Heart className="w-4 h-4" />
+                <span>Swipe Mode</span>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
