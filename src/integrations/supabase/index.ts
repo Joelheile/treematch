@@ -1,7 +1,7 @@
 // Student hooks
 export { useAddStudent } from './useAddStudent'
 export { useDeleteStudent } from './useDeleteStudent'
-export { useStudent } from './useStudent'
+
 export { useStudentByEmail } from './useStudentByEmail'
 export { useStudents } from './useStudents'
 export { useUpdateStudent } from './useUpdateStudent'
@@ -16,3 +16,4 @@ export { useUpdateSkill } from './useUpdateSkill'
 // Types
 export type { ServiceResponse, StudentWithSkills } from './useStudentByEmail'
 export type { PaginatedResponse, StudentFilters, StudentSearchOptions } from './useStudents'
+

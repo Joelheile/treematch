@@ -60,6 +60,7 @@ export default function OnboardingLogic() {
     name: string;
     code: string;
   } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   useEffect(() => {
     if (student && availableSkills.length > 0) {
@@ -147,20 +148,48 @@ export default function OnboardingLogic() {
   };
 
   const handleImageUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setFormData((prev) => ({
-            ...prev,
-            profileImage: e.target?.result as string,
-          }));
-        };
-        reader.readAsDataURL(file);
+      if (!file || !user?.id) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a valid image file (JPG, PNG, or GIF)");
+        return;
+      }
+
+      setIsUploadingImage(true);
+
+      try {
+        const result = await uploadAvatar.mutateAsync({
+          file,
+          userId: user.id,
+        });
+
+        setFormData((prev) => ({
+          ...prev,
+          profileImage: result.url,
+        }));
+
+        toast.success("Image uploaded successfully!");
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error("Failed to upload image. Please try again.");
+      } finally {
+        setIsUploadingImage(false);
       }
     },
-    []
+    [user?.id, uploadAvatar]
   );
 
   const handleCompleteProfile = useCallback(async () => {
@@ -240,7 +269,7 @@ export default function OnboardingLogic() {
       case 5:
         return true;
       case 6:
-        return formData.profileImage.trim() !== "";
+        return formData.profileImage.trim() !== "" && !isUploadingImage;
       default:
         return false;
     }
@@ -308,6 +337,7 @@ export default function OnboardingLogic() {
       progressPercentage={progressPercentage}
       isStepValid={isStepValid()}
       isSubmitting={isSubmitting}
+      isUploadingImage={isUploadingImage}
       user={user}
       student={student}
       handleCountryInputChange={handleCountryInputChange}
