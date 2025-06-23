@@ -188,7 +188,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 4:
         return formData.summerGoals.trim() !== "";
       case 5:
-        return true; // Profile image is optional
+        return formData.profileImage.trim() !== ""; // Profile image is required
       default:
         return false;
     }
@@ -413,10 +413,11 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
-                What are your goals?
+                What do you hope to achieve this semester?*
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base px-4">
-                Tell us about your goals for this semester.
+                Tell others about what you want to achieve? Build something,
+                meet VCs, get inspired, learn a new skill, etc.
               </p>
             </div>
 
@@ -424,9 +425,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
               <Label
                 htmlFor="goals"
                 className="text-lg font-semibold text-gray-700 dark:text-gray-300"
-              >
-                What do you hope to achieve this semester?*
-              </Label>
+              ></Label>
               <Textarea
                 id="goals"
                 value={formData.summerGoals}
@@ -448,12 +447,11 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
-                Add Your Profile Photo
+                Add Your Profile Photo*
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base px-4">
                 Upload a friendly photo so others can recognize you around
-                campus. This step is optional - you can skip it and complete
-                your profile.
+                campus.
               </p>
 
               {formData.profileImage ? (
@@ -544,7 +542,10 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
         {/* Progress Bar */}
         <div className="space-y-2">
-          <Progress value={progressPercentage} className="h-2" />
+          <Progress
+            value={progressPercentage}
+            className="h-2 [&>div]:bg-red-600"
+          />
           <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>{steps[currentStep - 1]?.title}</span>
             <span>{Math.round(progressPercentage)}%</span>
