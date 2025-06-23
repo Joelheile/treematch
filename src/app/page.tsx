@@ -40,9 +40,27 @@ export default function HomePage() {
     setIsOnboarded(false);
   };
 
-  if (!isOnboarded) {
-    router.push("/onboarding");
-  }
-
-  return <StudentOverview students={students} />;
+  return (
+    <AuthGuard>
+      <div className="relative">
+        <div className="absolute top-4 right-4 z-10">
+          <UserMenu />
+        </div>
+        {!isOnboarded ? (
+          (() => {
+            router.push('/onboarding');
+            return (
+              <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
+                <div className="text-center">
+                  <h1 className="text-2xl font-bold mb-4">Redirecting to onboarding...</h1>
+                </div>
+              </div>
+            );
+          })()
+        ) : (
+          <StudentOverview students={students} />
+        )}
+      </div>
+    </AuthGuard>
+  );
 }
