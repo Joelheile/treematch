@@ -4,6 +4,7 @@ export default {
 	content: [
 		"./src/**/*.{ts,tsx}",
 	],
+	darkMode: "class",
 	prefix: "",
 	theme: {
 		container: {
