@@ -2,12 +2,12 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, RefreshCw, Users, Heart, TreePine, X } from "lucide-react";
+import { Search, Filter, Users, TreePine, X } from "lucide-react";
 import { Student, AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import { StudentCard } from "@/components/StudentCard";
-import { SwipeInterface } from "@/components/SwipeInterface";
+import Link from "next/link";
 import {
   Sheet,
   SheetContent,
@@ -25,7 +25,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useIsMobile } from "@/hooks/use-mobile";
-import Link from "next/link";
 
 interface StudentOverviewProps {
   students: Student[];
@@ -35,7 +34,6 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [skillFilter, setSkillFilter] = useState("all");
   const [lookingForFilter, setLookingForFilter] = useState("all");
-  const [showSwipeMode, setShowSwipeMode] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
   const isMobile = useIsMobile();
@@ -199,10 +197,6 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
       </div>
     </div>
   );
-
-  if (showSwipeMode) {
-    return <SwipeInterface students={filteredStudents} onBack={() => setShowSwipeMode(false)} />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
