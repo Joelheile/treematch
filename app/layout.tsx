@@ -1,0 +1,27 @@
+import type { Metadata } from "next";
+import React from "react";
+import { ClientToasters } from "./client-toasters";
+import "./globals.css";
+import { Providers } from "./providers";
+
+export const metadata: Metadata = {
+  title: "TreeMatch",
+  description: "Stanford Student Matching Platform",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>
+          <ClientToasters />
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
+}
