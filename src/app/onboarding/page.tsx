@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import countriesData from "@/lib/countries.json";
 import { AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import {
   Briefcase,
@@ -15,6 +16,13 @@ import {
   User,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+
+// Country code to flag emoji mapping
+const countryToFlag = (countryCode: string) => {
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+};
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -42,7 +50,7 @@ export default function OnboardingPage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    city: "",
+    country: "",
     university: "",
     profileImage: "",
     skills: [] as string[],
@@ -50,6 +58,53 @@ export default function OnboardingPage() {
     summerGoals: "",
     currentProject: "",
   });
+
+  // Country autocomplete state
+  const [countryInput, setCountryInput] = useState("");
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<{
+    name: string;
+    code: string;
+  } | null>(null);
+
+  // Memoized country suggestions based on input
+  const countrySuggestions = useMemo(() => {
+    if (!countryInput.trim()) return [];
+    return countriesData
+      .filter((country) =>
+        country.name.toLowerCase().includes(countryInput.toLowerCase())
+      )
+      .slice(0, 5); // Show max 5 suggestions
+  }, [countryInput]);
+
+  // Country input handlers
+  const handleCountryInputChange = useCallback((value: string) => {
+    setCountryInput(value);
+    setShowCountrySuggestions(value.length > 0);
+
+    // Check if the input exactly matches a country
+    const exactMatch = countriesData.find(
+      (country) => country.name.toLowerCase() === value.toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSelectedCountry(exactMatch);
+      setFormData((prev) => ({ ...prev, country: exactMatch.name }));
+    } else {
+      setSelectedCountry(null);
+      setFormData((prev) => ({ ...prev, country: value }));
+    }
+  }, []);
+
+  const handleCountrySelect = useCallback(
+    (country: { name: string; code: string }) => {
+      setCountryInput(country.name);
+      setSelectedCountry(country);
+      setShowCountrySuggestions(false);
+      setFormData((prev) => ({ ...prev, country: country.name }));
+    },
+    []
+  );
 
   // Memoized steps to prevent recreation
   const steps = useMemo(
@@ -150,7 +205,7 @@ export default function OnboardingPage() {
       case 1:
         return (
           formData.name.trim() !== "" &&
-          formData.city.trim() !== "" &&
+          formData.country.trim() !== "" &&
           formData.university.trim() !== ""
         );
       case 2:
@@ -278,28 +333,54 @@ export default function OnboardingPage() {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <Label
-                  htmlFor="city"
+                  htmlFor="country"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Hometown*
+                  Country*
                 </Label>
                 <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, city: e.target.value }))
+                  id="country"
+                  value={countryInput}
+                  onChange={(e) => handleCountryInputChange(e.target.value)}
+                  onFocus={() =>
+                    setShowCountrySuggestions(countryInput.length > 0)
                   }
-                  placeholder="Where are you from?"
+                  onBlur={() =>
+                    setTimeout(() => setShowCountrySuggestions(false), 200)
+                  }
+                  placeholder="Start typing your country..."
                   className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
-                  list="cities"
+                  autoComplete="off"
                 />
-                <datalist id="cities">
-                  {POPULAR_CITIES.map((city) => (
-                    <option key={city} value={city} />
-                  ))}
-                </datalist>
+
+                {/* Autocomplete suggestions */}
+                {showCountrySuggestions && countrySuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {countrySuggestions.map((country) => (
+                      <div
+                        key={country.code}
+                        className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                        onClick={() => handleCountrySelect(country)}
+                      >
+                        <span className="text-lg">
+                          {countryToFlag(country.code)}
+                        </span>
+                        <span className="text-gray-900">{country.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Selected country flag display */}
+                {selectedCountry && (
+                  <div className="mt-1 ml-1 flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-2xl">
+                      {countryToFlag(selectedCountry.code)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
