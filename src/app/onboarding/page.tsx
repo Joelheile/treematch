@@ -10,6 +10,7 @@ import {
   LOOKING_FOR_OPTIONS,
   Student,
 } from "@/types/Student";
+import cities from "cities.json";
 import {
   Briefcase,
   Check,
@@ -20,11 +21,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-interface OnboardingFlowProps {
-  onComplete: (student: Student) => void;
-}
-
-export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   // Randomize skills and looking for options
@@ -36,42 +33,19 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     return [...LOOKING_FOR_OPTIONS].sort(() => Math.random() - 0.5);
   }, []);
 
-  // Autocomplete data
-  const universities = [
-    "Stanford University",
-    "University of California, Berkeley",
-    "Harvard University",
-    "MIT",
-    "Yale University",
-    "Princeton University",
-    "University of Chicago",
-    "Columbia University",
-    "University of Pennsylvania",
-    "Cornell University",
-    "UCLA",
-    "USC",
-    "NYU",
-    "Northwestern University",
-    "Duke University",
-  ];
+  // Country code to flag emoji mapping
+  const countryToFlag = (countryCode: string) => {
+    const codePoints = countryCode
+      .toUpperCase()
+      .split("")
+      .map((char) => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  };
 
-  const cities = [
-    "San Francisco, CA",
-    "Los Angeles, CA",
-    "New York, NY",
-    "Chicago, IL",
-    "Boston, MA",
-    "Seattle, WA",
-    "Austin, TX",
-    "Denver, CO",
-    "Portland, OR",
-    "San Diego, CA",
-    "Miami, FL",
-    "Atlanta, GA",
-    "Dallas, TX",
-    "Philadelphia, PA",
-    "Washington, DC",
-  ];
+  // Transform cities.json data for autocomplete
+  const cityOptions = (cities as any[]).map(
+    (city: any) => `${city.name} ${countryToFlag(city.country)}`
+  );
 
   const [formData, setFormData] = useState({
     name: "",
@@ -164,7 +138,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         lookingFor: [], // Set empty array since we removed this step
         createdAt: new Date(),
       };
-      onComplete(student);
+      // TODO: Implement student profile completion logic
+      console.log("Student profile completed:", student);
     }
   };
 
@@ -291,11 +266,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   list="universities"
                 />
-                <datalist id="universities">
-                  {universities.map((university) => (
-                    <option key={university} value={university} />
-                  ))}
-                </datalist>
               </div>
 
               <div>
@@ -312,11 +282,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     setFormData((prev) => ({ ...prev, city: e.target.value }))
                   }
                   placeholder="Where are you from?"
-                  className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="mt-1 h-12 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
                   list="cities"
                 />
                 <datalist id="cities">
-                  {cities.map((city) => (
+                  {cityOptions.map((city) => (
                     <option key={city} value={city} />
                   ))}
                 </datalist>
@@ -533,7 +503,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <div className="bg-red-600 p-2 rounded-lg">
               <TreePine className="w-5 h-5 text-white" />
             </div>
-            <div className="text-xl font-bold text-gray-900">
+            <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
               Treematch
             </div>
           </div>
@@ -562,7 +532,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <div className="bg-red-600 p-2 rounded-lg">
               <TreePine className="w-6 h-6 text-white" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Treematch
             </div>
           </div>
@@ -598,7 +568,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                   </div>
                   <div>
                     <div className="font-medium text-sm">{step.title}</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {step.subtitle}
                     </div>
                   </div>
