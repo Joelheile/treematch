@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { Tables } from "@/integrations/supabase/types";
+import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
 import {
   Briefcase,
   ExternalLink,
@@ -11,10 +11,8 @@ import {
   Target,
 } from "lucide-react";
 
-type Student = Tables<"students">;
-
 interface StudentCardProps {
-  student: Student;
+  student: StudentWithSkills;
 }
 
 export const StudentCard = ({ student }: StudentCardProps) => {
@@ -86,11 +84,11 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             <div className="flex flex-wrap gap-1">
               {student.skills.slice(0, 3).map((skill) => (
                 <Badge
-                  key={skill}
+                  key={skill.id}
                   variant="secondary"
                   className="text-xs bg-red-100 text-red-800 border-red-200"
                 >
-                  {skill}
+                  {skill.name}
                 </Badge>
               ))}
               {student.skills.length > 3 && (

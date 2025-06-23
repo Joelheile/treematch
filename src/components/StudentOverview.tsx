@@ -81,11 +81,21 @@ export const StudentOverview = () => {
   const { data: skills = [] } = useSkills(user?.id);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Function to convert country code to flag emoji
+  const getCountryFlag = (countryCode: string) => {
+    return countryCode
+      .toUpperCase()
+      .replace(/./g, (char) =>
+        String.fromCodePoint(127397 + char.charCodeAt(0))
+      );
+  };
+
   const countryOptions = useMemo(() => {
     return countries.map((country) => ({
       value: country.name,
       label: country.name,
-      flag: country.code,
+      flag: getCountryFlag(country.code),
+      code: country.code,
     }));
   }, []);
 
@@ -296,7 +306,12 @@ export const StudentOverview = () => {
           >
             <MapPin className="w-4 h-4" />
             <span className="text-sm font-medium">
-              {selectedCountry || "Country"}
+              {selectedCountry
+                ? `${
+                    countryOptions.find((c) => c.value === selectedCountry)
+                      ?.flag
+                  } ${selectedCountry}`
+                : "Country"}
             </span>
             <ChevronDown className="w-4 h-4" />
           </button>
@@ -313,22 +328,29 @@ export const StudentOverview = () => {
                     setShowCountryDropdown(false);
                   }}
                 >
-                  <span>All Countries</span>
+                  <span>🌍 All Countries</span>
                 </CommandItem>
-                {availableCountries.map((country) => (
-                  <CommandItem
-                    key={country}
-                    onSelect={() => {
-                      setSelectedCountry(country);
-                      setShowCountryDropdown(false);
-                    }}
-                  >
-                    <span>{country}</span>
-                    {selectedCountry === country && (
-                      <Check className="ml-auto w-4 h-4 text-red-600" />
-                    )}
-                  </CommandItem>
-                ))}
+                {availableCountries.map((country) => {
+                  const countryOption = countryOptions.find(
+                    (c) => c.value === country
+                  );
+                  return (
+                    <CommandItem
+                      key={country}
+                      onSelect={() => {
+                        setSelectedCountry(country);
+                        setShowCountryDropdown(false);
+                      }}
+                    >
+                      <span>
+                        {countryOption?.flag} {country}
+                      </span>
+                      {selectedCountry === country && (
+                        <Check className="ml-auto w-4 h-4 text-red-600" />
+                      )}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </CommandList>
           </Command>
