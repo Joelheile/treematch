@@ -1,73 +1,72 @@
-# Welcome to your Lovable project
+# TreeMatch
 
-## Project info
+A Stanford student matching platform built with Next.js, TypeScript, Tailwind CSS, and Shadcn UI.
 
-**URL**: https://lovable.dev/projects/d7bb66aa-0a40-4e01-8f52-793fa9fc5376
+## Getting Started
 
-## How can I edit this code?
+1. Install dependencies:
 
-There are several ways of editing your application.
+```bash
+npm install
+```
 
-**Use Lovable**
+2. Run the development server:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d7bb66aa-0a40-4e01-8f52-793fa9fc5376) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Migration from Vite to Next.js
 
-**Use GitHub Codespaces**
+This project has been migrated from Vite + React Router to Next.js App Router for better performance and simpler routing. Key changes include:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Replaced Vite with Next.js App Router**: Simplified build process and better performance
+- **Removed React Router DOM**: Uses Next.js file-based routing instead
+- **Updated directory structure**: Moved from `src/pages/` to Next.js `app/` directory
+- **Fixed component imports**: Resolved client/server component boundaries
+- **Updated build scripts**: New Next.js build and development commands
 
-## What technologies are used for this project?
+## Tech Stack
 
-This project is built with:
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Shadcn UI
+- **State Management**: React Query + React Context
+- **Backend**: Supabase
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Available Scripts
 
-## How can I deploy this project?
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-Simply open [Lovable](https://lovable.dev/projects/d7bb66aa-0a40-4e01-8f52-793fa9fc5376) and click on Share -> Publish.
+## Features
 
-## Can I connect a custom domain to my Lovable project?
+- Student onboarding flow
+- Profile creation and management
+- Skill-based matching system
+- Project collaboration tools
+- Real-time notifications
 
-Yes, you can!
+## Project Structure
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```
+treematch/
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Home page
+│   ├── not-found.tsx      # 404 page
+│   ├── providers.tsx      # Client-side providers
+│   └── globals.css        # Global styles
+├── src/
+│   ├── components/        # React components
+│   ├── hooks/            # Custom hooks
+│   ├── lib/              # Utility functions
+│   ├── types/            # TypeScript types
+│   └── integrations/     # External service integrations
+└── public/               # Static assets
+```
