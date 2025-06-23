@@ -1,103 +1,156 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
-import { studentService, type Student, type StudentInsert, type StudentUpdate, type StudentFilters, type QueryOptions } from './student-service'
-import { toast } from 'sonner'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { supabase } from './client'
+import { Tables } from './types'
 
-export const studentQueryKeys = {
-  all: ['students'] as const,
-  lists: () => [...studentQueryKeys.all, 'list'] as const,
-  list: (filters?: StudentFilters) => [...studentQueryKeys.lists(), { filters }] as const,
-  details: () => [...studentQueryKeys.all, 'detail'] as const,
-  detail: (id: string) => [...studentQueryKeys.details(), id] as const,
-  byEmail: (email: string) => [...studentQueryKeys.all, 'email', email] as const,
-  bySkill: (skill: string) => [...studentQueryKeys.all, 'skill', skill] as const,
-  byCountry: (country: string) => [...studentQueryKeys.all, 'country', country] as const,
-  withMetadata: () => [...studentQueryKeys.all, 'metadata'] as const,
-  analytics: () => [...studentQueryKeys.all, 'analytics'] as const,
-}
+type SkillRow = Tables<'skills'>
+type StudentRow = Tables<'students'>
+type StudentWithSkills = StudentRow & { skills: SkillRow[] }
 
-export const useStudents = (filters?: StudentFilters, options?: QueryOptions) => {
+export const useSkills = (userId?: string) => {
   return useQuery({
-    queryKey: studentQueryKeys.list(filters),
-    queryFn: () => studentService.searchStudents({ filters, ...options }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  })
-}
+    queryKey: ['skills', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('skills')
+        .select('*')
+        .or(`is_global.eq.true${userId ? `,user_id.eq.${userId}` : ''}`)
+        .order('name')
 
-export const useInfiniteStudents = (filters?: StudentFilters, options?: Omit<QueryOptions, 'offset'>) => {
-  return useInfiniteQuery({
-    queryKey: [...studentQueryKeys.list(filters), 'infinite'],
-    queryFn: ({ pageParam = 0 }) => 
-      studentService.searchStudents({ 
-        filters, 
-        ...options, 
-        offset: pageParam 
-      }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage.data || !lastPage.hasMore) return undefined
-      return (lastPage.nextCursor ? parseInt(lastPage.nextCursor) : 0)
+      if (error) throw error
+      return data as SkillRow[]
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   })
 }
 
-export const useStudent = (id: string, enabled = true) => {
+export const useStudentById = (id: string) => {
   return useQuery({
-    queryKey: studentQueryKeys.detail(id),
-    queryFn: () => studentService.getStudentById(id),
-    enabled: enabled && !!id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    queryKey: ['student', id],
+    queryFn: async () => {
+      const { data: studentData, error: studentError } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (studentError) throw studentError
+
+      const { data: skillsData, error: skillsError } = await supabase
+        .from('student_skills')
+        .select(`
+          skills (
+            id,
+            name,
+            is_global,
+            user_id,
+            created_at
+          )
+        `)
+        .eq('student_id', id)
+
+      if (skillsError) throw skillsError
+
+      const skills = skillsData?.map(item => (item as any).skills).filter(Boolean) || []
+      
+      return {
+        ...studentData,
+        skills
+      } as StudentWithSkills
+    },
+    enabled: !!id,
   })
 }
 
-export const useStudentByEmail = (email: string, enabled = true) => {
+export const useStudents = (options: {
+  limit?: number
+  offset?: number
+  skillIds?: string[]
+  country?: string
+  search?: string
+} = {}) => {
   return useQuery({
-    queryKey: studentQueryKeys.byEmail(email),
-    queryFn: () => studentService.getStudentByEmail(email),
-    enabled: enabled && !!email,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  })
-}
+    queryKey: ['students', options],
+    queryFn: async () => {
+      const { limit = 20, offset = 0, skillIds, country, search } = options
 
-export const useStudentsBySkill = (skill: string, options?: QueryOptions) => {
-  return useQuery({
-    queryKey: studentQueryKeys.bySkill(skill),
-    queryFn: () => studentService.getStudentsBySkill(skill, options),
-    enabled: !!skill,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  })
-}
+      let query = supabase
+        .from('students')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
 
-export const useStudentsByCountry = (country: string, options?: QueryOptions) => {
-  return useQuery({
-    queryKey: studentQueryKeys.byCountry(country),
-    queryFn: () => studentService.getStudentsByCountry(country, options),
-    enabled: !!country,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  })
-}
+      if (country) {
+        query = query.eq('country', country)
+      }
 
-export const useStudentsWithMetadata = (options?: QueryOptions) => {
-  return useQuery({
-    queryKey: studentQueryKeys.withMetadata(),
-    queryFn: () => studentService.getStudentsWithMetadata(options),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  })
-}
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,current_project.ilike.%${search}%`)
+      }
 
-export const useStudentAnalytics = () => {
-  return useQuery({
-    queryKey: studentQueryKeys.analytics(),
-    queryFn: () => studentService.getStudentAnalytics(),
-    staleTime: 15 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+      const { data: studentsData, error: studentsError, count } = await query
+
+      if (studentsError) throw studentsError
+
+      let finalStudentsData = studentsData || []
+
+      if (skillIds && skillIds.length > 0) {
+        const { data: studentSkillsData, error: skillFilterError } = await supabase
+          .from('student_skills')
+          .select('student_id')
+          .in('skill_id', skillIds)
+
+        if (skillFilterError) throw skillFilterError
+
+        const studentIdsWithSkills = studentSkillsData?.map(item => item.student_id) || []
+        finalStudentsData = studentsData?.filter(student => 
+          studentIdsWithSkills.includes(student.id)
+        ) || []
+      }
+
+      const studentIds = finalStudentsData.map(student => student.id)
+      
+      if (studentIds.length === 0) {
+        return {
+          data: [],
+          count: 0,
+          hasMore: false
+        }
+      }
+
+      const { data: allSkillsData, error: allSkillsError } = await supabase
+        .from('student_skills')
+        .select(`
+          student_id,
+          skills (
+            id,
+            name,
+            is_global,
+            user_id,
+            created_at
+          )
+        `)
+        .in('student_id', studentIds)
+
+      if (allSkillsError) throw allSkillsError
+
+      const skillsByStudent = allSkillsData?.reduce((acc, item) => {
+        const studentId = item.student_id
+        const skill = (item as any).skills
+        if (!acc[studentId]) acc[studentId] = []
+        if (skill) acc[studentId].push(skill)
+        return acc
+      }, {} as Record<string, SkillRow[]>) || {}
+
+      const studentsWithSkills = finalStudentsData.map(student => ({
+        ...student,
+        skills: skillsByStudent[student.id] || []
+      })) as StudentWithSkills[]
+
+      return {
+        data: studentsWithSkills,
+        count: count || 0,
+        hasMore: offset + limit < (count || 0)
+      }
+    },
   })
 }
 
@@ -105,197 +158,109 @@ export const useCreateStudent = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (student: StudentInsert) => studentService.createStudent(student),
-    onSuccess: (result) => {
-      if (result.data) {
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.lists() })
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.analytics() })
-        
-        queryClient.setQueryData(
-          studentQueryKeys.detail(result.data.id),
-          result
-        )
-        
-        toast.success('Student created successfully')
-      } else {
-        toast.error(result.error || 'Failed to create student')
-      }
-    },
-    onError: (error) => {
-      toast.error('Failed to create student')
-      console.error('Create student error:', error)
-    },
-  })
-}
+    mutationFn: async ({ 
+      student, 
+      skillIds 
+    }: { 
+      student: any
+      skillIds: string[] 
+    }) => {
+      const { data: studentData, error: studentError } = await supabase
+        .from('students')
+        .insert(student)
+        .select()
+        .single()
 
-export const useUpdateStudent = () => {
-  const queryClient = useQueryClient()
+      if (studentError) throw studentError
 
-  return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: StudentUpdate }) => 
-      studentService.updateStudent(id, updates),
-    onMutate: async ({ id, updates }) => {
-      await queryClient.cancelQueries({ queryKey: studentQueryKeys.detail(id) })
+      if (skillIds.length > 0) {
+        const studentSkills = skillIds.map(skillId => ({
+          student_id: studentData.id,
+          skill_id: skillId
+        }))
 
-      const previousStudent = queryClient.getQueryData(studentQueryKeys.detail(id))
+        const { error: skillsError } = await supabase
+          .from('student_skills')
+          .insert(studentSkills)
 
-      queryClient.setQueryData(studentQueryKeys.detail(id), (old: any) => {
-        if (!old?.data) return old
-        return {
-          ...old,
-          data: { ...old.data, ...updates }
+        if (skillsError) {
+          await supabase.from('students').delete().eq('id', studentData.id)
+          throw skillsError
         }
-      })
-
-      return { previousStudent }
-    },
-    onSuccess: (result, { id }) => {
-      if (result.data) {
-        queryClient.setQueryData(studentQueryKeys.detail(id), result)
-        
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.lists() })
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.analytics() })
-        
-        toast.success('Student updated successfully')
-      } else {
-        toast.error(result.error || 'Failed to update student')
       }
+
+      return studentData
     },
-    onError: (error, { id }, context) => {
-      if (context?.previousStudent) {
-        queryClient.setQueryData(studentQueryKeys.detail(id), context.previousStudent)
-      }
-      toast.error('Failed to update student')
-      console.error('Update student error:', error)
-    },
-    onSettled: (data, error, { id }) => {
-      queryClient.invalidateQueries({ queryKey: studentQueryKeys.detail(id) })
-    },
-  })
-}
-
-export const useDeleteStudent = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) => studentService.deleteStudent(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: studentQueryKeys.detail(id) })
-
-      queryClient.removeQueries({ queryKey: studentQueryKeys.detail(id) })
-
-      queryClient.setQueriesData(
-        { queryKey: studentQueryKeys.lists() },
-        (old: any) => {
-          if (!old?.data) return old
-          return {
-            ...old,
-            data: old.data.filter((student: Student) => student.id !== id)
-          }
-        }
-      )
-
-      return { id }
-    },
-    onSuccess: (result, id) => {
-      if (result.data) {
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.lists() })
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.analytics() })
-        
-        toast.success('Student deleted successfully')
-      } else {
-        toast.error(result.error || 'Failed to delete student')
-      }
-    },
-    onError: (error, id) => {
-      queryClient.invalidateQueries({ queryKey: studentQueryKeys.lists() })
-      toast.error('Failed to delete student')
-      console.error('Delete student error:', error)
-    },
-  })
-}
-
-export const useCreateMultipleStudents = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (students: StudentInsert[]) => studentService.createMultipleStudents(students),
-    onSuccess: (result) => {
-      if (result.data) {
-        queryClient.invalidateQueries({ queryKey: studentQueryKeys.all })
-        
-        toast.success(`${result.data.length} students created successfully`)
-      } else {
-        toast.error(result.error || 'Failed to create students')
-      }
-    },
-    onError: (error) => {
-      toast.error('Failed to create students')
-      console.error('Create multiple students error:', error)
-    },
-  })
-}
-
-export const useStudentCache = () => {
-  const queryClient = useQueryClient()
-
-  const prefetchStudent = (id: string) => {
-    return queryClient.prefetchQuery({
-      queryKey: studentQueryKeys.detail(id),
-      queryFn: () => studentService.getStudentById(id),
-      staleTime: 5 * 60 * 1000,
-    })
-  }
-
-  const prefetchStudents = (filters?: StudentFilters) => {
-    return queryClient.prefetchQuery({
-      queryKey: studentQueryKeys.list(filters),
-      queryFn: () => studentService.searchStudents({ filters }),
-      staleTime: 5 * 60 * 1000,
-    })
-  }
-
-  const invalidateStudent = (id: string) => {
-    queryClient.invalidateQueries({ queryKey: studentQueryKeys.detail(id) })
-  }
-
-  const invalidateAllStudents = () => {
-    queryClient.invalidateQueries({ queryKey: studentQueryKeys.all })
-  }
-
-  const removeStudent = (id: string) => {
-    queryClient.removeQueries({ queryKey: studentQueryKeys.detail(id) })
-  }
-
-  const setStudent = (id: string, data: Student) => {
-    queryClient.setQueryData(studentQueryKeys.detail(id), { data, error: null })
-  }
-
-  return {
-    prefetchStudent,
-    prefetchStudents,
-    invalidateStudent,
-    invalidateAllStudents,
-    removeStudent,
-    setStudent,
-  }
-}
-
-export const useSkills = (userId?: string) => {
-  return useQuery({
-    queryKey: ['skills', userId],
-    queryFn: () => studentService.getSkills(userId),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  })
-}
-
-export const useAddSkill = (userId: string) => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (name: string) => studentService.addSkill(name, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['skills', userId] })
-    }
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+    },
+  })
+}
+
+export const useUpdateStudentSkills = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ 
+      studentId, 
+      skillIds 
+    }: { 
+      studentId: string
+      skillIds: string[] 
+    }) => {
+      const { error: deleteError } = await supabase
+        .from('student_skills')
+        .delete()
+        .eq('student_id', studentId)
+
+      if (deleteError) throw deleteError
+
+      if (skillIds.length > 0) {
+        const studentSkills = skillIds.map(skillId => ({
+          student_id: studentId,
+          skill_id: skillId
+        }))
+
+        const { error: insertError } = await supabase
+          .from('student_skills')
+          .insert(studentSkills)
+
+        if (insertError) throw insertError
+      }
+
+      return true
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['student', variables.studentId] })
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+    },
+  })
+}
+
+export const useAddSkill = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ 
+      name, 
+      userId,
+      isGlobal = false 
+    }: { 
+      name: string
+      userId: string
+      isGlobal?: boolean 
+    }) => {
+      const { data, error } = await supabase
+        .from('skills')
+        .insert([{ name, is_global: isGlobal, user_id: isGlobal ? null : userId }])
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['skills'] })
+    },
   })
 } 

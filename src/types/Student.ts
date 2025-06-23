@@ -1,16 +1,17 @@
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types'
 
 export type StudentRow = Tables<'students'>
-export type StudentInsert = TablesInsert<'students'>  
+export type StudentInsert = TablesInsert<'students'>
 export type StudentUpdate = TablesUpdate<'students'>
-export type StudentWithMetadata = Tables<'students_with_metadata'>
+export type SkillRow = Tables<'skills'>
+export type StudentSkillRow = Tables<'student_skills'>
+export type StudentSkillInsert = TablesInsert<'student_skills'>
 
 export interface Student {
   id: string
   name: string | null
   country: string | null
   profile_image: string | null
-  skills: string[] | null
   summer_goals: string[] | null
   current_project: string | null
   coolest_thing: string | null
@@ -23,12 +24,24 @@ export interface Student {
   updated_at: string | null
 }
 
+export interface StudentWithSkills extends Student {
+  skills: SkillRow[]
+}
+
+export interface Skill {
+  id: string
+  name: string
+  is_global: boolean
+  user_id: string | null
+  created_at: string | null
+}
+
 export interface StudentFormatted {
   id: string
   name: string
   country: string
   profileImage?: string
-  skills: string[]
+  skills: Skill[]
   summerGoals: string[]
   currentProject: string
   coolestThing: string
@@ -42,13 +55,13 @@ export interface StudentFormatted {
   updatedAt: Date
 }
 
-export const formatStudentFromDB = (dbStudent: StudentRow): StudentFormatted => {
+export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = []): StudentFormatted => {
   return {
     id: dbStudent.id,
     name: dbStudent.name || '',
     country: dbStudent.country || '',
     profileImage: dbStudent.profile_image || undefined,
-    skills: dbStudent.skills || [],
+    skills: skills,
     summerGoals: dbStudent.summer_goals || [],
     currentProject: dbStudent.current_project || '',
     coolestThing: dbStudent.coolest_thing || '',
@@ -68,7 +81,6 @@ export const formatStudentForDB = (student: Partial<StudentFormatted>): StudentI
     name: student.name || null,
     country: student.country || null,
     profile_image: student.profileImage || null,
-    skills: student.skills || null,
     summer_goals: student.summerGoals || null,
     current_project: student.currentProject || null,
     coolest_thing: student.coolestThing || null,
@@ -104,7 +116,6 @@ export const createEmptyStudent = (): StudentInsert => ({
   name: null,
   country: null,
   profile_image: null,
-  skills: [],
   summer_goals: [],
   current_project: null,
   coolest_thing: null,
@@ -121,6 +132,5 @@ export const createStudentWithDefaults = (
   ...createEmptyStudent(),
   name: required.name,
   email: required.email,
-  skills: [],
   summer_goals: []
 })

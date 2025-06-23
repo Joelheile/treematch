@@ -23,7 +23,6 @@ export type Database = {
           name: string | null
           phone_number: string | null
           profile_image: string | null
-          skills: string[] | null
           summer_goals: string[] | null
           updated_at: string | null
           website: string | null
@@ -41,7 +40,6 @@ export type Database = {
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
-          skills?: string[] | null
           summer_goals?: string[] | null
           updated_at?: string | null
           website?: string | null
@@ -59,7 +57,6 @@ export type Database = {
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
-          skills?: string[] | null
           summer_goals?: string[] | null
           updated_at?: string | null
           website?: string | null
@@ -89,6 +86,42 @@ export type Database = {
           created_at?: string | null
         }
         Relationships: []
+      },
+      student_skills: {
+        Row: {
+          id: string
+          student_id: string
+          skill_id: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          skill_id: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          skill_id?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_skills_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

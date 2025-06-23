@@ -47,7 +47,7 @@ export default function OnboardingPage() {
     country: "",
     university: "",
     profileImage: "",
-    skills: [] as string[],
+    skillIds: [] as string[],
     summerGoals: "",
     currentProject: "",
     linkedinUrl: "",
@@ -65,7 +65,7 @@ export default function OnboardingPage() {
         country: savedData.country || "",
         university: savedData.university || "",
         profileImage: savedData.profileImage || "",
-        skills: savedData.skills || [],
+        skillIds: savedData.skillIds || [],
         summerGoals: savedData.summerGoals || "",
         currentProject: savedData.currentProject || "",
         linkedinUrl: savedData.linkedinUrl || "",
@@ -178,12 +178,18 @@ export default function OnboardingPage() {
   const handleCompleteProfile = useCallback(async () => {
     setIsSubmitting(true);
     try {
+      // Convert skillIds back to skill names for backward compatibility with existing onboarding storage
+      const selectedSkillNames = availableSkills
+        .filter((skill) => formData.skillIds.includes(skill.id))
+        .map((skill) => skill.name);
+
       const onboardingData: OnboardingData = {
         name: formData.name,
         country: formData.country,
         university: formData.university,
         profileImage: formData.profileImage,
-        skills: formData.skills,
+        skills: selectedSkillNames, // Keep this for backward compatibility
+        skillIds: formData.skillIds, // Add this for new structure
         summerGoals: formData.summerGoals,
         currentProject: formData.currentProject,
         linkedinUrl: formData.linkedinUrl,
@@ -207,7 +213,7 @@ export default function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, router]);
+  }, [formData, router, availableSkills]);
 
   const handleNext = useCallback(() => {
     if (currentStep < 6) {
@@ -232,7 +238,7 @@ export default function OnboardingPage() {
           formData.university.trim() !== ""
         );
       case 2:
-        return formData.skills.length > 0;
+        return formData.skillIds.length > 0;
       case 3:
         return formData.currentProject.trim() !== "";
       case 4:
@@ -419,33 +425,38 @@ export default function OnboardingPage() {
 
             <div className="flex flex-col gap-2">
               <div className="border-b border-gray-200 mb-2" />
-              <div className="flex flex-wrap gap-2">
-                {availableSkills.map((skill) => {
-                  return (
-                    <Badge
-                      key={skill}
-                      variant={
-                        formData.skills.includes(skill) ? "default" : "outline"
-                      }
-                      className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
-                        formData.skills.includes(skill)
-                          ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
-                          : "hover:bg-red-50 hover:border-red-200 border-gray-300"
-                      }`}
-                      onClick={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          skills: prev.skills.includes(skill)
-                            ? prev.skills.filter((s) => s !== skill)
-                            : [...prev.skills, skill],
-                        }));
-                      }}
-                    >
-                      {skill}
-                    </Badge>
-                  );
-                })}
-              </div>
+              {skillsLoading ? (
+                <div className="text-center text-gray-500">
+                  Loading skills...
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {availableSkills.map((skill) => {
+                    const isSelected = formData.skillIds.includes(skill.id);
+                    return (
+                      <Badge
+                        key={skill.id}
+                        variant={isSelected ? "default" : "outline"}
+                        className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
+                          isSelected
+                            ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+                            : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+                        }`}
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            skillIds: isSelected
+                              ? prev.skillIds.filter((id) => id !== skill.id)
+                              : [...prev.skillIds, skill.id],
+                          }));
+                        }}
+                      >
+                        {skill.name}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         );
