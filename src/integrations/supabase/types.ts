@@ -65,6 +65,30 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      },
+      skills: {
+        Row: {
+          id: string
+          name: string
+          is_global: boolean
+          user_id: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          is_global?: boolean
+          user_id?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          is_global?: boolean
+          user_id?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

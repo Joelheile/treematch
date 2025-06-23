@@ -81,54 +81,6 @@ export const formatStudentForDB = (student: Partial<StudentFormatted>): StudentI
   }
 }
 
-
-
-export const AVAILABLE_SKILLS = [
-  "Web Development",
-  "Mobile Development", 
-  "Data Science",
-  "Machine Learning",
-  "UI/UX Design",
-  "Product Management",
-  "Marketing",
-  "Business Development",
-  "Research",
-  "Writing",
-  "Photography",
-  "Video Editing",
-  "Consulting",
-  "Finance",
-  "Entrepreneurship",
-  "Public Speaking",
-  "Leadership",
-  "Project Management",
-  "Social Media",
-  "Content Creation",
-  "Artificial Intelligence",
-  "Blockchain",
-  "Cybersecurity",
-  "Game Development",
-  "Hardware Engineering"
-];
-
-export const LOOKING_FOR_OPTIONS = [
-  "Co-founder",
-  "Technical Partner",
-  "Designer",
-  "Marketing Partner", 
-  "Research Collaborator",
-  "Study Buddy",
-  "Mentorship",
-  "Networking",
-  "Project Partner",
-  "Startup Team",
-  "Internship Buddy",
-  "Social Group",
-  "Hackathon Team",
-  "Career Guidance",
-  "Industry Connections"
-];
-
 export const isValidStudent = (obj: any): obj is Student => {
   return (
     obj &&

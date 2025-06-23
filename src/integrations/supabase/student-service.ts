@@ -512,6 +512,20 @@ export class StudentService {
         return error.message || 'Database operation failed'
     }
   }
+
+  async getSkills(userId?: string): Promise<string[]> {
+    const { data, error } = await this.supabase
+      .from('skills')
+      .select('name, is_global, user_id')
+      .or(`is_global.eq.true,user_id.eq.${userId || ''}`)
+
+    if (error) return []
+    return data ? data.map((row: any) => row.name) : []
+  }
+
+  async addSkill(name: string, userId: string): Promise<void> {
+    await this.supabase.from('skills').insert([{ name, is_global: false, user_id: userId }])
+  }
 }
 
 export const createStudentService = (supabase?: SupabaseClient<Database>) => {

@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import countriesData from "@/lib/countries.json";
-import { AVAILABLE_SKILLS } from "@/types/Student";
 import {
   Briefcase,
   Check,
@@ -19,16 +18,17 @@ import {
   Twitter,
   User,
   Users,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 import { useAuth } from "@/app/auth/AuthProvider";
-import { useCreateStudent, useUpdateStudent } from "@/integrations/supabase/student-queries";
+import { useCreateStudent, useUpdateStudent, useSkills, useAddSkill } from "@/integrations/supabase/student-queries";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { toast } from "sonner";
 import type { StudentInsert, StudentUpdate } from "@/integrations/supabase/student-service";
 
-// Country code to flag emoji mapping
 const countryToFlag = (countryCode: string) => {
   return countryCode
     .toUpperCase()
@@ -43,6 +43,9 @@ export default function OnboardingPage() {
   const { student, refetch } = useCurrentStudent();
   const createStudentMutation = useCreateStudent();
   const updateStudentMutation = useUpdateStudent();
+  const { data: skills = [] } = useSkills(user?.id);
+  const addSkillMutation = useAddSkill(user?.id || '');
+  const [newSkill, setNewSkill] = useState('');
 
   const [formData, setFormData] = useState({
     name: "",
@@ -64,6 +67,12 @@ export default function OnboardingPage() {
     name: string;
     code: string;
   } | null>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const normalizedSkills = skills.map(s => s.trim().toLowerCase());
+  const normalizedSelected = formData.skills.map(s => s.trim().toLowerCase());
+  const normalizedNewSkill = newSkill.trim().toLowerCase();
+  const isDuplicate = normalizedSkills.includes(normalizedNewSkill) || normalizedSelected.includes(normalizedNewSkill);
 
   const steps = [
     {
@@ -439,28 +448,67 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div>
-              <div className="flex flex-wrap gap-2">
-                {AVAILABLE_SKILLS.map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant={
-                      formData.skills.includes(skill) ? "default" : "outline"
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 w-full mb-2">
+                <Input
+                  ref={inputRef}
+                  value={newSkill}
+                  onChange={e => setNewSkill(e.target.value)}
+                  placeholder="Add a new skill..."
+                  className="w-56"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && newSkill.trim() && !isDuplicate) {
+                      addSkillMutation.mutate(newSkill.trim(), {
+                        onSuccess: () => {
+                          setFormData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }))
+                          setNewSkill('')
+                          setTimeout(() => inputRef.current?.focus(), 100)
+                        }
+                      })
                     }
-                    className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
-                      formData.skills.includes(skill)
-                        ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
-                        : "hover:bg-red-50 hover:border-red-200 border-gray-300"
-                    }`}
-                    onClick={() => handleSkillToggle(skill)}
-                  >
-                    {skill}
-                  </Badge>
-                ))}
+                  }}
+                />
+                <Button
+                  onClick={() => {
+                    if (newSkill.trim() && !isDuplicate) {
+                      addSkillMutation.mutate(newSkill.trim(), {
+                        onSuccess: () => {
+                          setFormData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }))
+                          setNewSkill('')
+                          setTimeout(() => inputRef.current?.focus(), 100)
+                        }
+                      })
+                    }
+                  }}
+                  disabled={!newSkill.trim() || isDuplicate}
+                  variant="outline"
+                  size="sm"
+                >
+                  Add
+                </Button>
               </div>
-              <p className="text-sm text-gray-500 mt-4 text-center">
-                Selected {formData.skills.length} skills
-              </p>
+              {isDuplicate && newSkill.trim() && (
+                <div className="text-xs text-red-500 mb-1 ml-1">Skill already exists or is selected</div>
+              )}
+              <div className="border-b border-gray-200 mb-2" />
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => {
+                  return (
+                    <Badge
+                      key={skill}
+                      variant={formData.skills.includes(skill) ? "default" : "outline"}
+                      className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
+                        formData.skills.includes(skill)
+                          ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+                          : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+                      }`}
+                      onClick={() => handleSkillToggle(skill)}
+                    >
+                      {skill}
+                    </Badge>
+                  )
+                })}
+              </div>
             </div>
           </div>
         );
