@@ -1,11 +1,13 @@
 "use client";
 
-import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { StudentOverview } from "@/components/StudentOverview";
 import { Student } from "@/types/Student";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
 
@@ -37,8 +39,8 @@ export default function HomePage() {
   };
 
   if (!isOnboarded) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+    router.push("/onboarding");
   }
 
-  return <StudentOverview students={students} onReset={resetOnboarding} />;
+  return <StudentOverview students={students} />;
 }
