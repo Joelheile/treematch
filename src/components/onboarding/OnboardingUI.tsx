@@ -72,6 +72,7 @@ interface OnboardingUIProps {
   progressPercentage: number;
   isStepValid: boolean;
   isSubmitting: boolean;
+  isUploadingImage: boolean;
   user: any;
   student: any;
   handleCountryInputChange: (value: string) => void;
@@ -99,6 +100,7 @@ export default function OnboardingUI({
   progressPercentage,
   isStepValid,
   isSubmitting,
+  isUploadingImage,
   user,
   student,
   handleCountryInputChange,
@@ -513,8 +515,15 @@ export default function OnboardingUI({
                       htmlFor="image-upload-change"
                       className="cursor-pointer"
                     >
-                      <Button variant="outline" asChild className="h-11">
-                        <span>Change Photo</span>
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="h-11"
+                        disabled={isUploadingImage}
+                      >
+                        <span>
+                          {isUploadingImage ? "Uploading..." : "Change Photo"}
+                        </span>
                       </Button>
                     </Label>
                     <input
@@ -523,6 +532,7 @@ export default function OnboardingUI({
                       onChange={handleImageUpload}
                       className="hidden"
                       id="image-upload-change"
+                      disabled={isUploadingImage}
                     />
                   </div>
                 </div>
@@ -537,13 +547,17 @@ export default function OnboardingUI({
                     onChange={handleImageUpload}
                     className="hidden"
                     id="image-upload"
+                    disabled={isUploadingImage}
                   />
                   <Label htmlFor="image-upload" className="cursor-pointer">
                     <Button
-                      className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 sm:px-8 py-3 h-12"
+                      className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 sm:px-8 py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                       asChild
+                      disabled={isUploadingImage}
                     >
-                      <span>Upload Photo</span>
+                      <span>
+                        {isUploadingImage ? "Uploading..." : "Upload Photo"}
+                      </span>
                     </Button>
                   </Label>
                   <p className="text-sm text-gray-500 mt-4">
