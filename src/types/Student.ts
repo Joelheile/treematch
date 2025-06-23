@@ -2,14 +2,21 @@
 export interface Student {
   id: string;
   name: string;
-  city: string;
+  country: string;
   profileImage?: string;
   skills: string[];
-  lookingFor: string[];
-  summerGoals: string;
+  summerGoals: string[];
   currentProject: string;
+  coolestThing: string;
+  phoneNumber: string;
+  email: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
+
 
 export const AVAILABLE_SKILLS = [
   "Web Development",
