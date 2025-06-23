@@ -9,10 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      students: {
+        Row: {
+          coolest_thing: string | null
+          country: string | null
+          created_at: string | null
+          current_project: string | null
+          email: string | null
+          github: string | null
+          id: string
+          linkedin: string | null
+          name: string | null
+          phone_number: string | null
+          profile_image: string | null
+          skills: string[] | null
+          summer_goals: string[] | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          coolest_thing?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_project?: string | null
+          email?: string | null
+          github?: string | null
+          id?: string
+          linkedin?: string | null
+          name?: string | null
+          phone_number?: string | null
+          profile_image?: string | null
+          skills?: string[] | null
+          summer_goals?: string[] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          coolest_thing?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_project?: string | null
+          email?: string | null
+          github?: string | null
+          id?: string
+          linkedin?: string | null
+          name?: string | null
+          phone_number?: string | null
+          profile_image?: string | null
+          skills?: string[] | null
+          summer_goals?: string[] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      students_with_metadata: {
+        Row: {
+          coolest_thing: string | null
+          country: string | null
+          created_at: string | null
+          current_project: string | null
+          email: string | null
+          github: string | null
+          goals_count: number | null
+          has_social_links: boolean | null
+          id: string | null
+          linkedin: string | null
+          name: string | null
+          phone_number: string | null
+          profile_image: string | null
+          skills: string[] | null
+          skills_count: number | null
+          summer_goals: string[] | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          coolest_thing?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_project?: string | null
+          email?: string | null
+          github?: string | null
+          goals_count?: never
+          has_social_links?: never
+          id?: string | null
+          linkedin?: string | null
+          name?: string | null
+          phone_number?: string | null
+          profile_image?: string | null
+          skills?: string[] | null
+          skills_count?: never
+          summer_goals?: string[] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          coolest_thing?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_project?: string | null
+          email?: string | null
+          github?: string | null
+          goals_count?: never
+          has_social_links?: never
+          id?: string | null
+          linkedin?: string | null
+          name?: string | null
+          phone_number?: string | null
+          profile_image?: string | null
+          skills?: string[] | null
+          skills_count?: never
+          summer_goals?: string[] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
