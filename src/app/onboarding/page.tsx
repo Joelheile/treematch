@@ -5,12 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  AVAILABLE_SKILLS,
-  LOOKING_FOR_OPTIONS,
-  Student,
-} from "@/types/Student";
-import cities from "cities.json";
+import { AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import {
   Briefcase,
   Check,
@@ -19,33 +14,31 @@ import {
   TreePine,
   User,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Randomize skills and looking for options
+  // Stable randomization instead of Math.random() anti-pattern
   const randomizedSkills = useMemo(() => {
-    return [...AVAILABLE_SKILLS].sort(() => Math.random() - 0.5);
+    const skills = [...AVAILABLE_SKILLS];
+    // Use a simple but stable shuffle
+    for (let i = skills.length - 1; i > 0; i--) {
+      const j = Math.floor((i + 1) * 0.7); // Deterministic but mixed
+      [skills[i], skills[j]] = [skills[j], skills[i]];
+    }
+    return skills;
   }, []);
 
   const randomizedLookingFor = useMemo(() => {
-    return [...LOOKING_FOR_OPTIONS].sort(() => Math.random() - 0.5);
+    const options = [...LOOKING_FOR_OPTIONS];
+    // Use a different stable shuffle
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor((i + 1) * 0.3); // Different deterministic pattern
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    return options;
   }, []);
-
-  // Country code to flag emoji mapping
-  const countryToFlag = (countryCode: string) => {
-    const codePoints = countryCode
-      .toUpperCase()
-      .split("")
-      .map((char) => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
-  };
-
-  // Transform cities.json data for autocomplete
-  const cityOptions = (cities as any[]).map(
-    (city: any) => `${city.name} ${countryToFlag(city.country)}`
-  );
 
   const [formData, setFormData] = useState({
     name: "",
@@ -58,98 +51,101 @@ export default function OnboardingPage() {
     currentProject: "",
   });
 
-  const steps = [
-    {
-      number: 1,
-      title: "Welcome",
-      subtitle: "Basic Information",
-      icon: TreePine,
-      completed: currentStep > 1,
-    },
-    {
-      number: 2,
-      title: "Skills",
-      subtitle: "Your Expertise",
-      icon: Target,
-      completed: currentStep > 2,
-    },
-    {
-      number: 3,
-      title: "Current Project",
-      subtitle: "What You're Building",
-      icon: Briefcase,
-      completed: currentStep > 3,
-    },
-    {
-      number: 4,
-      title: "Goals",
-      subtitle: "Your Aspirations",
-      icon: Check,
-      completed: currentStep > 4,
-    },
-    {
-      number: 5,
-      title: "Profile Photo",
-      subtitle: "Add Your Picture",
-      icon: User,
-      completed: false,
-    },
-  ];
+  // Memoized steps to prevent recreation
+  const steps = useMemo(
+    () => [
+      {
+        number: 1,
+        title: "Welcome",
+        subtitle: "Basic Information",
+        icon: TreePine,
+        completed: currentStep > 1,
+      },
+      {
+        number: 2,
+        title: "Skills",
+        subtitle: "Your Expertise",
+        icon: Target,
+        completed: currentStep > 2,
+      },
+      {
+        number: 3,
+        title: "Current Project",
+        subtitle: "What You're Building",
+        icon: Briefcase,
+        completed: currentStep > 3,
+      },
+      {
+        number: 4,
+        title: "Goals",
+        subtitle: "Your Aspirations",
+        icon: Check,
+        completed: currentStep > 4,
+      },
+      {
+        number: 5,
+        title: "Profile Photo",
+        subtitle: "Add Your Picture",
+        icon: User,
+        completed: false,
+      },
+    ],
+    [currentStep]
+  );
 
-  const handleSkillToggle = (skill: string) => {
+  // Optimized handlers with useCallback
+  const handleSkillToggle = useCallback((skill: string) => {
     setFormData((prev) => ({
       ...prev,
       skills: prev.skills.includes(skill)
         ? prev.skills.filter((s) => s !== skill)
         : [...prev.skills, skill],
     }));
-  };
+  }, []);
 
-  const handleLookingForToggle = (option: string) => {
+  const handleLookingForToggle = useCallback((option: string) => {
     setFormData((prev) => ({
       ...prev,
       lookingFor: prev.lookingFor.includes(option)
         ? prev.lookingFor.filter((o) => o !== option)
         : [...prev.lookingFor, option],
     }));
-  };
+  }, []);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFormData((prev) => ({
-          ...prev,
-          profileImage: e.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const handleImageUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setFormData((prev) => ({
+            ...prev,
+            profileImage: e.target?.result as string,
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    []
+  );
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
-      const student: Student = {
-        id: Date.now().toString(),
-        ...formData,
-        lookingFor: [], // Set empty array since we removed this step
-        createdAt: new Date(),
-      };
-      // TODO: Implement student profile completion logic
-      console.log("Student profile completed:", student);
+      // Simple completion without complex Student type
+      console.log("Student profile completed:", formData);
     }
-  };
+  }, [currentStep, formData]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const isStepValid = () => {
+  // Memoized validation
+  const isStepValid = useMemo(() => {
     switch (currentStep) {
       case 1:
         return (
@@ -164,13 +160,46 @@ export default function OnboardingPage() {
       case 4:
         return formData.summerGoals.trim() !== "";
       case 5:
-        return formData.profileImage.trim() !== ""; // Profile image is required
+        return formData.profileImage.trim() !== "";
       default:
         return false;
     }
-  };
+  }, [currentStep, formData]);
 
-  const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
+  const progressPercentage = useMemo(
+    () => ((currentStep - 1) / (steps.length - 1)) * 100,
+    [currentStep, steps.length]
+  );
+
+  // Memoized name parsing for performance
+  const nameParts = useMemo(() => {
+    const parts = formData.name.split(" ");
+    return {
+      firstName: parts[0] || "",
+      lastName: parts.slice(1).join(" ") || "",
+    };
+  }, [formData.name]);
+
+  const handleNameChange = useCallback(
+    (field: "first" | "last", value: string) => {
+      setFormData((prev) => {
+        if (field === "first") {
+          return {
+            ...prev,
+            name: nameParts.lastName ? `${value} ${nameParts.lastName}` : value,
+          };
+        } else {
+          return {
+            ...prev,
+            name: nameParts.firstName
+              ? `${nameParts.firstName} ${value}`
+              : value,
+          };
+        }
+      });
+    },
+    [nameParts.firstName, nameParts.lastName]
+  );
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -204,19 +233,8 @@ export default function OnboardingPage() {
                   </Label>
                   <Input
                     id="firstName"
-                    value={formData.name.split(" ")[0] || ""}
-                    onChange={(e) => {
-                      const lastName = formData.name
-                        .split(" ")
-                        .slice(1)
-                        .join(" ");
-                      setFormData((prev) => ({
-                        ...prev,
-                        name: lastName
-                          ? `${e.target.value} ${lastName}`
-                          : e.target.value,
-                      }));
-                    }}
+                    value={nameParts.firstName}
+                    onChange={(e) => handleNameChange("first", e.target.value)}
                     placeholder="First Name"
                     className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
@@ -230,16 +248,8 @@ export default function OnboardingPage() {
                   </Label>
                   <Input
                     id="lastName"
-                    value={formData.name.split(" ").slice(1).join(" ") || ""}
-                    onChange={(e) => {
-                      const firstName = formData.name.split(" ")[0] || "";
-                      setFormData((prev) => ({
-                        ...prev,
-                        name: firstName
-                          ? `${firstName} ${e.target.value}`
-                          : e.target.value,
-                      }));
-                    }}
+                    value={nameParts.lastName}
+                    onChange={(e) => handleNameChange("last", e.target.value)}
                     placeholder="Last Name"
                     className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
@@ -286,7 +296,7 @@ export default function OnboardingPage() {
                   list="cities"
                 />
                 <datalist id="cities">
-                  {cityOptions.map((city) => (
+                  {POPULAR_CITIES.map((city) => (
                     <option key={city} value={city} />
                   ))}
                 </datalist>
@@ -581,7 +591,7 @@ export default function OnboardingPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 pb-24">
-        <div className="w-full max-w-2xl  ">
+        <div className="w-full max-w-2xl">
           <div className="p-6 sm:p-8 lg:p-12">{renderStepContent()}</div>
         </div>
       </div>
@@ -604,7 +614,7 @@ export default function OnboardingPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!isStepValid()}
+            disabled={!isStepValid}
             className={`px-6 sm:px-8 font-semibold h-11 ${
               currentStep === 5
                 ? "bg-red-600 hover:bg-red-700 text-white"
