@@ -4,6 +4,7 @@ export interface OnboardingData {
   university: string
   profileImage: string
   skills: string[]
+  skillIds?: string[]
   summerGoals: string
   currentProject: string
   linkedinUrl: string
