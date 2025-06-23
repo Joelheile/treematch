@@ -1,11 +1,16 @@
 "use client";
+import { useAuth } from "@/app/auth/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { useSkills } from "@/integrations/supabase/student-queries";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import {
+  useSkills,
+  useUpdateStudentSkills,
+} from "@/integrations/supabase/student-queries";
 import countriesData from "@/lib/countries.json";
 import {
   OnboardingStorage,
@@ -39,8 +44,15 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  // Auth and user data
+  const { user } = useAuth();
+  const { student, isLoading: studentLoading } = useCurrentStudent();
+
   // Fetch global skills from database
   const { data: availableSkills = [], isLoading: skillsLoading } = useSkills();
+
+  // Mutation for updating student skills
+  const updateStudentSkills = useUpdateStudentSkills();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -56,25 +68,55 @@ export default function OnboardingPage() {
     githubUsername: "",
   });
 
-  // Load data from localStorage on component mount
+  // Prefill form with existing user data
   useEffect(() => {
-    const savedData = OnboardingStorage.load();
-    if (savedData) {
+    if (student && availableSkills.length > 0) {
+      // Map existing student data to form
       setFormData({
-        name: savedData.name || "",
-        country: savedData.country || "",
-        university: savedData.university || "",
-        profileImage: savedData.profileImage || "",
-        skillIds: savedData.skillIds || [],
-        summerGoals: savedData.summerGoals || "",
-        currentProject: savedData.currentProject || "",
-        linkedinUrl: savedData.linkedinUrl || "",
-        instagramHandle: savedData.instagramHandle || "",
-        twitterHandle: savedData.twitterHandle || "",
-        githubUsername: savedData.githubUsername || "",
+        name: student.name || "",
+        country: student.country || "",
+        university: "", // University not in student table
+        profileImage: student.profile_image || "",
+        skillIds: student.skills?.map((skill) => skill.id) || [],
+        summerGoals: student.summer_goals?.join("\n") || "",
+        currentProject: student.coolest_thing || "",
+        linkedinUrl: student.linkedin || "",
+        instagramHandle: "", // Not stored directly
+        twitterHandle: "", // Not stored directly
+        githubUsername: student.github || "",
       });
+
+      // Set country input for autocomplete
+      if (student.country) {
+        setCountryInput(student.country);
+        const matchingCountry = countriesData.find(
+          (country) =>
+            country.name.toLowerCase() === student.country?.toLowerCase()
+        );
+        if (matchingCountry) {
+          setSelectedCountry(matchingCountry);
+        }
+      }
+    } else if (!studentLoading) {
+      // No existing student data, try to load from localStorage
+      const savedData = OnboardingStorage.load();
+      if (savedData) {
+        setFormData({
+          name: savedData.name || "",
+          country: savedData.country || "",
+          university: savedData.university || "",
+          profileImage: savedData.profileImage || "",
+          skillIds: savedData.skillIds || [],
+          summerGoals: savedData.summerGoals || "",
+          currentProject: savedData.currentProject || "",
+          linkedinUrl: savedData.linkedinUrl || "",
+          instagramHandle: savedData.instagramHandle || "",
+          twitterHandle: savedData.twitterHandle || "",
+          githubUsername: savedData.githubUsername || "",
+        });
+      }
     }
-  }, []);
+  }, [student, availableSkills, studentLoading]);
 
   const [countryInput, setCountryInput] = useState("");
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
@@ -178,7 +220,20 @@ export default function OnboardingPage() {
   const handleCompleteProfile = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      // Convert skillIds back to skill names for backward compatibility with existing onboarding storage
+      // If user is logged in and has an existing student record, update their skills
+      if (user && student) {
+        // Update skills in database
+        await updateStudentSkills.mutateAsync({
+          studentId: student.id,
+          skillIds: formData.skillIds,
+        });
+
+        toast.success("Your profile has been updated successfully!");
+        router.push("/");
+        return;
+      }
+
+      // Otherwise, save to localStorage for signup flow
       const selectedSkillNames = availableSkills
         .filter((skill) => formData.skillIds.includes(skill.id))
         .map((skill) => skill.name);
@@ -188,8 +243,8 @@ export default function OnboardingPage() {
         country: formData.country,
         university: formData.university,
         profileImage: formData.profileImage,
-        skills: selectedSkillNames, // Keep this for backward compatibility
-        skillIds: formData.skillIds, // Add this for new structure
+        skills: selectedSkillNames,
+        skillIds: formData.skillIds,
         summerGoals: formData.summerGoals,
         currentProject: formData.currentProject,
         linkedinUrl: formData.linkedinUrl,
@@ -198,14 +253,10 @@ export default function OnboardingPage() {
         githubUsername: formData.githubUsername,
       };
 
-      // Save to localStorage
       OnboardingStorage.save(onboardingData);
-
       toast.success(
         "Profile information saved! Now let's create your account."
       );
-
-      // Redirect to signup page
       router.push("/auth/signup");
     } catch (error) {
       console.error("Error saving profile:", error);
@@ -213,7 +264,7 @@ export default function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, router, availableSkills]);
+  }, [formData, router, availableSkills, user, student, updateStudentSkills]);
 
   const handleNext = useCallback(() => {
     if (currentStep < 6) {
@@ -276,6 +327,22 @@ export default function OnboardingPage() {
     }
   };
 
+  // Show loading state while fetching user data
+  if (studentLoading || skillsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <TreePine className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-600">
+            {user ? "Loading your profile..." : "Loading..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -286,14 +353,19 @@ export default function OnboardingPage() {
                 <TreePine className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-                Welcome to Treematch!
+                {user && student
+                  ? "Update Your Profile"
+                  : "Welcome to Treematch!"}
               </h1>
               <p className="text-gray-600 text-base sm:text-lg lg:text-xl leading-relaxed mb-4 sm:mb-6 px-4">
-                Connect with fellow students for projects, collaboration, and
-                friendship.
+                {user && student
+                  ? "Review and update your profile information."
+                  : "Connect with fellow students for projects, collaboration, and friendship."}
               </p>
               <p className="text-gray-500 mb-6 sm:mb-8 text-sm sm:text-base px-4">
-                Let's start with some basic information to build your profile.
+                {user && student
+                  ? "Make sure your information is up to date."
+                  : "Let's start with some basic information to build your profile."}
               </p>
             </div>
 
@@ -836,7 +908,9 @@ export default function OnboardingPage() {
             {isSubmitting
               ? "Saving..."
               : currentStep === 6
-              ? "Complete Profile"
+              ? user && student
+                ? "Update Profile"
+                : "Complete Profile"
               : "Continue"}
           </Button>
         </div>
