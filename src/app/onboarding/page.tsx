@@ -10,6 +10,8 @@ import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import {
   useCreateStudent,
   useUpdateStudent,
+  useSkills,
+  useAddSkill,
 } from "@/integrations/supabase/student-queries";
 import type {
   StudentInsert,
@@ -32,7 +34,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 import { toast } from "sonner";
 
 const countryToFlag = (countryCode: string) => {
