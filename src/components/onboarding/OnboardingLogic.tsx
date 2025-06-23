@@ -3,6 +3,7 @@
 import { useAuth } from "@/app/auth/AuthProvider";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { useSkills } from "@/integrations/supabase/useSkills";
+import { useUpdateStudent } from "@/integrations/supabase/useUpdateStudent";
 import { useUpdateStudentSkills } from "@/integrations/supabase/useUpdateStudentSkills";
 import { useUploadAvatar } from "@/integrations/supabase/useUploadAvatar";
 import countriesData from "@/lib/countries.json";
@@ -38,6 +39,7 @@ export default function OnboardingLogic() {
   const { student, isLoading: studentLoading } = useCurrentStudent();
   const { data: availableSkills = [], isLoading: skillsLoading } = useSkills();
   const updateStudentSkills = useUpdateStudentSkills();
+  const updateStudent = useUpdateStudent();
   const uploadAvatar = useUploadAvatar();
 
   const [formData, setFormData] = useState<FormData>({
@@ -196,10 +198,25 @@ export default function OnboardingLogic() {
     setIsSubmitting(true);
     try {
       if (user && student) {
-        await updateStudentSkills.mutateAsync({
-          studentId: student.id,
-          skillIds: formData.skillIds,
-        });
+        await Promise.all([
+          updateStudent.mutateAsync({
+            id: student.id,
+            updates: {
+              name: formData.name,
+              country: formData.country,
+              profile_image: formData.profileImage || null,
+              summer_goals: formData.summerGoals ? [formData.summerGoals] : [],
+              coolest_thing: formData.currentProject,
+              linkedin: formData.linkedinUrl || null,
+              github: formData.githubUsername || null,
+              website: formData.twitterHandle || null,
+            },
+          }),
+          updateStudentSkills.mutateAsync({
+            studentId: student.id,
+            skillIds: formData.skillIds,
+          }),
+        ]);
 
         toast.success("Your profile has been updated successfully!");
         router.push("/");
@@ -236,7 +253,15 @@ export default function OnboardingLogic() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, router, availableSkills, user, student, updateStudentSkills]);
+  }, [
+    formData,
+    router,
+    availableSkills,
+    user,
+    student,
+    updateStudentSkills,
+    updateStudent,
+  ]);
 
   const handleNext = useCallback(() => {
     if (currentStep < 6) {
