@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -369,11 +368,13 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
-                What exciting project are you working on?
+                What's the coolest passion/project/thing you've done/have?
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base px-4">
-                Share what you're passionate about right now. This could be a
-                class project, startup idea, research, or personal interest.
+                This is your chance to showcase what makes you unique! Share
+                something you're proud of - whether it's a current project, past
+                achievement, hobby, or passion. Think of something that would
+                spark an interesting conversation :)
               </p>
             </div>
 
@@ -382,7 +383,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                 htmlFor="currentProject"
                 className="text-lg font-semibold text-gray-700 dark:text-gray-300"
               >
-                Current Project or Passion*
+                Your Coolest Thing*
               </Label>
               <Textarea
                 id="currentProject"
@@ -393,9 +394,16 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     currentProject: e.target.value,
                   }))
                 }
-                placeholder="e.g., Building an AI app for course scheduling, researching sustainable energy solutions, starting a campus food delivery service..."
+                placeholder="Tell us about something awesome you've done or are working on..."
                 className="min-h-[120px] mt-2 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
               />
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mx-4 mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>Examples:</strong> Built a viral TikTok channel,
+                  started a startup, part of Excel world championship, built a
+                  community event, etc.
+                </p>
+              </div>
             </div>
           </div>
         );
@@ -404,9 +412,6 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="bg-red-600 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <Check className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-              </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
                 What are your goals?
               </h2>
@@ -418,7 +423,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
             <div>
               <Label
                 htmlFor="goals"
-                className="text-lg font-semibold mb-4 block text-gray-700 dark:text-gray-300"
+                className="text-lg font-semibold text-gray-700 dark:text-gray-300"
               >
                 What do you hope to achieve this semester?*
               </Label>
@@ -432,7 +437,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                   }))
                 }
                 placeholder="e.g., Launch my startup, complete my CS thesis, find an internship, build my network, learn new skills..."
-                className="min-h-[120px] border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
+                className="min-h-[120px] mt-2 border-gray-300 dark:border-gray-600 focus:border-red-500 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100"
               />
             </div>
           </div>
@@ -603,8 +608,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <Card className="w-full max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <CardContent className="p-6 sm:p-8 lg:p-12">
+        <div className="w-full max-w-2xl  dark:bg-gray-900">
+          <div className="p-6 sm:p-8 lg:p-12">
             {renderStepContent()}
 
             {/* Navigation Buttons */}
@@ -634,8 +639,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                 {currentStep === 5 ? "Complete Profile" : "Continue"}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
