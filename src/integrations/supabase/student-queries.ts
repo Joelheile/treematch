@@ -279,4 +279,23 @@ export const useStudentCache = () => {
     removeStudent,
     setStudent,
   }
+}
+
+export const useSkills = (userId?: string) => {
+  return useQuery({
+    queryKey: ['skills', userId],
+    queryFn: () => studentService.getSkills(userId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  })
+}
+
+export const useAddSkill = (userId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string) => studentService.addSkill(name, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['skills', userId] })
+    }
+  })
 } 

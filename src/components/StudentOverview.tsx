@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, Users, TreePine, X, Loader2, BarChart3, Globe2, Award } from "lucide-react";
-import { AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import { StudentCard } from "@/components/StudentCard";
 import Link from "next/link";
 import {
@@ -28,9 +27,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   useStudents, 
   useStudentAnalytics, 
-  useInfiniteStudents 
+  useInfiniteStudents,
+  useSkills,
+  useAddSkill
 } from "@/integrations/supabase/student-queries";
 import type { StudentFilters } from "@/integrations/supabase/student-service";
+import { useAuth } from '@/app/auth/AuthProvider';
 
 export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,6 +43,10 @@ export const StudentOverview = () => {
   const [hasWebsite, setHasWebsite] = useState<boolean | undefined>(undefined);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const { data: skills = [] } = useSkills(user?.id);
+  const addSkillMutation = useAddSkill(user?.id || '');
+  const [newSkill, setNewSkill] = useState('');
 
   // Build filters object
   const filters: StudentFilters = useMemo(() => {
@@ -241,38 +247,56 @@ export const StudentOverview = () => {
        </div>
 
       {/* Skills Selection */}
-      <div>
-        <label className="text-sm font-medium text-gray-700 mb-3 block">Filter by Skills</label>
-        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-          {AVAILABLE_SKILLS.map((skill) => (
-            <Badge
-              key={skill}
-              variant={selectedSkills.includes(skill) ? "default" : "outline"}
-              className={`cursor-pointer transition-all hover:scale-105 ${
-                selectedSkills.includes(skill)
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "hover:bg-red-50 hover:border-red-200 border-gray-300"
-              }`}
-              onClick={() => handleSkillSelect(skill)}
-            >
+      <div className="mb-2 flex gap-2">
+        <Input
+          value={newSkill}
+          onChange={e => setNewSkill(e.target.value)}
+          placeholder="Add custom skill"
+          className="w-48"
+        />
+        <Button
+          onClick={() => {
+            if (newSkill.trim()) {
+              addSkillMutation.mutate(newSkill.trim());
+              setNewSkill('');
+            }
+          }}
+          disabled={addSkillMutation.isPending || !newSkill.trim()}
+          variant="outline"
+          size="sm"
+        >
+          Add
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+        {skills.map((skill) => (
+          <Badge
+            key={skill}
+            variant={selectedSkills.includes(skill) ? "default" : "outline"}
+            className={`cursor-pointer transition-all hover:scale-105 ${
+              selectedSkills.includes(skill)
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+            }`}
+            onClick={() => handleSkillSelect(skill)}
+          >
+            {skill}
+          </Badge>
+        ))}
+      </div>
+      {selectedSkills.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {selectedSkills.map((skill) => (
+            <Badge key={skill} className="bg-red-100 text-red-800 text-xs">
               {skill}
+              <X 
+                className="w-3 h-3 ml-1 cursor-pointer" 
+                onClick={() => handleSkillSelect(skill)}
+              />
             </Badge>
           ))}
         </div>
-        {selectedSkills.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {selectedSkills.map((skill) => (
-              <Badge key={skill} className="bg-red-100 text-red-800 text-xs">
-                {skill}
-                <X 
-                  className="w-3 h-3 ml-1 cursor-pointer" 
-                  onClick={() => handleSkillSelect(skill)}
-                />
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 
