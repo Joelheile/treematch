@@ -609,39 +609,39 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 pb-24">
         <div className="w-full max-w-2xl  dark:bg-gray-900">
-          <div className="p-6 sm:p-8 lg:p-12">
-            {renderStepContent()}
+          <div className="p-6 sm:p-8 lg:p-12">{renderStepContent()}</div>
+        </div>
+      </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-gray-200 dark:border-gray-700">
-              {currentStep > 1 ? (
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  className="flex items-center space-x-2 px-4 sm:px-6 h-11 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Back</span>
-                </Button>
-              ) : (
-                <div />
-              )}
+      {/* Fixed Navigation Buttons */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex justify-between max-w-2xl mx-auto">
+          {currentStep > 1 ? (
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="flex items-center space-x-2 px-4 sm:px-6 h-11 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back</span>
+            </Button>
+          ) : (
+            <div />
+          )}
 
-              <Button
-                onClick={handleNext}
-                disabled={!isStepValid()}
-                className={`px-6 sm:px-8 font-semibold h-11 ${
-                  currentStep === 5
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : "bg-gray-900 dark:bg-gray-100 hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900"
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {currentStep === 5 ? "Complete Profile" : "Continue"}
-              </Button>
-            </div>
-          </div>
+          <Button
+            onClick={handleNext}
+            disabled={!isStepValid()}
+            className={`px-6 sm:px-8 font-semibold h-11 ${
+              currentStep === 5
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-gray-900 dark:bg-gray-100 hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {currentStep === 5 ? "Complete Profile" : "Continue"}
+          </Button>
         </div>
       </div>
     </div>
