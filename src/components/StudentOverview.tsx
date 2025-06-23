@@ -2,10 +2,10 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Users, TreePine, X } from "lucide-react";
-import { Student, AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
+import { Search, Filter, Users, TreePine, X, Loader2, BarChart3, Globe2, Award } from "lucide-react";
+import { AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import { StudentCard } from "@/components/StudentCard";
 import Link from "next/link";
 import {
@@ -25,38 +25,57 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  useStudents, 
+  useStudentAnalytics, 
+  useInfiniteStudents 
+} from "@/integrations/supabase/student-queries";
+import type { StudentFilters } from "@/integrations/supabase/student-service";
 
-interface StudentOverviewProps {
-  students: Student[];
-}
-
-export const StudentOverview = ({ students }: StudentOverviewProps) => {
+export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [skillFilter, setSkillFilter] = useState("all");
-  const [lookingForFilter, setLookingForFilter] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
+  const [hasLinkedIn, setHasLinkedIn] = useState<boolean | undefined>(undefined);
+  const [hasGithub, setHasGithub] = useState<boolean | undefined>(undefined);
+  const [hasWebsite, setHasWebsite] = useState<boolean | undefined>(undefined);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const isMobile = useIsMobile();
 
-  const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
-      const matchesSearch = 
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.summerGoals.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.currentProject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        student.lookingFor.some(item => item.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Build filters object
+  const filters: StudentFilters = useMemo(() => {
+    const result: StudentFilters = {};
+    
+    if (searchTerm.trim()) result.search = searchTerm.trim();
+    if (selectedCountry) result.country = selectedCountry;
+    if (selectedSkills.length > 0) result.skills = selectedSkills;
+    if (hasLinkedIn !== undefined) result.hasLinkedIn = hasLinkedIn;
+    if (hasGithub !== undefined) result.hasGithub = hasGithub;
+    if (hasWebsite !== undefined) result.hasWebsite = hasWebsite;
+    
+    return result;
+  }, [searchTerm, selectedCountry, selectedSkills, hasLinkedIn, hasGithub, hasWebsite]);
 
-      const matchesSkillFilter = skillFilter === "all" || student.skills.includes(skillFilter);
-      const matchesLookingForFilter = lookingForFilter === "all" || student.lookingFor.includes(lookingForFilter);
-      
-      const matchesSelectedSkills = selectedSkills.length === 0 || selectedSkills.some(skill => student.skills.includes(skill));
-      const matchesSelectedLookingFor = selectedLookingFor.length === 0 || selectedLookingFor.some(item => student.lookingFor.includes(item));
+  // Fetch students with filters
+  const { 
+    data: studentsResponse, 
+    isLoading, 
+    error,
+    refetch 
+  } = useStudents(filters, {
+    limit: 50,
+    orderBy: 'created_at',
+    orderDirection: 'desc'
+  });
 
-      return matchesSearch && matchesSkillFilter && matchesLookingForFilter && matchesSelectedSkills && matchesSelectedLookingFor;
-    });
-  }, [students, searchTerm, skillFilter, lookingForFilter, selectedSkills, selectedLookingFor]);
+  // Fetch analytics
+  const { 
+    data: analytics, 
+    isLoading: analyticsLoading 
+  } = useStudentAnalytics();
+
+  const students = studentsResponse?.data || [];
+  const totalCount = studentsResponse?.totalCount || 0;
 
   const handleSkillSelect = (skill: string) => {
     setSelectedSkills(prev => 
@@ -66,71 +85,164 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
     );
   };
 
-  const handleLookingForSelect = (item: string) => {
-    setSelectedLookingFor(prev => 
-      prev.includes(item) 
-        ? prev.filter(i => i !== item)
-        : [...prev, item]
-    );
-  };
-
   const clearAllFilters = () => {
     setSearchTerm("");
-    setSkillFilter("all");
-    setLookingForFilter("all");
+    setSelectedCountry("");
     setSelectedSkills([]);
-    setSelectedLookingFor([]);
+    setHasLinkedIn(undefined);
+    setHasGithub(undefined);
+    setHasWebsite(undefined);
   };
 
-  const hasActiveFilters = searchTerm || skillFilter !== "all" || lookingForFilter !== "all" || selectedSkills.length > 0 || selectedLookingFor.length > 0;
+  const hasActiveFilters = searchTerm || selectedCountry || selectedSkills.length > 0 || 
+    hasLinkedIn !== undefined || hasGithub !== undefined || hasWebsite !== undefined;
+
+  const uniqueCountries = useMemo(() => {
+    if (!analytics?.data?.studentsByCountry) return [];
+    return Object.keys(analytics.data.studentsByCountry).sort();
+  }, [analytics]);
+
+  const renderAnalytics = () => {
+    if (!analytics?.data) return null;
+
+    const { totalStudents, studentsByCountry, topSkills, studentsWithSocialLinks } = analytics.data;
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalStudents}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Countries</CardTitle>
+            <Globe2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{Object.keys(studentsByCountry).length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">With Social Links</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{studentsWithSocialLinks}</div>
+            <div className="text-xs text-muted-foreground">
+              {totalStudents > 0 ? Math.round((studentsWithSocialLinks / totalStudents) * 100) : 0}% of total
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Top Skill</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{topSkills[0]?.skill || "None"}</div>
+            <div className="text-xs text-muted-foreground">
+              {topSkills[0]?.count || 0} students
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const renderFilters = () => (
     <div className="space-y-6">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input
-          placeholder="Search by name, location, skills, projects, or goals..."
+          placeholder="Search by name, email, project, or skills..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10 border-gray-300 focus:border-red-500 focus:ring-red-500"
         />
       </div>
 
-      {/* Quick Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Skill</label>
-          <Select value={skillFilter} onValueChange={setSkillFilter}>
-            <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
-              <SelectValue placeholder="All skills" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectItem value="all">All skills</SelectItem>
-              {AVAILABLE_SKILLS.map((skill) => (
-                <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Looking For</label>
-          <Select value={lookingForFilter} onValueChange={setLookingForFilter}>
-            <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
-              <SelectValue placeholder="All options" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectItem value="all">All options</SelectItem>
-              {LOOKING_FOR_OPTIONS.map((option) => (
-                <SelectItem key={option} value={option}>{option}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+             {/* Country Filter */}
+       <div>
+         <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Country</label>
+         <Select value={selectedCountry || "all"} onValueChange={(value) => setSelectedCountry(value === "all" ? "" : value)}>
+           <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
+             <SelectValue placeholder="All countries" />
+           </SelectTrigger>
+           <SelectContent className="bg-white max-h-60">
+             <SelectItem value="all">All countries</SelectItem>
+             {uniqueCountries.map((country) => (
+               <SelectItem key={country} value={country}>
+                 {country} ({analytics?.data?.studentsByCountry[country] || 0})
+               </SelectItem>
+             ))}
+           </SelectContent>
+         </Select>
+       </div>
 
-      {/* Advanced Skill Selection */}
+             {/* Social Media Filters */}
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         <div>
+           <label className="text-sm font-medium text-gray-700 mb-2 block">LinkedIn</label>
+           <Select 
+             value={hasLinkedIn === undefined ? "any" : hasLinkedIn.toString()} 
+             onValueChange={(value) => setHasLinkedIn(value === "any" ? undefined : value === "true")}
+           >
+             <SelectTrigger>
+               <SelectValue placeholder="Any" />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="any">Any</SelectItem>
+               <SelectItem value="true">Has LinkedIn</SelectItem>
+               <SelectItem value="false">No LinkedIn</SelectItem>
+             </SelectContent>
+           </Select>
+         </div>
+         <div>
+           <label className="text-sm font-medium text-gray-700 mb-2 block">GitHub</label>
+           <Select 
+             value={hasGithub === undefined ? "any" : hasGithub.toString()} 
+             onValueChange={(value) => setHasGithub(value === "any" ? undefined : value === "true")}
+           >
+             <SelectTrigger>
+               <SelectValue placeholder="Any" />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="any">Any</SelectItem>
+               <SelectItem value="true">Has GitHub</SelectItem>
+               <SelectItem value="false">No GitHub</SelectItem>
+             </SelectContent>
+           </Select>
+         </div>
+         <div>
+           <label className="text-sm font-medium text-gray-700 mb-2 block">Website</label>
+           <Select 
+             value={hasWebsite === undefined ? "any" : hasWebsite.toString()} 
+             onValueChange={(value) => setHasWebsite(value === "any" ? undefined : value === "true")}
+           >
+             <SelectTrigger>
+               <SelectValue placeholder="Any" />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="any">Any</SelectItem>
+               <SelectItem value="true">Has Website</SelectItem>
+               <SelectItem value="false">No Website</SelectItem>
+             </SelectContent>
+           </Select>
+         </div>
+       </div>
+
+      {/* Skills Selection */}
       <div>
-        <label className="text-sm font-medium text-gray-700 mb-3 block">Select Multiple Skills</label>
+        <label className="text-sm font-medium text-gray-700 mb-3 block">Filter by Skills</label>
         <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
           {AVAILABLE_SKILLS.map((skill) => (
             <Badge
@@ -161,42 +273,27 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
           </div>
         )}
       </div>
-
-      {/* Advanced Looking For Selection */}
-      <div>
-        <label className="text-sm font-medium text-gray-700 mb-3 block">Select Multiple Collaboration Types</label>
-        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-          {LOOKING_FOR_OPTIONS.map((option) => (
-            <Badge
-              key={option}
-              variant={selectedLookingFor.includes(option) ? "default" : "outline"}
-              className={`cursor-pointer transition-all hover:scale-105 ${
-                selectedLookingFor.includes(option)
-                  ? "bg-gray-900 hover:bg-black text-white"
-                  : "hover:bg-gray-50 hover:border-gray-400 border-gray-300"
-              }`}
-              onClick={() => handleLookingForSelect(option)}
-            >
-              {option}
-            </Badge>
-          ))}
-        </div>
-        {selectedLookingFor.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {selectedLookingFor.map((item) => (
-              <Badge key={item} className="bg-gray-200 text-gray-800 text-xs">
-                {item}
-                <X 
-                  className="w-3 h-3 ml-1 cursor-pointer" 
-                  onClick={() => handleLookingForSelect(item)}
-                />
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="p-8 text-center max-w-md">
+          <div className="text-red-500 mb-4">
+            <Users className="w-12 h-12 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Failed to load students</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {error instanceof Error ? error.message : "An unexpected error occurred"}
+            </p>
+            <Button onClick={() => refetch()} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,6 +311,15 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className="hidden md:flex items-center space-x-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Analytics</span>
+              </Button>
               <Link href="/meet" passHref>
                 <Button
                   className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
@@ -264,8 +370,11 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
         </div>
       </div>
 
-      {/* Enhanced Filters */}
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Analytics */}
+        {showAnalytics && !analyticsLoading && renderAnalytics()}
+
+        {/* Filters */}
         {!isMobile ? (
            <Accordion type="single" collapsible defaultValue="item-1" className="mb-6">
             <AccordionItem value="item-1">
@@ -305,26 +414,61 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
-              {filteredStudents.length} {filteredStudents.length === 1 ? 'Student' : 'Students'} Found
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Loading students...</span>
+                </div>
+              ) : (
+                `${students.length} ${students.length === 1 ? 'Student' : 'Students'} Found`
+              )}
             </h2>
              <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <Users className="w-4 h-4" />
-                <span>{students.length} total</span>
+                <span>{totalCount} total</span>
               </div>
           </div>
 
-          {filteredStudents.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="animate-pulse">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : students.length === 0 ? (
             <Card className="p-8 text-center">
               <div className="text-gray-500">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No students found</h3>
                 <p>Try adjusting your search terms or filters to find more matches</p>
+                {hasActiveFilters && (
+                  <Button 
+                    variant="outline" 
+                    onClick={clearAllFilters}
+                    className="mt-4"
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
               </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredStudents.map((student) => (
-                <StudentCard key={student.id} student={student} />
+              {students.map((student) => (
+                <StudentCard 
+                  key={student.id} 
+                  student={student} 
+                />
               ))}
             </div>
           )}

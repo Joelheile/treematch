@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   AVAILABLE_SKILLS,
   LOOKING_FOR_OPTIONS,
-  Student,
 } from "@/types/Student";
 import cities from "cities.json";
 import {
@@ -20,9 +19,21 @@ import {
   User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useAuth } from "@/app/auth/AuthProvider";
+import { useCreateStudent, useUpdateStudent } from "@/integrations/supabase/student-queries";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import type { StudentInsert, StudentUpdate } from "@/integrations/supabase/student-service";
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const { student, refetch } = useCurrentStudent();
+  const createStudentMutation = useCreateStudent();
+  const updateStudentMutation = useUpdateStudent();
+  const router = useRouter();
 
   // Randomize skills and looking for options
   const randomizedSkills = useMemo(() => {
@@ -128,18 +139,57 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleCompleteProfile = async () => {
+    if (!user?.email) {
+      toast.error("User email not found. Please try logging in again.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const studentData: StudentInsert = {
+        name: formData.name,
+        email: user.email,
+        country: formData.city,
+        profile_image: formData.profileImage || null,
+        skills: formData.skills,
+        summer_goals: formData.lookingFor,
+        current_project: formData.currentProject,
+        coolest_thing: formData.summerGoals, // Using summerGoals for the "coolest thing" field
+        phone_number: null,
+        linkedin: null,
+        github: null,
+        website: null,
+        isOnboarded: true
+      };
+
+      if (student) {
+        const updateData: StudentUpdate = {
+          ...studentData,
+          id: undefined
+        };
+        await updateStudentMutation.mutateAsync({ id: student.id, updates: updateData });
+      } else {
+        await createStudentMutation.mutateAsync(studentData);
+      }
+
+      await refetch();
+      
+      router.push('/');
+      
+    } catch (error) {
+      console.error("Error completing profile:", error);
+      toast.error("Failed to complete profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleNext = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
-      const student: Student = {
-        id: Date.now().toString(),
-        ...formData,
-        lookingFor: [], // Set empty array since we removed this step
-        createdAt: new Date(),
-      };
-      // TODO: Implement student profile completion logic
-      console.log("Student profile completed:", student);
+      handleCompleteProfile();
     }
   };
 
@@ -594,6 +644,7 @@ export default function OnboardingPage() {
               variant="outline"
               onClick={handleBack}
               className="flex items-center space-x-2 px-4 sm:px-6 h-11 border-gray-300 hover:bg-gray-50"
+              disabled={isSubmitting}
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Back</span>
@@ -604,14 +655,19 @@ export default function OnboardingPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!isStepValid()}
+            disabled={!isStepValid() || isSubmitting}
             className={`px-6 sm:px-8 font-semibold h-11 ${
               currentStep === 5
                 ? "bg-red-600 hover:bg-red-700 text-white"
                 : "bg-gray-900 hover:bg-black text-white"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {currentStep === 5 ? "Complete Profile" : "Continue"}
+            {isSubmitting 
+              ? "Saving..." 
+              : currentStep === 5 
+                ? "Complete Profile" 
+                : "Continue"
+            }
           </Button>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import { supabase as defaultSupabase } from '@/integrations/supabase/client'
 import { createClient } from '@/integrations/supabase/client-ssr'
-import { createClient as createServerClient } from '@/integrations/supabase/server'
 import type { Database, Tables, TablesInsert, TablesUpdate } from './types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -519,9 +518,8 @@ export const createStudentService = (supabase?: SupabaseClient<Database>) => {
   return new StudentService(supabase)
 }
 
-export const createServerStudentService = () => {
-  return new StudentService(createServerClient())
-}
+// Server-side student service should be created separately in server components
+// to avoid importing next/headers in client components
 
 export const studentService = new StudentService()
 

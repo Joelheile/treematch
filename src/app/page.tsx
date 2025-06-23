@@ -3,42 +3,57 @@
 import { StudentOverview } from "@/components/StudentOverview";
 import { AuthGuard } from "@/components/AuthGuard";
 import { UserMenu } from "@/components/UserMenu";
-import { Student } from "@/types/Student";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TreePine } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
+  const { isOnboarded, isLoading, error } = useCurrentStudent();
 
-  const [isOnboarded, setIsOnboarded] = useState(false);
-  const [students, setStudents] = useState<Student[]>([]);
+  if (isLoading) {
+    return (
+      <AuthGuard>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
+          <div className="text-center space-y-6">
+            <div className="mx-auto w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center animate-pulse">
+              <TreePine className="w-8 h-8 text-white" />
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-32 mx-auto" />
+              <Skeleton className="h-3 w-24 mx-auto" />
+            </div>
+            <p className="text-sm text-gray-500">Loading your profile...</p>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
 
-  useEffect(() => {
-    // Check if user has completed onboarding
-    const onboardingStatus = localStorage.getItem("stanford-onboarded");
-    const savedStudents = localStorage.getItem("stanford-students");
-
-    if (onboardingStatus === "true") {
-      setIsOnboarded(true);
-    }
-
-    if (savedStudents) {
-      setStudents(JSON.parse(savedStudents));
-    }
-  }, []);
-
-  const handleOnboardingComplete = (studentData: Student) => {
-    const updatedStudents = [...students, studentData];
-    setStudents(updatedStudents);
-    localStorage.setItem("stanford-students", JSON.stringify(updatedStudents));
-    localStorage.setItem("stanford-onboarded", "true");
-    setIsOnboarded(true);
-  };
-
-  const resetOnboarding = () => {
-    localStorage.removeItem("stanford-onboarded");
-    setIsOnboarded(false);
-  };
+  if (error) {
+    return (
+      <AuthGuard>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
+          <div className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center">
+              <TreePine className="w-8 h-8 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">Welcome to Treematch!</h1>
+              <p className="text-gray-600">Let's set up your profile to get started.</p>
+            </div>
+            <button 
+              onClick={() => router.push('/onboarding')}
+              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Complete Your Profile
+            </button>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard>
@@ -58,7 +73,7 @@ export default function HomePage() {
             );
           })()
         ) : (
-          <StudentOverview students={students} />
+          <StudentOverview />
         )}
       </div>
     </AuthGuard>
