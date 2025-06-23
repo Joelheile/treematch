@@ -36,6 +36,7 @@ export interface StudentFormatted {
   email: string
   linkedin?: string
   github?: string
+  isOnboarded: boolean
   website?: string
   createdAt: Date
   updatedAt: Date
@@ -55,6 +56,7 @@ export const formatStudentFromDB = (dbStudent: StudentRow): StudentFormatted => 
     email: dbStudent.email || '',
     linkedin: dbStudent.linkedin || undefined,
     github: dbStudent.github || undefined,
+    isOnboarded: dbStudent.isOnboarded || false,
     website: dbStudent.website || undefined,
     createdAt: new Date(dbStudent.created_at || ''),
     updatedAt: new Date(dbStudent.updated_at || '')
@@ -74,6 +76,7 @@ export const formatStudentForDB = (student: Partial<StudentFormatted>): StudentI
     email: student.email || null,
     linkedin: student.linkedin || null,
     github: student.github || null,
+    isOnboarded: student.isOnboarded || false,
     website: student.website || null
   }
 }
