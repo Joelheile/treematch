@@ -409,45 +409,52 @@ export default function OnboardingPage() {
                 >
                   Country*
                 </Label>
-                <Input
-                  id="country"
-                  value={countryInput}
-                  onChange={(e) => handleCountryInputChange(e.target.value)}
-                  onFocus={() =>
-                    setShowCountrySuggestions(countryInput.length > 0)
-                  }
-                  onBlur={() =>
-                    setTimeout(() => setShowCountrySuggestions(false), 200)
-                  }
-                  placeholder="Start typing your country..."
-                  className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
-                  autoComplete="off"
-                />
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="relative flex-1">
+                    <Input
+                      id="country"
+                      value={countryInput}
+                      onChange={(e) => handleCountryInputChange(e.target.value)}
+                      onFocus={() =>
+                        setShowCountrySuggestions(countryInput.length > 0)
+                      }
+                      onBlur={() =>
+                        setTimeout(() => setShowCountrySuggestions(false), 200)
+                      }
+                      placeholder="Start typing your country..."
+                      className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
+                      autoComplete="off"
+                    />
 
-                {showCountrySuggestions && countrySuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {countrySuggestions.map((country) => (
-                      <div
-                        key={country.code}
-                        className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
-                        onClick={() => handleCountrySelect(country)}
-                      >
-                        <span className="text-lg">
-                          {countryToFlag(country.code)}
-                        </span>
-                        <span className="text-gray-900">{country.name}</span>
-                      </div>
-                    ))}
+                    {showCountrySuggestions &&
+                      countrySuggestions.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                          {countrySuggestions.map((country) => (
+                            <div
+                              key={country.code}
+                              className="px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                              onClick={() => handleCountrySelect(country)}
+                            >
+                              <span className="text-lg">
+                                {countryToFlag(country.code)}
+                              </span>
+                              <span className="text-gray-900">
+                                {country.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                   </div>
-                )}
 
-                {selectedCountry && (
-                  <div className="mt-1 ml-1 flex items-center gap-2 text-sm text-gray-600">
-                    <span className="text-2xl">
-                      {countryToFlag(selectedCountry.code)}
-                    </span>
-                  </div>
-                )}
+                  {selectedCountry && (
+                    <div className="flex items-center justify-center w-12 h-12 bg-gray-50 rounded-md border border-gray-200">
+                      <span className="text-2xl">
+                        {countryToFlag(selectedCountry.code)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
