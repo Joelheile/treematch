@@ -1,14 +1,10 @@
 import { OnboardingData } from '@/lib/onboarding-storage'
-import { createClient } from './client-ssr'
-import { StudentInsert, StudentService } from './student-service'
+import { supabase } from '../../integrations/supabase/client'
+import { TablesInsert } from '../../integrations/supabase/types'
+
+type StudentInsert = TablesInsert<'students'>
 
 export class OnboardingService {
-  private studentService: StudentService
-
-  constructor() {
-    this.studentService = new StudentService(createClient())
-  }
-
   private formatSocialUrl(platform: string, input: string): string | null {
     if (!input.trim()) return null
 
@@ -43,15 +39,54 @@ export class OnboardingService {
       email: userEmail,
       country: onboardingData.country,
       profile_image: onboardingData.profileImage || null,
-      skills: onboardingData.skills,
       summer_goals: [onboardingData.summerGoals],
       current_project: onboardingData.currentProject,
       phone_number: null,
       linkedin: this.formatSocialUrl("linkedin", onboardingData.linkedinUrl),
       github: this.formatSocialUrl("github", onboardingData.githubUsername),
-      website: this.formatSocialUrl("twitter", onboardingData.twitterHandle), // Using website field for Twitter
+      website: this.formatSocialUrl("twitter", onboardingData.twitterHandle),
       isOnboarded: true,
     }
+  }
+
+  async getStudentByEmail(email: string) {
+    const { data: studentData, error: studentError } = await supabase
+      .from('students')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (studentError) {
+      if (studentError.code === 'PGRST116') {
+        return { data: null, error: null }
+      }
+      throw studentError
+    }
+
+    return { data: studentData, error: null }
+  }
+
+  async createStudent(student: StudentInsert) {
+    const { data, error } = await supabase
+      .from('students')
+      .insert(student)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  }
+
+  async updateStudent(id: string, updates: Partial<StudentInsert>) {
+    const { data, error } = await supabase
+      .from('students')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
   }
 
   async saveOnboardingDataToDatabase(
@@ -59,25 +94,22 @@ export class OnboardingService {
     userEmail: string
   ) {
     try {
-      // Check if student already exists
-      const existingStudentResponse = await this.studentService.getStudentByEmail(userEmail)
+      const existingStudentResponse = await this.getStudentByEmail(userEmail)
       
       const studentData = this.convertOnboardingDataToStudent(onboardingData, userEmail)
 
       if (existingStudentResponse.data) {
-        // Update existing student
         const updateData = {
           ...studentData,
-          id: undefined, // Remove id from update data
+          id: undefined,
         }
-        const result = await this.studentService.updateStudent(
+        const result = await this.updateStudent(
           existingStudentResponse.data.id,
           updateData
         )
         return result
       } else {
-        // Create new student
-        const result = await this.studentService.createStudent(studentData)
+        const result = await this.createStudent(studentData)
         return result
       }
     } catch (error) {

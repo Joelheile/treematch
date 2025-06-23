@@ -1,93 +1,110 @@
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Users, TreePine, X, Loader2, BarChart3, Globe2, Award } from "lucide-react";
+import { useAuth } from "@/app/auth/AuthProvider";
 import { StudentCard } from "@/components/StudentCard";
-import Link from "next/link";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetClose
-} from "@/components/ui/sheet"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { 
-  useStudents, 
-  useStudentAnalytics, 
-  useInfiniteStudents,
-  useSkills,
-  useAddSkill
-} from "@/integrations/supabase/student-queries";
-import type { StudentFilters } from "@/integrations/supabase/student-service";
-import { useAuth } from '@/app/auth/AuthProvider';
+import { useAddSkill } from "@/integrations/supabase/useAddSkill";
+import { useSkills } from "@/integrations/supabase/useSkills";
+import type { StudentFilters } from "@/integrations/supabase/useStudents";
+import { useStudents } from "@/integrations/supabase/useStudents";
+import {
+  Award,
+  BarChart3,
+  Filter,
+  Globe2,
+  Loader2,
+  Search,
+  TreePine,
+  Users,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [hasLinkedIn, setHasLinkedIn] = useState<boolean | undefined>(undefined);
+  const [hasLinkedIn, setHasLinkedIn] = useState<boolean | undefined>(
+    undefined
+  );
   const [hasGithub, setHasGithub] = useState<boolean | undefined>(undefined);
   const [hasWebsite, setHasWebsite] = useState<boolean | undefined>(undefined);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { data: skills = [] } = useSkills(user?.id);
-  const addSkillMutation = useAddSkill(user?.id || '');
-  const [newSkill, setNewSkill] = useState('');
+  const addSkillMutation = useAddSkill(user?.id || "");
+  const [newSkill, setNewSkill] = useState("");
 
   // Build filters object
   const filters: StudentFilters = useMemo(() => {
     const result: StudentFilters = {};
-    
+
     if (searchTerm.trim()) result.search = searchTerm.trim();
     if (selectedCountry) result.country = selectedCountry;
     if (selectedSkills.length > 0) result.skills = selectedSkills;
     if (hasLinkedIn !== undefined) result.hasLinkedIn = hasLinkedIn;
     if (hasGithub !== undefined) result.hasGithub = hasGithub;
     if (hasWebsite !== undefined) result.hasWebsite = hasWebsite;
-    
+
     return result;
-  }, [searchTerm, selectedCountry, selectedSkills, hasLinkedIn, hasGithub, hasWebsite]);
+  }, [
+    searchTerm,
+    selectedCountry,
+    selectedSkills,
+    hasLinkedIn,
+    hasGithub,
+    hasWebsite,
+  ]);
 
   // Fetch students with filters
-  const { 
-    data: studentsResponse, 
-    isLoading, 
+  const {
+    data: studentsResponse,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useStudents(filters, {
     limit: 50,
-    orderBy: 'created_at',
-    orderDirection: 'desc'
+    orderBy: "created_at",
+    orderDirection: "desc",
   });
 
   // Fetch analytics
-  const { 
-    data: analytics, 
-    isLoading: analyticsLoading 
-  } = useStudentAnalytics();
+  const { data: analytics, isLoading: analyticsLoading } =
+    useStudentAnalytics();
 
   const students = studentsResponse?.data || [];
   const totalCount = studentsResponse?.totalCount || 0;
 
   const handleSkillSelect = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     );
   };
 
@@ -100,8 +117,13 @@ export const StudentOverview = () => {
     setHasWebsite(undefined);
   };
 
-  const hasActiveFilters = searchTerm || selectedCountry || selectedSkills.length > 0 || 
-    hasLinkedIn !== undefined || hasGithub !== undefined || hasWebsite !== undefined;
+  const hasActiveFilters =
+    searchTerm ||
+    selectedCountry ||
+    selectedSkills.length > 0 ||
+    hasLinkedIn !== undefined ||
+    hasGithub !== undefined ||
+    hasWebsite !== undefined;
 
   const uniqueCountries = useMemo(() => {
     if (!analytics?.data?.studentsByCountry) return [];
@@ -111,39 +133,53 @@ export const StudentOverview = () => {
   const renderAnalytics = () => {
     if (!analytics?.data) return null;
 
-    const { totalStudents, studentsByCountry, topSkills, studentsWithSocialLinks } = analytics.data;
+    const {
+      totalStudents,
+      studentsByCountry,
+      topSkills,
+      studentsWithSocialLinks,
+    } = analytics.data;
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Students
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalStudents}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Countries</CardTitle>
             <Globe2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Object.keys(studentsByCountry).length}</div>
+            <div className="text-2xl font-bold">
+              {Object.keys(studentsByCountry).length}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">With Social Links</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              With Social Links
+            </CardTitle>
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{studentsWithSocialLinks}</div>
             <div className="text-xs text-muted-foreground">
-              {totalStudents > 0 ? Math.round((studentsWithSocialLinks / totalStudents) * 100) : 0}% of total
+              {totalStudents > 0
+                ? Math.round((studentsWithSocialLinks / totalStudents) * 100)
+                : 0}
+              % of total
             </div>
           </CardContent>
         </Card>
@@ -154,7 +190,9 @@ export const StudentOverview = () => {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{topSkills[0]?.skill || "None"}</div>
+            <div className="text-2xl font-bold">
+              {topSkills[0]?.skill || "None"}
+            </div>
             <div className="text-xs text-muted-foreground">
               {topSkills[0]?.count || 0} students
             </div>
@@ -176,81 +214,100 @@ export const StudentOverview = () => {
         />
       </div>
 
-             {/* Country Filter */}
-       <div>
-         <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Country</label>
-         <Select value={selectedCountry || "all"} onValueChange={(value) => setSelectedCountry(value === "all" ? "" : value)}>
-           <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
-             <SelectValue placeholder="All countries" />
-           </SelectTrigger>
-           <SelectContent className="bg-white max-h-60">
-             <SelectItem value="all">All countries</SelectItem>
-             {uniqueCountries.map((country) => (
-               <SelectItem key={country} value={country}>
-                 {country} ({analytics?.data?.studentsByCountry[country] || 0})
-               </SelectItem>
-             ))}
-           </SelectContent>
-         </Select>
-       </div>
+      {/* Country Filter */}
+      <div>
+        <label className="text-sm font-medium text-gray-700 mb-2 block">
+          Filter by Country
+        </label>
+        <Select
+          value={selectedCountry || "all"}
+          onValueChange={(value) =>
+            setSelectedCountry(value === "all" ? "" : value)
+          }
+        >
+          <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
+            <SelectValue placeholder="All countries" />
+          </SelectTrigger>
+          <SelectContent className="bg-white max-h-60">
+            <SelectItem value="all">All countries</SelectItem>
+            {uniqueCountries.map((country) => (
+              <SelectItem key={country} value={country}>
+                {country} ({analytics?.data?.studentsByCountry[country] || 0})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-             {/* Social Media Filters */}
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-         <div>
-           <label className="text-sm font-medium text-gray-700 mb-2 block">LinkedIn</label>
-           <Select 
-             value={hasLinkedIn === undefined ? "any" : hasLinkedIn.toString()} 
-             onValueChange={(value) => setHasLinkedIn(value === "any" ? undefined : value === "true")}
-           >
-             <SelectTrigger>
-               <SelectValue placeholder="Any" />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="any">Any</SelectItem>
-               <SelectItem value="true">Has LinkedIn</SelectItem>
-               <SelectItem value="false">No LinkedIn</SelectItem>
-             </SelectContent>
-           </Select>
-         </div>
-         <div>
-           <label className="text-sm font-medium text-gray-700 mb-2 block">GitHub</label>
-           <Select 
-             value={hasGithub === undefined ? "any" : hasGithub.toString()} 
-             onValueChange={(value) => setHasGithub(value === "any" ? undefined : value === "true")}
-           >
-             <SelectTrigger>
-               <SelectValue placeholder="Any" />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="any">Any</SelectItem>
-               <SelectItem value="true">Has GitHub</SelectItem>
-               <SelectItem value="false">No GitHub</SelectItem>
-             </SelectContent>
-           </Select>
-         </div>
-         <div>
-           <label className="text-sm font-medium text-gray-700 mb-2 block">Website</label>
-           <Select 
-             value={hasWebsite === undefined ? "any" : hasWebsite.toString()} 
-             onValueChange={(value) => setHasWebsite(value === "any" ? undefined : value === "true")}
-           >
-             <SelectTrigger>
-               <SelectValue placeholder="Any" />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="any">Any</SelectItem>
-               <SelectItem value="true">Has Website</SelectItem>
-               <SelectItem value="false">No Website</SelectItem>
-             </SelectContent>
-           </Select>
-         </div>
-       </div>
+      {/* Social Media Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">
+            LinkedIn
+          </label>
+          <Select
+            value={hasLinkedIn === undefined ? "any" : hasLinkedIn.toString()}
+            onValueChange={(value) =>
+              setHasLinkedIn(value === "any" ? undefined : value === "true")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="true">Has LinkedIn</SelectItem>
+              <SelectItem value="false">No LinkedIn</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">
+            GitHub
+          </label>
+          <Select
+            value={hasGithub === undefined ? "any" : hasGithub.toString()}
+            onValueChange={(value) =>
+              setHasGithub(value === "any" ? undefined : value === "true")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="true">Has GitHub</SelectItem>
+              <SelectItem value="false">No GitHub</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">
+            Website
+          </label>
+          <Select
+            value={hasWebsite === undefined ? "any" : hasWebsite.toString()}
+            onValueChange={(value) =>
+              setHasWebsite(value === "any" ? undefined : value === "true")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="true">Has Website</SelectItem>
+              <SelectItem value="false">No Website</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* Skills Selection */}
       <div className="mb-2 flex gap-2">
         <Input
           value={newSkill}
-          onChange={e => setNewSkill(e.target.value)}
+          onChange={(e) => setNewSkill(e.target.value)}
           placeholder="Add custom skill"
           className="w-48"
         />
@@ -258,7 +315,7 @@ export const StudentOverview = () => {
           onClick={() => {
             if (newSkill.trim()) {
               addSkillMutation.mutate(newSkill.trim());
-              setNewSkill('');
+              setNewSkill("");
             }
           }}
           disabled={addSkillMutation.isPending || !newSkill.trim()}
@@ -289,8 +346,8 @@ export const StudentOverview = () => {
           {selectedSkills.map((skill) => (
             <Badge key={skill} className="bg-red-100 text-red-800 text-xs">
               {skill}
-              <X 
-                className="w-3 h-3 ml-1 cursor-pointer" 
+              <X
+                className="w-3 h-3 ml-1 cursor-pointer"
                 onClick={() => handleSkillSelect(skill)}
               />
             </Badge>
@@ -306,9 +363,13 @@ export const StudentOverview = () => {
         <Card className="p-8 text-center max-w-md">
           <div className="text-red-500 mb-4">
             <Users className="w-12 h-12 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">Failed to load students</h3>
+            <h3 className="text-lg font-medium mb-2">
+              Failed to load students
+            </h3>
             <p className="text-sm text-gray-600 mb-4">
-              {error instanceof Error ? error.message : "An unexpected error occurred"}
+              {error instanceof Error
+                ? error.message
+                : "An unexpected error occurred"}
             </p>
             <Button onClick={() => refetch()} variant="outline">
               Try Again
@@ -331,7 +392,9 @@ export const StudentOverview = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Treematch</h1>
-                <p className="text-gray-500 text-sm hidden md:block">Connect with Stanford students</p>
+                <p className="text-gray-500 text-sm hidden md:block">
+                  Connect with Stanford students
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -345,9 +408,7 @@ export const StudentOverview = () => {
                 <span>Analytics</span>
               </Button>
               <Link href="/meet" passHref>
-                <Button
-                  className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
-                >
+                <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700">
                   <Users className="w-4 h-4" />
                   <span className="hidden sm:inline">Meet in Person</span>
                 </Button>
@@ -400,34 +461,37 @@ export const StudentOverview = () => {
 
         {/* Filters */}
         {!isMobile ? (
-           <Accordion type="single" collapsible defaultValue="item-1" className="mb-6">
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="item-1"
+            className="mb-6"
+          >
             <AccordionItem value="item-1">
               <AccordionTrigger>
                 <div className="flex items-center justify-between w-full pr-4">
-                    <div className="flex items-center space-x-2">
-                      <Filter className="w-5 h-5 text-gray-600" />
-                      <h2 className="text-lg font-semibold">Filter and Sort</h2>
-                    </div>
-                    {hasActiveFilters && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearAllFilters();
-                        }}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        Clear All Filters
-                      </Button>
-                    )}
+                  <div className="flex items-center space-x-2">
+                    <Filter className="w-5 h-5 text-gray-600" />
+                    <h2 className="text-lg font-semibold">Filter and Sort</h2>
+                  </div>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearAllFilters();
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 <Card>
-                  <CardContent className="pt-6">
-                    {renderFilters()}
-                  </CardContent>
+                  <CardContent className="pt-6">{renderFilters()}</CardContent>
                 </Card>
               </AccordionContent>
             </AccordionItem>
@@ -444,13 +508,15 @@ export const StudentOverview = () => {
                   <span>Loading students...</span>
                 </div>
               ) : (
-                `${students.length} ${students.length === 1 ? 'Student' : 'Students'} Found`
+                `${students.length} ${
+                  students.length === 1 ? "Student" : "Students"
+                } Found`
               )}
             </h2>
-             <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Users className="w-4 h-4" />
-                <span>{totalCount} total</span>
-              </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Users className="w-4 h-4" />
+              <span>{totalCount} total</span>
+            </div>
           </div>
 
           {isLoading ? (
@@ -474,10 +540,13 @@ export const StudentOverview = () => {
               <div className="text-gray-500">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No students found</h3>
-                <p>Try adjusting your search terms or filters to find more matches</p>
+                <p>
+                  Try adjusting your search terms or filters to find more
+                  matches
+                </p>
                 {hasActiveFilters && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={clearAllFilters}
                     className="mt-4"
                   >
@@ -489,10 +558,7 @@ export const StudentOverview = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {students.map((student) => (
-                <StudentCard 
-                  key={student.id} 
-                  student={student} 
-                />
+                <StudentCard key={student.id} student={student} />
               ))}
             </div>
           )}
