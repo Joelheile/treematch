@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Check, LogOut } from "lucide-react";
+import { Check, TreePine, Mail, User, Target, Briefcase, Heart } from "lucide-react";
 import { Student, AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 
 interface OnboardingFlowProps {
@@ -21,16 +21,17 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     profileImage: "",
     skills: [] as string[],
     lookingFor: [] as string[],
-    summerGoals: ""
+    summerGoals: "",
+    currentProject: ""
   });
 
   const steps = [
-    { number: 1, title: "Welcome!", completed: currentStep > 1 },
-    { number: 2, title: "Your Profile", completed: currentStep > 2 },
-    { number: 3, title: "Skills", completed: currentStep > 3 },
-    { number: 4, title: "Focus Areas", completed: currentStep > 4 },
-    { number: 5, title: "Matching", completed: currentStep > 5 },
-    { number: 6, title: "Submit", completed: false }
+    { number: 1, title: "Welcome to Treematch", icon: TreePine, completed: currentStep > 1 },
+    { number: 2, title: "Profile Setup", icon: User, completed: currentStep > 2 },
+    { number: 3, title: "Your Skills", icon: Target, completed: currentStep > 3 },
+    { number: 4, title: "What You're Seeking", icon: Heart, completed: currentStep > 4 },
+    { number: 5, title: "Current Projects", icon: Briefcase, completed: currentStep > 5 },
+    { number: 6, title: "Ready to Connect", icon: Check, completed: false }
   ];
 
   const handleSkillToggle = (skill: string) => {
@@ -69,7 +70,6 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
       const student: Student = {
         id: Date.now().toString(),
         ...formData,
@@ -89,9 +89,9 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     switch (currentStep) {
       case 1: return true;
       case 2: return formData.name.trim() !== "" && formData.city.trim() !== "";
-      case 3: return true;
-      case 4: return formData.skills.length > 0;
-      case 5: return formData.lookingFor.length > 0;
+      case 3: return formData.skills.length > 0;
+      case 4: return formData.lookingFor.length > 0;
+      case 5: return formData.currentProject.trim() !== "";
       case 6: return formData.summerGoals.trim() !== "";
       default: return false;
     }
@@ -101,17 +101,17 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="text-center space-y-6">
-            <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-green-600" />
+          <div className="text-center space-y-8">
+            <div className="bg-red-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+              <TreePine className="w-12 h-12 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome!</h2>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                Great that you want to enrich our mentoring network!
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to Treematch!</h1>
+              <p className="text-gray-600 text-xl leading-relaxed mb-6">
+                Connect with fellow Stanford students for projects, collaboration, and friendship.
               </p>
-              <p className="text-gray-600 mt-4">
-                Please fill out the following fields so we can optimally integrate you and your expertise.
+              <p className="text-gray-500">
+                Let's build your profile to find your perfect study partners and project collaborators.
               </p>
             </div>
           </div>
@@ -120,20 +120,21 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 2:
         return (
           <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Profile</h2>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Let's get to know you</h2>
+              <p className="text-gray-600">Tell us about yourself so others can find you</p>
             </div>
             
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Select Profile Picture</h3>
-              <p className="text-gray-600 mb-6">Please upload a profile picture where you can be easily recognized. (max. 5MB)</p>
+              <h3 className="text-lg font-semibold mb-4">Profile Picture</h3>
+              <p className="text-gray-600 mb-6">Upload a friendly photo so others can recognize you around campus</p>
               
               {formData.profileImage ? (
                 <div className="relative inline-block">
                   <img
                     src={formData.profileImage}
                     alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-red-100"
                   />
                   <Button
                     variant="outline"
@@ -141,7 +142,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     className="mt-4"
                     onClick={() => setFormData(prev => ({ ...prev, profileImage: "" }))}
                   >
-                    Remove Photo
+                    Change Photo
                   </Button>
                 </div>
               ) : (
@@ -154,8 +155,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     id="image-upload"
                   />
                   <Label htmlFor="image-upload" className="cursor-pointer">
-                    <Button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-8 py-3" asChild>
-                      <span>Upload Profile Picture</span>
+                    <Button className="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3" asChild>
+                      <span>Upload Photo</span>
                     </Button>
                   </Label>
                 </div>
@@ -177,7 +178,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                       }));
                     }}
                     placeholder="First Name"
-                    className="mt-1"
+                    className="mt-1 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
                 </div>
                 <div>
@@ -193,19 +194,19 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                       }));
                     }}
                     placeholder="Last Name"
-                    className="mt-1"
+                    className="mt-1 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="city" className="text-sm font-medium">Hometown*</Label>
+                <Label htmlFor="city" className="text-sm font-medium">Where are you from?*</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                   placeholder="e.g., San Francisco, CA"
-                  className="mt-1"
+                  className="mt-1 border-gray-300 focus:border-red-500 focus:ring-red-500"
                 />
               </div>
             </div>
@@ -215,15 +216,14 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 3:
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Skills</h2>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What are your skills?</h2>
               <p className="text-gray-600">
-                Select your expertise. In the next step, you'll determine the areas where you'd especially like to support your mentees.
+                Select the areas where you have experience or expertise. This helps others find you for the right projects.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Your Expertise</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {AVAILABLE_SKILLS.map((skill) => (
                   <Badge
@@ -231,8 +231,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     variant={formData.skills.includes(skill) ? "default" : "outline"}
                     className={`cursor-pointer text-center justify-center py-3 px-4 text-sm transition-all hover:scale-105 ${
                       formData.skills.includes(skill) 
-                        ? "bg-gray-800 hover:bg-gray-900 text-white" 
-                        : "hover:bg-gray-50 hover:border-gray-300"
+                        ? "bg-red-600 hover:bg-red-700 text-white border-red-600" 
+                        : "hover:bg-red-50 hover:border-red-200 border-gray-300"
                     }`}
                     onClick={() => handleSkillToggle(skill)}
                   >
@@ -240,6 +240,9 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                   </Badge>
                 ))}
               </div>
+              <p className="text-sm text-gray-500 mt-4 text-center">
+                Selected {formData.skills.length} skills
+              </p>
             </div>
           </div>
         );
@@ -247,15 +250,14 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 4:
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Focus Areas</h2>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What are you looking for?</h2>
               <p className="text-gray-600 mb-6">
-                You have expertise in many areas - that's great! Now select the skills in which you'd especially like to support your mentees.
+                Let others know what type of collaboration or connection you're seeking this semester.
               </p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Prioritize the phases where you can help best.</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {LOOKING_FOR_OPTIONS.map((option) => (
                   <Badge
@@ -263,8 +265,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     variant={formData.lookingFor.includes(option) ? "default" : "outline"}
                     className={`cursor-pointer text-center justify-center py-3 px-4 text-sm transition-all hover:scale-105 ${
                       formData.lookingFor.includes(option)
-                        ? "bg-gray-800 hover:bg-gray-900 text-white"
-                        : "hover:bg-gray-50 hover:border-gray-300"
+                        ? "bg-gray-900 hover:bg-black text-white border-gray-900"
+                        : "hover:bg-gray-50 hover:border-gray-400 border-gray-300"
                     }`}
                     onClick={() => handleLookingForToggle(option)}
                   >
@@ -272,6 +274,9 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                   </Badge>
                 ))}
               </div>
+              <p className="text-sm text-gray-500 mt-4 text-center">
+                Selected {formData.lookingFor.length} options
+              </p>
             </div>
           </div>
         );
@@ -279,58 +284,47 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 5:
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Matching</h2>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">What exciting project are you working on?</h2>
               <p className="text-gray-600 mb-6">
-                What is your preferred channel for first contact?
+                Share what you're passionate about right now. This could be a class project, startup idea, research, or personal interest.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="py-4 text-sm">
-                📧 E-Mail
-              </Button>
-              <Button variant="outline" className="py-4 text-sm">
-                📞 Phone
-              </Button>
-              <Button variant="outline" className="py-4 text-sm">
-                📹 Video-Call
-              </Button>
-              <Button variant="outline" className="py-4 text-sm">
-                👥 Personal Meeting
-              </Button>
+            <div>
+              <Label htmlFor="currentProject" className="text-lg font-semibold">Current Project or Passion*</Label>
+              <Textarea
+                id="currentProject"
+                value={formData.currentProject}
+                onChange={(e) => setFormData(prev => ({ ...prev, currentProject: e.target.value }))}
+                placeholder="e.g., Building an AI app for course scheduling, researching sustainable energy solutions, starting a campus food delivery service..."
+                className="min-h-[120px] mt-2 border-gray-300 focus:border-red-500 focus:ring-red-500"
+              />
             </div>
           </div>
         );
 
       case 6:
         return (
-          <div className="text-center space-y-6">
-            <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-green-600" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Submit Application</h2>
-              <p className="text-gray-600 mb-4">
-                Your mentoring application is completely filled out.
-              </p>
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="bg-red-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Almost ready to connect!</h2>
               <p className="text-gray-600 mb-6">
-                Click "Submit" to submit your application.
-              </p>
-              <p className="text-sm text-gray-500">
-                After submission, you will receive a confirmation by email.
-                Our team will contact you within a few days.
+                One last thing - tell us about your goals for this semester.
               </p>
             </div>
 
-            <div className="mt-8">
-              <Label htmlFor="goals" className="text-left block text-lg font-semibold mb-4">Summer Session Goals</Label>
+            <div>
+              <Label htmlFor="goals" className="text-lg font-semibold mb-4 block">What do you hope to achieve this semester?*</Label>
               <Textarea
                 id="goals"
                 value={formData.summerGoals}
                 onChange={(e) => setFormData(prev => ({ ...prev, summerGoals: e.target.value }))}
-                placeholder="What do you hope to accomplish this summer? What projects are you working on?"
-                className="min-h-[120px] text-left"
+                placeholder="e.g., Launch my startup, complete my CS thesis, find an internship, build my network, learn new skills..."
+                className="min-h-[120px] border-gray-300 focus:border-red-500 focus:ring-red-500"
               />
             </div>
           </div>
@@ -344,59 +338,61 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-lg">
+      <div className="w-80 bg-white shadow-lg border-r">
         <div className="p-6">
-          <div className="text-2xl font-bold bg-black text-white px-3 py-2 rounded mb-8">
-            STANFORD
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="bg-red-600 p-2 rounded-lg">
+              <TreePine className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">Treematch</div>
           </div>
           
-          <div className="space-y-4">
-            {steps.map((step) => (
-              <div
-                key={step.number}
-                className={`flex items-center space-x-3 p-2 rounded ${
-                  step.number === currentStep 
-                    ? 'bg-yellow-100' 
-                    : step.completed 
-                      ? 'text-gray-700' 
-                      : 'text-gray-400'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step.number === currentStep
-                    ? 'bg-yellow-400 text-black'
-                    : step.completed
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                }`}>
-                  {step.completed ? <Check className="w-4 h-4" /> : step.number}
+          <div className="space-y-3">
+            {steps.map((step) => {
+              const Icon = step.icon;
+              return (
+                <div
+                  key={step.number}
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                    step.number === currentStep 
+                      ? 'bg-red-50 border border-red-200' 
+                      : step.completed 
+                        ? 'text-gray-700' 
+                        : 'text-gray-400'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    step.number === currentStep
+                      ? 'bg-red-600 text-white'
+                      : step.completed
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    {step.completed ? <Check className="w-4 h-4" /> : step.number}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Icon className="w-4 h-4" />
+                    <span className="font-medium text-sm">{step.title}</span>
+                  </div>
                 </div>
-                <span className="font-medium">{step.title}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-auto pt-8 border-t">
-            <Button variant="ghost" className="flex items-center space-x-2 text-gray-600">
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </Button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <Card className="w-full max-w-2xl shadow-xl bg-white">
+        <Card className="w-full max-w-3xl shadow-xl bg-white">
           <CardContent className="p-12">
             {renderStepContent()}
             
-            <div className="flex justify-between pt-8 mt-8 border-t">
+            <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
               {currentStep > 1 ? (
                 <Button
                   variant="outline"
                   onClick={handleBack}
-                  className="px-8"
+                  className="px-8 border-gray-300 hover:bg-gray-50"
                 >
                   Back
                 </Button>
@@ -407,11 +403,11 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                 disabled={!isStepValid()}
                 className={`px-8 font-semibold ${
                   currentStep === 6 
-                    ? 'bg-yellow-400 hover:bg-yellow-500 text-black' 
-                    : 'bg-gray-800 hover:bg-gray-900'
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-gray-900 hover:bg-black text-white'
                 }`}
               >
-                {currentStep === 6 ? 'Submit' : 'Continue'}
+                {currentStep === 6 ? 'Join Treematch' : 'Continue'}
               </Button>
             </div>
           </CardContent>

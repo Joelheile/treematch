@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, RefreshCw, Users, Heart } from "lucide-react";
+import { Search, Filter, RefreshCw, Users, Heart, TreePine, X } from "lucide-react";
 import { Student, AVAILABLE_SKILLS, LOOKING_FOR_OPTIONS } from "@/types/Student";
 import { StudentCard } from "@/components/StudentCard";
 import { SwipeInterface } from "@/components/SwipeInterface";
@@ -20,6 +20,8 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
   const [skillFilter, setSkillFilter] = useState("all");
   const [lookingForFilter, setLookingForFilter] = useState("all");
   const [showSwipeMode, setShowSwipeMode] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
 
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
@@ -27,28 +29,62 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.summerGoals.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+        student.currentProject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        student.lookingFor.some(item => item.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesSkill = skillFilter === "all" || student.skills.includes(skillFilter);
-      const matchesLookingFor = lookingForFilter === "all" || student.lookingFor.includes(lookingForFilter);
+      const matchesSkillFilter = skillFilter === "all" || student.skills.includes(skillFilter);
+      const matchesLookingForFilter = lookingForFilter === "all" || student.lookingFor.includes(lookingForFilter);
+      
+      const matchesSelectedSkills = selectedSkills.length === 0 || selectedSkills.some(skill => student.skills.includes(skill));
+      const matchesSelectedLookingFor = selectedLookingFor.length === 0 || selectedLookingFor.some(item => student.lookingFor.includes(item));
 
-      return matchesSearch && matchesSkill && matchesLookingFor;
+      return matchesSearch && matchesSkillFilter && matchesLookingForFilter && matchesSelectedSkills && matchesSelectedLookingFor;
     });
-  }, [students, searchTerm, skillFilter, lookingForFilter]);
+  }, [students, searchTerm, skillFilter, lookingForFilter, selectedSkills, selectedLookingFor]);
+
+  const handleSkillSelect = (skill: string) => {
+    setSelectedSkills(prev => 
+      prev.includes(skill) 
+        ? prev.filter(s => s !== skill)
+        : [...prev, skill]
+    );
+  };
+
+  const handleLookingForSelect = (item: string) => {
+    setSelectedLookingFor(prev => 
+      prev.includes(item) 
+        ? prev.filter(i => i !== item)
+        : [...prev, item]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setSkillFilter("all");
+    setLookingForFilter("all");
+    setSelectedSkills([]);
+    setSelectedLookingFor([]);
+  };
 
   if (showSwipeMode) {
     return <SwipeInterface students={filteredStudents} onBack={() => setShowSwipeMode(false)} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Stanford Summer Connect</h1>
-              <p className="text-gray-600 mt-1">Find your perfect study and project partners</p>
+            <div className="flex items-center space-x-3">
+              <div className="bg-red-600 p-2 rounded-lg">
+                <TreePine className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Treematch</h1>
+                <p className="text-gray-600 mt-1">Connect with Stanford students for projects and collaboration</p>
+              </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -60,13 +96,13 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
                 className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
               >
                 <Heart className="w-4 h-4" />
-                <span>Swipe Mode</span>
+                <span>Discover Mode</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onReset}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 border-gray-300 hover:bg-gray-50"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Reset Profile</span>
@@ -76,30 +112,44 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Enhanced Filters */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold">Search & Filter</h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Filter className="w-5 h-5 text-gray-600" />
+                <h2 className="text-lg font-semibold">Find Your Perfect Match</h2>
+              </div>
+              {(searchTerm || skillFilter !== "all" || lookingForFilter !== "all" || selectedSkills.length > 0 || selectedLookingFor.length > 0) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  Clear All Filters
+                </Button>
+              )}
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                placeholder="Search by name, city, goals, or skills..."
+                placeholder="Search by name, location, skills, projects, or goals..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-gray-300 focus:border-red-500 focus:ring-red-500"
               />
             </div>
+
+            {/* Quick Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Skill</label>
                 <Select value={skillFilter} onValueChange={setSkillFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
                     <SelectValue placeholder="All skills" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
@@ -113,7 +163,7 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Looking For</label>
                 <Select value={lookingForFilter} onValueChange={setLookingForFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-red-500 focus:ring-red-500">
                     <SelectValue placeholder="All options" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
@@ -125,6 +175,74 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
                 </Select>
               </div>
             </div>
+
+            {/* Advanced Skill Selection */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-3 block">Select Multiple Skills</label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {AVAILABLE_SKILLS.map((skill) => (
+                  <Badge
+                    key={skill}
+                    variant={selectedSkills.includes(skill) ? "default" : "outline"}
+                    className={`cursor-pointer transition-all hover:scale-105 ${
+                      selectedSkills.includes(skill)
+                        ? "bg-red-600 hover:bg-red-700 text-white"
+                        : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+                    }`}
+                    onClick={() => handleSkillSelect(skill)}
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+              {selectedSkills.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {selectedSkills.map((skill) => (
+                    <Badge key={skill} className="bg-red-100 text-red-800 text-xs">
+                      {skill}
+                      <X 
+                        className="w-3 h-3 ml-1 cursor-pointer" 
+                        onClick={() => handleSkillSelect(skill)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Advanced Looking For Selection */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-3 block">Select Multiple Collaboration Types</label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {LOOKING_FOR_OPTIONS.map((option) => (
+                  <Badge
+                    key={option}
+                    variant={selectedLookingFor.includes(option) ? "default" : "outline"}
+                    className={`cursor-pointer transition-all hover:scale-105 ${
+                      selectedLookingFor.includes(option)
+                        ? "bg-gray-900 hover:bg-black text-white"
+                        : "hover:bg-gray-50 hover:border-gray-400 border-gray-300"
+                    }`}
+                    onClick={() => handleLookingForSelect(option)}
+                  >
+                    {option}
+                  </Badge>
+                ))}
+              </div>
+              {selectedLookingFor.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {selectedLookingFor.map((item) => (
+                    <Badge key={item} className="bg-gray-100 text-gray-800 text-xs">
+                      {item}
+                      <X 
+                        className="w-3 h-3 ml-1 cursor-pointer" 
+                        onClick={() => handleLookingForSelect(item)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -134,19 +252,6 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
             <h2 className="text-xl font-semibold text-gray-900">
               {filteredStudents.length} {filteredStudents.length === 1 ? 'Student' : 'Students'} Found
             </h2>
-            {(searchTerm || skillFilter !== "all" || lookingForFilter !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm("");
-                  setSkillFilter("all");
-                  setLookingForFilter("all");
-                }}
-              >
-                Clear Filters
-              </Button>
-            )}
           </div>
 
           {filteredStudents.length === 0 ? (
@@ -154,7 +259,7 @@ export const StudentOverview = ({ students, onReset }: StudentOverviewProps) => 
               <div className="text-gray-500">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No students found</h3>
-                <p>Try adjusting your search terms or filters</p>
+                <p>Try adjusting your search terms or filters to find more matches</p>
               </div>
             </Card>
           ) : (

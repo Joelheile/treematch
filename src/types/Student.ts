@@ -7,6 +7,7 @@ export interface Student {
   skills: string[];
   lookingFor: string[];
   summerGoals: string;
+  currentProject: string;
   createdAt: Date;
 }
 
@@ -30,7 +31,12 @@ export const AVAILABLE_SKILLS = [
   "Leadership",
   "Project Management",
   "Social Media",
-  "Content Creation"
+  "Content Creation",
+  "Artificial Intelligence",
+  "Blockchain",
+  "Cybersecurity",
+  "Game Development",
+  "Hardware Engineering"
 ];
 
 export const LOOKING_FOR_OPTIONS = [
@@ -45,5 +51,8 @@ export const LOOKING_FOR_OPTIONS = [
   "Project Partner",
   "Startup Team",
   "Internship Buddy",
-  "Social Group"
+  "Social Group",
+  "Hackathon Team",
+  "Career Guidance",
+  "Industry Connections"
 ];

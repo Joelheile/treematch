@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, X, MapPin, Target } from "lucide-react";
+import { ArrowLeft, Heart, X, MapPin, Target, Briefcase, TreePine } from "lucide-react";
 import { Student } from "@/types/Student";
 
 interface SwipeInterfaceProps {
@@ -36,13 +36,15 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
 
   if (!currentStudent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="p-8 text-center">
           <div className="text-gray-500">
-            <Heart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium mb-2">No more profiles!</h3>
-            <p className="mb-4">You've seen all available students.</p>
-            <Button onClick={onBack}>Back to Overview</Button>
+            <TreePine className="w-12 h-12 mx-auto mb-4 text-red-400" />
+            <h3 className="text-lg font-medium mb-2">You've seen everyone!</h3>
+            <p className="mb-4">Check back later for new students joining Treematch.</p>
+            <Button onClick={onBack} className="bg-red-600 hover:bg-red-700">
+              Back to Browse
+            </Button>
           </div>
         </Card>
       </div>
@@ -50,15 +52,19 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={onBack}>
+            <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-gray-100">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Back to Browse
             </Button>
+            <div className="flex items-center space-x-2">
+              <TreePine className="w-5 h-5 text-red-600" />
+              <span className="font-semibold text-gray-900">Discover</span>
+            </div>
             <div className="text-sm text-gray-600">
               {currentIndex + 1} of {students.length}
             </div>
@@ -68,7 +74,7 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
 
       {/* Profile Card */}
       <div className="max-w-lg mx-auto px-4 py-6">
-        <Card className="bg-white shadow-lg">
+        <Card className="bg-white shadow-lg border border-gray-200">
           <CardHeader className="text-center pb-4">
             {currentStudent.profileImage ? (
               <img
@@ -77,7 +83,7 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
                 className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-red-100"
               />
             ) : (
-              <div className="w-32 h-32 rounded-full mx-auto bg-gradient-to-br from-red-400 to-orange-400 flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-32 h-32 rounded-full mx-auto bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-2xl font-bold">
                 {currentStudent.name.split(' ').map(n => n[0]).join('').toUpperCase()}
               </div>
             )}
@@ -91,12 +97,23 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
           </CardHeader>
           
           <CardContent className="space-y-6">
+            {/* Current Project */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <Briefcase className="w-5 h-5 mr-2" />
+                Current Project
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                {currentStudent.currentProject}
+              </p>
+            </div>
+
             {/* Skills */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {currentStudent.skills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="bg-red-100 text-red-800">
+                  <Badge key={skill} variant="secondary" className="bg-red-100 text-red-800 border-red-200">
                     {skill}
                   </Badge>
                 ))}
@@ -108,18 +125,18 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Looking For</h3>
               <div className="flex flex-wrap gap-2">
                 {currentStudent.lookingFor.map((item) => (
-                  <Badge key={item} variant="outline" className="border-orange-200 text-orange-800">
+                  <Badge key={item} variant="outline" className="border-gray-300 text-gray-700">
                     {item}
                   </Badge>
                 ))}
               </div>
             </div>
 
-            {/* Summer Goals */}
+            {/* Semester Goals */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
                 <Target className="w-5 h-5 mr-2" />
-                Summer Goals
+                Semester Goals
               </h3>
               <p className="text-gray-700 leading-relaxed">
                 {currentStudent.summerGoals}
@@ -141,7 +158,7 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
           <Button
             size="lg"
             onClick={handleLike}
-            className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600"
+            className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700"
           >
             <Heart className="w-6 h-6 text-white" />
           </Button>
@@ -151,10 +168,13 @@ export const SwipeInterface = ({ students, onBack }: SwipeInterfaceProps) => {
         <div className="mt-6">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-red-500 h-2 rounded-full transition-all duration-300"
+              className="bg-red-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentIndex + 1) / students.length) * 100}%` }}
             />
           </div>
+          <p className="text-center text-sm text-gray-500 mt-2">
+            {likedProfiles.length} connections made
+          </p>
         </div>
       </div>
     </div>
