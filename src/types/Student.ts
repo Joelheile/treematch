@@ -3,6 +3,7 @@ export interface Student {
   id: string;
   name: string;
   city: string;
+  university: string;
   profileImage?: string;
   skills: string[];
   lookingFor: string[];
