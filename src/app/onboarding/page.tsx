@@ -44,27 +44,6 @@ export default function OnboardingPage() {
   const createStudentMutation = useCreateStudent();
   const updateStudentMutation = useUpdateStudent();
 
-  // Stable randomization instead of Math.random() anti-pattern
-  const randomizedSkills = useMemo(() => {
-    const skills = [...AVAILABLE_SKILLS];
-    // Use a simple but stable shuffle
-    for (let i = skills.length - 1; i > 0; i--) {
-      const j = Math.floor((i + 1) * 0.7); // Deterministic but mixed
-      [skills[i], skills[j]] = [skills[j], skills[i]];
-    }
-    return skills;
-  }, []);
-
-  const randomizedLookingFor = useMemo(() => {
-    const options = [...LOOKING_FOR_OPTIONS];
-    // Use a different stable shuffle
-    for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor((i + 1) * 0.3); // Different deterministic pattern
-      [options[i], options[j]] = [options[j], options[i]];
-    }
-    return options;
-  }, []);
-
   const [formData, setFormData] = useState({
     name: "",
     country: "",
@@ -218,7 +197,7 @@ export default function OnboardingPage() {
         country: formData.country,
         profile_image: formData.profileImage || null,
         skills: formData.skills,
-        summer_goals: formData.lookingFor,
+        summer_goals: [formData.summerGoals],
         current_project: formData.currentProject,
         phone_number: null,
         linkedin: formatSocialUrl('linkedin', formData.linkedinUrl),
@@ -259,7 +238,7 @@ export default function OnboardingPage() {
     router
   ]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -289,7 +268,6 @@ export default function OnboardingPage() {
         return formData.summerGoals.trim() !== "";
       case 5:
         return true;
-        return true;
       case 6:
         return formData.profileImage.trim() !== "";
       default:
@@ -299,7 +277,7 @@ export default function OnboardingPage() {
 
   const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
 
-  const nameParts = useMemo(() => {
+  const { firstName, lastName } = useMemo(() => {
     const parts = formData.name.split(" ");
     return {
       firstName: parts[0] || "",
@@ -852,7 +830,7 @@ export default function OnboardingPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!isStepValid || isSubmitting}
+            disabled={!isStepValid()}
             className={`px-6 sm:px-8 font-semibold h-11 ${
               currentStep === 6
                 ? "bg-red-600 hover:bg-red-700 text-white"
