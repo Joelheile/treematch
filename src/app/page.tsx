@@ -1,13 +1,15 @@
 "use client";
 
-import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { StudentOverview } from "@/components/StudentOverview";
 import { AuthGuard } from "@/components/AuthGuard";
 import { UserMenu } from "@/components/UserMenu";
 import { Student } from "@/types/Student";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
 
@@ -38,18 +40,9 @@ export default function HomePage() {
     setIsOnboarded(false);
   };
 
-  return (
-    <AuthGuard>
-      <div className="relative">
-        <div className="absolute top-4 right-4 z-10">
-          <UserMenu />
-        </div>
-        {!isOnboarded ? (
-          <OnboardingFlow onComplete={handleOnboardingComplete} />
-        ) : (
-          <StudentOverview students={students} onReset={resetOnboarding} />
-        )}
-      </div>
-    </AuthGuard>
-  );
+  if (!isOnboarded) {
+    router.push("/onboarding");
+  }
+
+  return <StudentOverview students={students} />;
 }
