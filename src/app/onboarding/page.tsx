@@ -22,6 +22,11 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
+import { useAuth } from "@/app/auth/AuthProvider";
+import { useCreateStudent, useUpdateStudent } from "@/integrations/supabase/student-queries";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { toast } from "sonner";
+import type { StudentInsert, StudentUpdate } from "@/integrations/supabase/student-service";
 
 // Country code to flag emoji mapping
 const countryToFlag = (countryCode: string) => {
@@ -32,7 +37,12 @@ const countryToFlag = (countryCode: string) => {
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
+  const { student, refetch } = useCurrentStudent();
+  const createStudentMutation = useCreateStudent();
+  const updateStudentMutation = useUpdateStudent();
 
   // Stable randomization instead of Math.random() anti-pattern
   const randomizedSkills = useMemo(() => {
@@ -202,14 +212,85 @@ export default function OnboardingPage() {
     []
   );
 
+  const handleCompleteProfile = useCallback(async () => {
+    if (!user?.email) {
+      toast.error("User email not found. Please try logging in again.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formatSocialUrl = (platform: string, input: string) => {
+        if (!input.trim()) return null;
+        
+        switch (platform) {
+          case 'linkedin':
+            return input.startsWith('http') ? input : `https://www.linkedin.com/in/${input.replace('@', '')}`;
+          case 'github':
+            return input.startsWith('http') ? input : `https://github.com/${input.replace('@', '')}`;
+          case 'twitter':
+            return input.startsWith('http') ? input : `https://twitter.com/${input.replace('@', '')}`;
+          case 'instagram':
+            return input.startsWith('http') ? input : `https://instagram.com/${input.replace('@', '')}`;
+          default:
+            return input;
+        }
+      };
+
+      const studentData: StudentInsert = {
+        name: formData.name,
+        email: user.email,
+        country: formData.country,
+        profile_image: formData.profileImage || null,
+        skills: formData.skills,
+        summer_goals: formData.lookingFor,
+        current_project: formData.currentProject,
+        phone_number: null,
+        linkedin: formatSocialUrl('linkedin', formData.linkedinUrl),
+        github: formatSocialUrl('github', formData.githubUsername),
+        website: formatSocialUrl('twitter', formData.twitterHandle), // Using website field for Twitter for now
+        isOnboarded: true
+      };
+
+      if (student) {
+        const updateData: StudentUpdate = {
+          ...studentData,
+          id: undefined
+        };
+        await updateStudentMutation.mutateAsync({ id: student.id, updates: updateData });
+        toast.success("Profile updated successfully!");
+      } else {
+        await createStudentMutation.mutateAsync(studentData);
+        toast.success("Profile created successfully!");
+      }
+
+      await refetch();
+      
+      router.push('/');
+      
+    } catch (error) {
+      console.error("Error completing profile:", error);
+      toast.error("Failed to complete profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+    user?.email,
+    formData,
+    student,
+    updateStudentMutation,
+    createStudentMutation,
+    refetch,
+    router
+  ]);
+
   const handleNext = useCallback(() => {
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
-      router.push("/");
-      console.log("Student profile completed:", formData);
+      handleCompleteProfile();
     }
-  }, [currentStep, formData]);
+  }, [currentStep, handleCompleteProfile]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
@@ -233,7 +314,7 @@ export default function OnboardingPage() {
       case 4:
         return formData.summerGoals.trim() !== "";
       case 5:
-        return true; // Social links are optional, always valid
+        return true;
       case 6:
         return formData.profileImage.trim() !== "";
       default:
@@ -246,7 +327,6 @@ export default function OnboardingPage() {
     [currentStep, steps.length]
   );
 
-  // Memoized name parsing for performance
   const nameParts = useMemo(() => {
     const parts = formData.name.split(" ");
     return {
@@ -825,14 +905,19 @@ export default function OnboardingPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!isStepValid}
+            disabled={!isStepValid || isSubmitting}
             className={`px-6 sm:px-8 font-semibold h-11 ${
               currentStep === 6
                 ? "bg-red-600 hover:bg-red-700 text-white"
                 : "bg-gray-900 hover:bg-black text-white"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {currentStep === 6 ? "Complete Profile" : "Continue"}
+            {isSubmitting 
+              ? "Saving..." 
+              : currentStep === 6 
+                ? "Complete Profile" 
+                : "Continue"
+            }
           </Button>
         </div>
       </div>
