@@ -11,9 +11,14 @@ import {
   Briefcase,
   Check,
   ChevronLeft,
+  Github,
+  Instagram,
+  Linkedin,
   Target,
   TreePine,
+  Twitter,
   User,
+  Users,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -57,6 +62,10 @@ export default function OnboardingPage() {
     lookingFor: [] as string[],
     summerGoals: "",
     currentProject: "",
+    linkedinUrl: "",
+    instagramHandle: "",
+    twitterHandle: "",
+    githubUsername: "",
   });
 
   // Country autocomplete state
@@ -139,6 +148,13 @@ export default function OnboardingPage() {
       },
       {
         number: 5,
+        title: "Socials",
+        subtitle: "Connect With You",
+        icon: Users,
+        completed: currentStep > 5,
+      },
+      {
+        number: 6,
         title: "Profile Photo",
         subtitle: "Add Your Picture",
         icon: User,
@@ -185,7 +201,7 @@ export default function OnboardingPage() {
   );
 
   const handleNext = useCallback(() => {
-    if (currentStep < 5) {
+    if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
       // Simple completion without complex Student type
@@ -215,6 +231,8 @@ export default function OnboardingPage() {
       case 4:
         return formData.summerGoals.trim() !== "";
       case 5:
+        return true; // Social links are optional, always valid
+      case 6:
         return formData.profileImage.trim() !== "";
       default:
         return false;
@@ -509,6 +527,115 @@ export default function OnboardingPage() {
           <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
+                Connect with You
+              </h2>
+              <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base px-4">
+                Share your social media links so others can connect with you
+                outside of Treematch.
+              </p>
+            </div>
+
+            <div className="space-y-4 sm:space-y-6">
+              {/* LinkedIn */}
+              <div>
+                <Label
+                  htmlFor="linkedinUrl"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                >
+                  <Linkedin className="w-4 h-4 text-blue-600" />
+                  LinkedIn
+                </Label>
+                <Input
+                  id="linkedinUrl"
+                  value={formData.linkedinUrl}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      linkedinUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="https://www.linkedin.com/in/yourusername"
+                  className="mt-1 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Instagram */}
+              <div>
+                <Label
+                  htmlFor="instagramHandle"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                >
+                  <Instagram className="w-4 h-4 text-pink-600" />
+                  Instagram
+                </Label>
+                <Input
+                  id="instagramHandle"
+                  value={formData.instagramHandle}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      instagramHandle: e.target.value,
+                    }))
+                  }
+                  placeholder="@username"
+                  className="mt-1 h-12 border-gray-300 focus:border-pink-500 focus:ring-pink-500"
+                />
+              </div>
+
+              {/* Twitter */}
+              <div>
+                <Label
+                  htmlFor="twitterHandle"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                >
+                  <Twitter className="w-4 h-4 text-blue-400" />
+                  Twitter / X
+                </Label>
+                <Input
+                  id="twitterHandle"
+                  value={formData.twitterHandle}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      twitterHandle: e.target.value,
+                    }))
+                  }
+                  placeholder="@username"
+                  className="mt-1 h-12 border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+                />
+              </div>
+
+              {/* GitHub */}
+              <div>
+                <Label
+                  htmlFor="githubUsername"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-2"
+                >
+                  <Github className="w-4 h-4 text-gray-800" />
+                  GitHub
+                </Label>
+                <Input
+                  id="githubUsername"
+                  value={formData.githubUsername}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      githubUsername: e.target.value,
+                    }))
+                  }
+                  placeholder="@username"
+                  className="mt-1 h-12 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6 sm:space-y-8">
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                 Add Your Profile Photo*
               </h2>
               <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base px-4">
@@ -697,12 +824,12 @@ export default function OnboardingPage() {
             onClick={handleNext}
             disabled={!isStepValid}
             className={`px-6 sm:px-8 font-semibold h-11 ${
-              currentStep === 5
+              currentStep === 6
                 ? "bg-red-600 hover:bg-red-700 text-white"
                 : "bg-gray-900 hover:bg-black text-white"
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {currentStep === 5 ? "Complete Profile" : "Continue"}
+            {currentStep === 6 ? "Complete Profile" : "Continue"}
           </Button>
         </div>
       </div>
