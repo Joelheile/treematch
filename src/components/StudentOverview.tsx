@@ -25,6 +25,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useIsMobile } from "@/hooks/use-mobile";
+import Link from "next/link";
 
 interface StudentOverviewProps {
   students: Student[];
@@ -219,13 +220,14 @@ export const StudentOverview = ({ students }: StudentOverviewProps) => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button
-                onClick={() => setShowSwipeMode(true)}
-                className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
-              >
-                <Heart className="w-4 h-4" />
-                <span className="hidden sm:inline">Discover</span>
-              </Button>
+              <Link href="/meet" passHref>
+                <Button
+                  className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="hidden sm:inline">Meet in Person</span>
+                </Button>
+              </Link>
               {isMobile && (
                 <Sheet>
                   <SheetTrigger asChild>
