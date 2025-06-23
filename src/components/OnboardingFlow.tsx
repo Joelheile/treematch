@@ -14,12 +14,11 @@ import {
   Briefcase,
   Check,
   ChevronLeft,
-  Heart,
   Target,
   TreePine,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface OnboardingFlowProps {
   onComplete: (student: Student) => void;
@@ -27,6 +26,15 @@ interface OnboardingFlowProps {
 
 export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Randomize skills and looking for options
+  const randomizedSkills = useMemo(() => {
+    return [...AVAILABLE_SKILLS].sort(() => Math.random() - 0.5);
+  }, []);
+
+  const randomizedLookingFor = useMemo(() => {
+    return [...LOOKING_FOR_OPTIONS].sort(() => Math.random() - 0.5);
+  }, []);
 
   // Autocomplete data
   const universities = [
@@ -93,27 +101,20 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     },
     {
       number: 3,
-      title: "Looking For",
-      subtitle: "What You Seek",
-      icon: Heart,
+      title: "Current Project",
+      subtitle: "What You're Building",
+      icon: Briefcase,
       completed: currentStep > 3,
     },
     {
       number: 4,
-      title: "Current Project",
-      subtitle: "What You're Building",
-      icon: Briefcase,
+      title: "Goals",
+      subtitle: "Your Aspirations",
+      icon: Check,
       completed: currentStep > 4,
     },
     {
       number: 5,
-      title: "Goals",
-      subtitle: "Your Aspirations",
-      icon: Check,
-      completed: currentStep > 5,
-    },
-    {
-      number: 6,
       title: "Profile Photo",
       subtitle: "Add Your Picture",
       icon: User,
@@ -154,12 +155,13 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   };
 
   const handleNext = () => {
-    if (currentStep < 6) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
       const student: Student = {
         id: Date.now().toString(),
         ...formData,
+        lookingFor: [], // Set empty array since we removed this step
         createdAt: new Date(),
       };
       onComplete(student);
@@ -183,12 +185,10 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       case 2:
         return formData.skills.length > 0;
       case 3:
-        return formData.lookingFor.length > 0;
-      case 4:
         return formData.currentProject.trim() !== "";
-      case 5:
+      case 4:
         return formData.summerGoals.trim() !== "";
-      case 6:
+      case 5:
         return true; // Profile image is optional
       default:
         return false;
@@ -339,14 +339,14 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
             </div>
 
             <div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {AVAILABLE_SKILLS.map((skill) => (
+              <div className="flex flex-wrap gap-2">
+                {randomizedSkills.map((skill) => (
                   <Badge
                     key={skill}
                     variant={
                       formData.skills.includes(skill) ? "default" : "outline"
                     }
-                    className={`cursor-pointer text-center justify-center py-4 px-4 text-sm transition-all hover:scale-105 min-h-[44px] ${
+                    className={`cursor-pointer text-center justify-center py-2 px-3 text-xs transition-all hover:scale-105 min-h-[36px] ${
                       formData.skills.includes(skill)
                         ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
                         : "hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-200 border-gray-300 dark:border-gray-600 dark:text-gray-300"
@@ -365,47 +365,6 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         );
 
       case 3:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
-                What are you looking for?
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base px-4">
-                Let others know what type of collaboration or connection you're
-                seeking this semester.
-              </p>
-            </div>
-
-            <div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {LOOKING_FOR_OPTIONS.map((option) => (
-                  <Badge
-                    key={option}
-                    variant={
-                      formData.lookingFor.includes(option)
-                        ? "default"
-                        : "outline"
-                    }
-                    className={`cursor-pointer text-center justify-center py-4 px-4 text-sm transition-all hover:scale-105 min-h-[44px] ${
-                      formData.lookingFor.includes(option)
-                        ? "bg-gray-900 dark:bg-gray-100 hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 border-gray-300 dark:border-gray-600 dark:text-gray-300"
-                    }`}
-                    onClick={() => handleLookingForToggle(option)}
-                  >
-                    {option}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
-                Selected {formData.lookingFor.length} options
-              </p>
-            </div>
-          </div>
-        );
-
-      case 4:
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -441,7 +400,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           </div>
         );
 
-      case 5:
+      case 4:
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -479,7 +438,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           </div>
         );
 
-      case 6:
+      case 5:
         return (
           <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
@@ -667,12 +626,12 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                 onClick={handleNext}
                 disabled={!isStepValid()}
                 className={`px-6 sm:px-8 font-semibold h-11 ${
-                  currentStep === 6
+                  currentStep === 5
                     ? "bg-red-600 hover:bg-red-700 text-white"
                     : "bg-gray-900 dark:bg-gray-100 hover:bg-black dark:hover:bg-gray-200 text-white dark:text-gray-900"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {currentStep === 6 ? "Complete Profile" : "Continue"}
+                {currentStep === 5 ? "Complete Profile" : "Continue"}
               </Button>
             </div>
           </CardContent>
