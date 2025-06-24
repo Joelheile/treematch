@@ -276,8 +276,8 @@ export default function OnboardingUI({
 
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
+          <div className="flex flex-col h-full min-h-[400px]">
+            <div className="text-center mb-6">
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 px-2">
                 What are your skills?
               </h2>
@@ -287,38 +287,42 @@ export default function OnboardingUI({
               </p>
             </div>
 
-            <div className="space-y-3">
-              <div className="border-b border-gray-200" />
+            <div className="flex-1 flex flex-col">
+              <div className="border-b border-gray-200 mb-3" />
               {skillsLoading ? (
-                <div className="text-center text-gray-500 py-8">
-                  Loading skills...
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    Loading skills...
+                  </div>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2 sm:gap-3 max-h-80 overflow-y-auto px-1">
-                  {availableSkills.map((skill) => {
-                    const isSelected = formData.skillIds.includes(skill.id);
-                    return (
-                      <Badge
-                        key={skill.id}
-                        variant={isSelected ? "default" : "outline"}
-                        className={`cursor-pointer text-center justify-center py-2 px-3 text-xs sm:text-sm transition-all hover:scale-105 min-h-[36px] sm:min-h-[40px] touch-manipulation ${
-                          isSelected
-                            ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
-                            : "hover:bg-red-50 hover:border-red-200 border-gray-300"
-                        }`}
-                        onClick={() => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            skillIds: isSelected
-                              ? prev.skillIds.filter((id) => id !== skill.id)
-                              : [...prev.skillIds, skill.id],
-                          }));
-                        }}
-                      >
-                        {skill.name}
-                      </Badge>
-                    );
-                  })}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 px-1 pb-4">
+                    {availableSkills.map((skill) => {
+                      const isSelected = formData.skillIds.includes(skill.id);
+                      return (
+                        <Badge
+                          key={skill.id}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer text-center justify-center py-2 px-3 text-xs sm:text-sm transition-all hover:scale-105 min-h-[36px] sm:min-h-[40px] touch-manipulation ${
+                            isSelected
+                              ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+                              : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+                          }`}
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              skillIds: isSelected
+                                ? prev.skillIds.filter((id) => id !== skill.id)
+                                : [...prev.skillIds, skill.id],
+                            }));
+                          }}
+                        >
+                          {skill.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -693,7 +697,13 @@ export default function OnboardingUI({
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
+          <div
+            className={`max-w-2xl mx-auto h-full ${
+              currentStep === 2
+                ? "p-4 sm:p-6 lg:p-8 pb-24 flex flex-col"
+                : "p-4 sm:p-6 lg:p-8 pb-24"
+            }`}
+          >
             {renderStepContent()}
           </div>
         </div>
