@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import OnboardingUI from "./OnboardingUI";
+import { TreePine } from "lucide-react";
 
 interface FormData {
   name: string;
@@ -319,17 +320,11 @@ export default function OnboardingLogic() {
   if (studentLoading || skillsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <svg
-              className="w-8 h-8 text-white"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12 2L13.09 8.26L22 9L13.09 15.74L15.18 22L12 18.5L8.82 22L10.91 15.74L2 9L10.91 8.26L12 2Z" />
-            </svg>
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
+            <TreePine className="w-6 h-6 text-white" />
           </div>
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-500">
             {user ? "Loading your profile..." : "Loading..."}
           </p>
         </div>
