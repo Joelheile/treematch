@@ -20,6 +20,7 @@ const compressImage = async (file: File): Promise<File> => {
   }
 
   try {
+    console.log(file, file instanceof File, file.type, file.size)
     return await imageCompression(file, options)
   } catch (error) {
     return file
@@ -31,10 +32,10 @@ export const useUploadAvatar = () => {
     mutationFn: async ({ file }: UploadAvatarOptions) => {
       const compressedFile = await compressImage(file)
       const fileExt = compressedFile.name.split('.').pop() || 'jpg'
-      const fileName = `${crypto.randomUUID()}.${fileExt}`
+      const safeName = compressedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')
       const { data, error } = await supabase.storage
         .from('temp-avatars')
-        .upload(fileName, compressedFile, {
+        .upload(safeName, compressedFile, {
           cacheControl: '3600',
           upsert: true
         })
@@ -43,10 +44,10 @@ export const useUploadAvatar = () => {
       }
       const { data: { publicUrl } } = supabase.storage
         .from('temp-avatars')
-        .getPublicUrl(fileName)
+        .getPublicUrl(safeName)
       return {
         url: publicUrl,
-        path: fileName
+        path: safeName
       }
     }
   })
@@ -56,15 +57,15 @@ export const useUploadTempAvatar = () => {
   return useMutation<{ url: string; path: string }, Error, File>({
     mutationFn: async (file: File) => {
       const fileExt = file.name.split('.').pop() || 'jpg'
-      const fileName = `${crypto.randomUUID()}.${fileExt}`
+      const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_')
       const { data, error } = await supabase.storage
         .from('temp-avatars')
-        .upload(fileName, file, { cacheControl: '3600', upsert: true })
+        .upload(safeName, file, { cacheControl: '3600', upsert: true })
       if (error) throw new Error(error.message)
       const { data: { publicUrl } } = supabase.storage
         .from('temp-avatars')
-        .getPublicUrl(fileName)
-      return { url: publicUrl, path: fileName }
+        .getPublicUrl(safeName)
+      return { url: publicUrl, path: safeName }
     }
   })
 } 

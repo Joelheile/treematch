@@ -1,6 +1,7 @@
 import { OnboardingData } from '@/lib/onboarding-storage'
 import { supabase } from '../../integrations/supabase/client'
 import { TablesInsert } from '../../integrations/supabase/types'
+import { moveAvatarAfterLogin } from '../../integrations/supabase/moveAvatarAfterLogin'
 
 type StudentInsert = TablesInsert<'students'>
 
@@ -94,10 +95,16 @@ export class OnboardingService {
     userEmail: string
   ) {
     try {
+      let profileImage = onboardingData.profileImage || null
+      if (onboardingData.tempAvatarPath && onboardingData.tempAvatarPath !== "") {
+        // Move avatar from temp-avatars to avatars bucket
+        const user = await supabase.auth.getUser()
+        if (user.data?.user?.id) {
+          profileImage = await moveAvatarAfterLogin(onboardingData.tempAvatarPath, user.data.user.id)
+        }
+      }
       const existingStudentResponse = await this.getStudentByEmail(userEmail)
-      
-      const studentData = this.convertOnboardingDataToStudent(onboardingData, userEmail)
-
+      const studentData = this.convertOnboardingDataToStudent({ ...onboardingData, profileImage }, userEmail)
       if (existingStudentResponse.data) {
         const updateData = {
           ...studentData,

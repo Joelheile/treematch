@@ -215,11 +215,9 @@ export default function OnboardingLogic() {
         router.push("/");
         return;
       }
-
       const selectedSkillNames = availableSkills
         .filter((skill) => formData.skillIds.includes(skill.id))
         .map((skill) => skill.name);
-
       const onboardingData: OnboardingData = {
         name: formData.name,
         country: formData.country,
@@ -235,7 +233,6 @@ export default function OnboardingLogic() {
         githubUsername: formData.githubUsername,
         tempAvatarPath,
       };
-
       OnboardingStorage.save(onboardingData);
       toast.success(
         "Profile information saved! Now let's create your account."
