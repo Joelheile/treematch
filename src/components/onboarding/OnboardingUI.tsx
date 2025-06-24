@@ -5,12 +5,13 @@ import OnboardingNavigation from "./OnboardingNavigation";
 import {
   BasicInfoStep,
   SkillsStep,
+  CoursesStep,
   CurrentProjectStep,
   GoalsStep,
   SocialsStep,
   ProfilePhotoStep,
 } from "./steps";
-import { FormData, Skill, Country, Step } from "./types";
+import { FormData, Skill, Course, Country, Step } from "./types";
 
 interface OnboardingUIProps {
   currentStep: number;
@@ -101,15 +102,18 @@ export default function OnboardingUI({
 
       case 3:
         return (
-          <CurrentProjectStep
+          <CoursesStep
             formData={formData}
             setFormData={setFormData}
+            availableCourses={[]}
+            coursesLoading={false}
+            onNext={handleNext}
           />
         );
 
       case 4:
         return (
-          <GoalsStep
+          <CurrentProjectStep
             formData={formData}
             setFormData={setFormData}
           />
@@ -117,13 +121,21 @@ export default function OnboardingUI({
 
       case 5:
         return (
-          <SocialsStep
+          <GoalsStep
             formData={formData}
             setFormData={setFormData}
           />
         );
 
       case 6:
+        return (
+          <SocialsStep
+            formData={formData}
+            setFormData={setFormData}
+          />
+        );
+
+      case 7:
         return (
           <ProfilePhotoStep
             formData={formData}
