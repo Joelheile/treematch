@@ -2,6 +2,7 @@ export interface OnboardingData {
   name: string
   country: string
   university: string
+  phoneNumber: string
   profileImage: string
   skills: string[]
   skillIds?: string[]
