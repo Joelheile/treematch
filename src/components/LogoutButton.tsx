@@ -21,7 +21,7 @@ export const LogoutButton = () => {
         onClick={handleLogoutClick}
         size="sm"
         variant="outline"
-        className="h-8 w-8 p-0 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 shadow-lg"
+        className="h-8 w-8 p-0 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90"
         title="Sign out"
       >
         <LogOut className="h-3 w-3" />
