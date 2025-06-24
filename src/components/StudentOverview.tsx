@@ -30,7 +30,6 @@ import {
   MapPin,
   Search,
   SlidersHorizontal,
-  Sparkles,
   TreePine,
   Users,
   X,
@@ -43,17 +42,6 @@ const useStudentAnalytics = () => ({
   data: null,
   isLoading: false,
 });
-
-const POPULAR_SKILLS = [
-  "Web Development",
-  "Mobile Development",
-  "Data Science",
-  "Machine Learning",
-  "UI/UX Design",
-  "Product Management",
-  "Marketing",
-  "Business Development",
-];
 
 const QUICK_FILTERS = [
   { id: "hasLinkedIn", label: "Has LinkedIn", icon: Linkedin },
@@ -227,31 +215,6 @@ export const StudentOverview = () => {
           )}
         </div>
       </div>
-
-      {searchFocused && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 max-h-64 overflow-y-auto">
-          <div className="p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-              <Sparkles className="w-4 h-4 mr-2 text-yellow-500" />
-              Popular Skills
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_SKILLS.map((skill) => (
-                <button
-                  key={skill}
-                  onClick={() => {
-                    handleSkillSelect(skill);
-                    setSearchFocused(false);
-                  }}
-                  className="px-3 py-1.5 text-sm bg-red-50 text-red-700 rounded-full border border-red-200 hover:bg-red-100 transition-colors"
-                >
-                  {skill}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 
@@ -414,15 +377,15 @@ export const StudentOverview = () => {
                   <span>Clear all skills</span>
                 </CommandItem>
               </CommandGroup>
-              {POPULAR_SKILLS.length > 0 && (
+              {skills.length > 0 && (
                 <CommandGroup heading="Popular Skills">
-                  {POPULAR_SKILLS.map((skill) => (
+                  {skills.map((skill) => (
                     <CommandItem
-                      key={skill}
-                      onSelect={() => handleSkillSelect(skill)}
+                      key={skill.id}
+                      onSelect={() => handleSkillSelect(skill.name)}
                     >
-                      <span>{skill}</span>
-                      {selectedSkills.includes(skill) && (
+                      <span>{skill.name}</span>
+                      {selectedSkills.includes(skill.name) && (
                         <Check className="ml-auto w-4 h-4 text-red-600" />
                       )}
                     </CommandItem>
@@ -432,7 +395,7 @@ export const StudentOverview = () => {
               {skills.length > 0 && (
                 <CommandGroup heading="All Skills">
                   {skills
-                    .filter((skill) => !POPULAR_SKILLS.includes(skill.name))
+                    .filter((skill) => !selectedSkills.includes(skill.name))
                     .map((skill) => (
                       <CommandItem
                         key={skill.id}

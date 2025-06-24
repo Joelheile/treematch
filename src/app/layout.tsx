@@ -1,3 +1,4 @@
+import { LogoutButton } from "@/components/LogoutButton";
 import type { Metadata } from "next";
 import React from "react";
 import { ClientToasters } from "./client-toasters";
@@ -20,6 +21,7 @@ export default function RootLayout({
         <Providers>
           <ClientToasters />
           {children}
+          <LogoutButton />
         </Providers>
       </body>
     </html>
