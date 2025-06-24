@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 export default function HomePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { isOnboarded, isLoading: studentLoading, error } = useCurrentStudent();
+  const { student, isOnboarded, isLoading: studentLoading, error } = useCurrentStudent();
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
   const [delayPassed, setDelayPassed] = useState(false);
 
