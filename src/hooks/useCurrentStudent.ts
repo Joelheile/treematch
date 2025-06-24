@@ -12,7 +12,8 @@ export const useCurrentStudent = () => {
   } = useStudentByEmail(user?.email || '', !!user?.email)
 
   const student = studentResponse?.data
-  const isOnboarded = student?.isOnboarded || false
+  
+  const isOnboarded = student ? (student.isOnboarded === true) : false
 
   return {
     student,
