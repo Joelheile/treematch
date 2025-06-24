@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
+import type { StudentWithSkills } from "@/types/Student";
 import {
   Briefcase,
   ExternalLink,
