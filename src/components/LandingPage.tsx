@@ -95,7 +95,7 @@ export function LandingPage() {
               <div className="flex items-center space-x-2 text-red-600 font-medium">
                 <Clock className="w-4 h-4" />
                 <span>
-                  {timeLeft.days} days, {timeLeft.hours} hours left
+                  {timeLeft.days} days & {timeLeft.hours} hours left
                 </span>
               </div>
             )}
