@@ -42,51 +42,54 @@ export function LandingPage() {
   const studentCount = students?.data?.length || 0;
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-stanford-cardinal rounded flex items-center justify-center">
-              <TreePine className="w-5 h-5 text-white" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-stanford-cardinal rounded flex items-center justify-center">
+              <TreePine className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-stanford-cardinal">
+            <span className="text-lg sm:text-xl font-bold text-stanford-cardinal">
               TreeMatch
             </span>
           </div>
           <Button
             variant="ghost"
             onClick={() => router.push("/auth/login")}
-            className="text-stanford-cardinal hover:bg-gray-50"
+            className="text-stanford-cardinal hover:bg-gray-50 h-9 px-3 sm:px-4 text-sm sm:text-base"
           >
             Sign In
           </Button>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="px-4 py-20 text-center">
-        <div className="max-w-3xl mx-auto space-y-12">
-          <Badge className="bg-stanford-cardinal text-white">
+      <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20 text-center">
+        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 lg:space-y-12">
+          <Badge className="bg-stanford-cardinal text-white text-xs sm:text-sm px-3 py-1">
             For Stanford Summer Session Students Only
           </Badge>
 
-          <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 leading-tight">
-            Don't Waste Your Stanford Summer
-            <span className="block text-stanford-cardinal mt-2">
-              on the Same 5 People
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight px-2">
+            Your Best Stanford Summer Starts
+            <span className="block text-stanford-cardinal mt-1 sm:mt-2">
+              with Amazing People
             </span>
           </h1>
 
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Connect with builders, entrepreneurs, and brilliant minds across all
-            fields. Set up your profile in under 2 minutes.
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-2">
+            Connect with incredible minds across all fields and interests.
+            Discover your people and create unforgettable experiences together.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 text-sm text-gray-500 px-2">
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>{studentCount} from 500+ Summer Session students</span>
+              <div className="relative">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+              </div>
+              <span className="text-center sm:text-left">
+                {studentCount} from 500+ Summer Session students
+              </span>
             </div>
             {timeLeft.isActive && (
               <div className="flex items-center space-x-2 text-red-600 font-medium">
@@ -98,185 +101,168 @@ export function LandingPage() {
             )}
           </div>
 
-          <Button
-            onClick={() => router.push("/onboarding")}
-            className="bg-stanford-cardinal hover:bg-red-700 text-white font-semibold px-8 py-4 text-lg mt-8"
-            size="lg"
-          >
-            Find Your People in 2 Minutes
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          <div className="px-2">
+            <Button
+              onClick={() => router.push("/onboarding")}
+              className="bg-stanford-cardinal hover:bg-red-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
+              size="lg"
+            >
+              Find Your People
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Problem */}
-      <section className="px-4 py-20 bg-gray-50">
+      <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-12">
-            You're Surrounded by Amazing People... But Only Know a Few
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-8 sm:mb-12 px-2 leading-tight">
+            You're Surrounded by Amazing People... So Get to Know Them!
           </h2>
 
-          <div className="space-y-6 max-w-2xl mx-auto text-left">
-            <div>
-              <p className="text-gray-600 leading-relaxed">
-                😔 Stuck with your dorm neighbors while missing the startup
-                founder down the hall
+          <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                ✨ That person you had a great chat with at the gym? Let's make
+                sure you stay connected
               </p>
             </div>
-            <div>
-              <p className="text-gray-600 leading-relaxed">
-                💭 That brilliant CS student you briefly met at orientation?
-                Gone forever
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                🌟 The brilliant mind from your study group who shares your
+                passions
               </p>
             </div>
-            <div>
-              <p className="text-gray-600 leading-relaxed">
-                🤝 The entrepreneur in your econ class who could be your
-                co-founder
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                🎉 Someone with completely different interests who could become
+                your closest friend
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Solution */}
-      <section className="px-4 py-20">
+      <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-            TreeMatch: Your Stanford Summer Network
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 px-2">
+            TreeMatch: Discover Your Stanford Community
           </h2>
-          <p className="text-stanford-cardinal font-semibold mb-16">
-            Profile setup: Under 2 minutes. First connections: Within hours.
+          <p className="text-stanford-cardinal font-semibold mb-8 sm:mb-12 lg:mb-16 text-sm sm:text-base px-2">
+            Profile setup: Under two minutes. New connections: Within hours.
           </p>
 
-          <div className="grid sm:grid-cols-3 gap-12">
-            <div>
-              <div className="w-12 h-12 bg-stanford-cardinal text-white rounded flex items-center justify-center mx-auto mb-6 font-bold text-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6 lg:gap-12">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-stanford-cardinal text-white rounded-lg flex items-center justify-center mx-auto mb-4 sm:mb-6 font-bold text-lg">
                 1
               </div>
-              <h3 className="font-semibold text-gray-900 mb-3">Quick Setup</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Answer 5 questions about your interests and goals
+              <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-base sm:text-lg">
+                Share Your Story
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Tell others about your interests, passions, and what makes you
+                unique
               </p>
             </div>
-            <div>
-              <div className="w-12 h-12 bg-stanford-cardinal text-white rounded flex items-center justify-center mx-auto mb-6 font-bold text-lg">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-stanford-cardinal text-white rounded-lg flex items-center justify-center mx-auto mb-4 sm:mb-6 font-bold text-lg">
                 2
               </div>
-              <h3 className="font-semibold text-gray-900 mb-3">
-                Browse Students
+              <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-base sm:text-lg">
+                Discover People
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Find people by interests, majors, and projects
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Browse through fascinating people with diverse backgrounds and
+                interests
               </p>
             </div>
-            <div>
-              <div className="w-12 h-12 bg-stanford-cardinal text-white rounded flex items-center justify-center mx-auto mb-6 font-bold text-lg">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-stanford-cardinal text-white rounded-lg flex items-center justify-center mx-auto mb-4 sm:mb-6 font-bold text-lg">
                 3
               </div>
-              <h3 className="font-semibold text-gray-900 mb-3">Connect</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Message, meet up, collaborate, or grab coffee
+              <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-base sm:text-lg">
+                Make Connections
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Reach out, meet up, explore campus, and create lasting
+                friendships
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Live Counter */}
-      <section className="px-4 py-20 bg-gray-50">
+      <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
             {studentCount} from 500+ Summer Session Students
           </h2>
-          <p className="text-gray-600 leading-relaxed">
-            Join the growing network of Stanford Summer Session students
+          <p className="text-gray-600 leading-relaxed text-sm sm:text-base px-2">
+            Join the growing community of Stanford Summer Session students
+            discovering each other
           </p>
         </div>
       </section>
 
-      {/* FOMO */}
-      <section className="px-4 py-20 bg-red-50 border-y border-red-200">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center space-x-2 bg-red-100 text-red-700 px-6 py-3 rounded-full font-semibold">
-            <Timer className="w-4 h-4" />
-            <span>Summer Session ends August 17th</span>
+      <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20 bg-stanford-cardinal">
+        <div className="max-w-2xl mx-auto text-center space-y-6 sm:space-y-8">
+          {timeLeft.isActive && (
+            <div className="inline-flex items-center space-x-2 bg-white/10 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base">
+              <Timer className="w-4 h-4" />
+              <span>
+                Only {timeLeft.days} days, {timeLeft.hours} hours left
+              </span>
+            </div>
+          )}
+
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white px-2 leading-tight">
+            Make This Summer Unforgettable
+          </h2>
+
+          <p className="text-white/90 text-base sm:text-lg lg:text-xl px-2 leading-relaxed">
+            The best memories happen when you step outside your comfort zone.
+            Connect with new people and discover experiences you never expected.
+          </p>
+
+          <div className="px-2">
+            <Button
+              onClick={() => router.push("/onboarding")}
+              className="bg-white text-stanford-cardinal hover:bg-gray-50 font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
+              size="lg"
+            >
+              Start Connecting
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Every Day You Wait is Another Brilliant Person You Won't Meet
-          </h2>
-
-          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            The best connections happen in the first few weeks. Don't graduate
-            wishing you'd met more people.
-          </p>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="px-4 py-24 bg-stanford-cardinal">
-        <div className="max-w-2xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">
-            Stop Settling for Your Current Circle
-          </h2>
-          <p className="text-white/90 text-lg">
+          <p className="text-white/80 text-sm sm:text-base mt-4 sm:mt-6 px-2">
             Free for all Stanford Summer Session students
           </p>
 
-          <Button
-            onClick={() => router.push("/onboarding")}
-            className="bg-white text-stanford-cardinal hover:bg-gray-50 font-bold px-8 py-4 text-lg mt-8"
-            size="lg"
-          >
-            Join TreeMatch Now - 2 Minute Setup
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-
-          <div className="space-y-3 mt-8">
-            <p className="text-white/80 text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-white/70 pt-6 sm:pt-8 mt-8 sm:mt-12 border-t border-white/20 px-2">
+            <div className="flex items-center space-x-2">
+              <TreePine className="w-4 h-4" />
+              <span className="font-medium">TreeMatch</span>
+            </div>
+            <p className="text-center">
               Already have an account?{" "}
               <button
                 onClick={() => router.push("/auth/login")}
-                className="text-white font-medium underline hover:no-underline"
+                className="text-white underline hover:no-underline font-medium"
               >
                 Sign in here
               </button>
             </p>
-            <button className="text-white/90 text-sm underline hover:no-underline">
-              See who's already here
-            </button>
           </div>
+
+          <p className="text-white/50 text-xs sm:text-sm mt-4 sm:mt-6 text-center px-2 leading-relaxed">
+            No trees were harmed in the making of this network. Side effects may
+            include: lifelong friendships, unexpected adventures, and the best
+            summer of your life.
+          </p>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white/80 px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between space-y-6 sm:space-y-0 mb-8">
-            <div className="flex items-center space-x-2">
-              <TreePine className="w-5 h-5" />
-              <span className="font-semibold">TreeMatch</span>
-            </div>
-            <div className="text-sm text-center sm:text-right">
-              <p>The essential Stanford Summer Session networking tool</p>
-              {timeLeft.isActive && (
-                <p className="text-white/60 mt-1">
-                  Only {timeLeft.days} days, {timeLeft.hours} hours left
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="border-t border-gray-700 pt-6 text-center">
-            <p className="text-white/50 text-xs mt-2">
-              No trees were harmed in the making of this network. Results may
-              vary. <br /> Side effects may include: making friends, starting
-              companies, and having an amazing summer.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

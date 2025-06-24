@@ -22,6 +22,7 @@ interface FormData {
   name: string;
   country: string;
   university: string;
+  phoneNumber: string;
   profileImage: string;
   skillIds: string[];
   summerGoals: string;
@@ -48,6 +49,7 @@ export default function OnboardingLogic() {
     name: "",
     country: "",
     university: "",
+    phoneNumber: "",
     profileImage: "",
     skillIds: [],
     summerGoals: "",
@@ -73,8 +75,9 @@ export default function OnboardingLogic() {
         name: student.name || "",
         country: student.country || "",
         university: "",
+        phoneNumber: student.phone_number || "",
         profileImage: student.profile_image || "",
-        skillIds: student.skills?.map((skill) => skill.id) || [],
+        skillIds: student.skills || [],
         summerGoals: student.summer_goals?.join("\n") || "",
         currentProject: student.coolest_thing || "",
         linkedinUrl: student.linkedin || "",
@@ -100,6 +103,7 @@ export default function OnboardingLogic() {
           name: savedData.name || "",
           country: savedData.country || "",
           university: savedData.university || "",
+          phoneNumber: savedData.phoneNumber || "",
           profileImage: savedData.profileImage || "",
           skillIds: savedData.skillIds || [],
           summerGoals: savedData.summerGoals || "",
@@ -199,6 +203,7 @@ export default function OnboardingLogic() {
             updates: {
               name: formData.name,
               country: formData.country,
+              phone_number: formData.phoneNumber || null,
               profile_image: newProfileImage || null,
               summer_goals: formData.summerGoals ? [formData.summerGoals] : [],
               coolest_thing: formData.currentProject,
@@ -223,6 +228,7 @@ export default function OnboardingLogic() {
         name: formData.name,
         country: formData.country,
         university: formData.university,
+        phoneNumber: formData.phoneNumber,
         profileImage: formData.profileImage,
         skills: selectedSkillNames,
         skillIds: formData.skillIds,
@@ -276,7 +282,8 @@ export default function OnboardingLogic() {
         return (
           formData.name.trim() !== "" &&
           formData.country.trim() !== "" &&
-          formData.university.trim() !== ""
+          formData.university.trim() !== "" &&
+          formData.phoneNumber.trim() !== ""
         );
       case 2:
         return formData.skillIds.length > 0;
