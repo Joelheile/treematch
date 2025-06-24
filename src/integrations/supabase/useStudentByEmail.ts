@@ -3,11 +3,6 @@ import { supabase } from './client'
 import { Tables } from './types'
 
 type Student = Tables<'students'>
-type Skill = Tables<'skills'>
-
-export interface StudentWithSkills extends Student {
-  skills: Skill[]
-}
 
 export interface ServiceResponse<T> {
   data: T | null
@@ -17,7 +12,7 @@ export interface ServiceResponse<T> {
 export const useStudentByEmail = (email: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['student-by-email', email],
-    queryFn: async (): Promise<ServiceResponse<StudentWithSkills>> => {
+    queryFn: async (): Promise<ServiceResponse<Student>> => {
       const { data: studentData, error: studentError } = await supabase
         .from('students')
         .select('*')
@@ -51,7 +46,7 @@ export const useStudentByEmail = (email: string, enabled: boolean = true) => {
       const studentWithSkills = {
         ...studentData,
         skills
-      } as StudentWithSkills
+      } as Student
       
       return { 
         data: studentWithSkills, 
