@@ -13,22 +13,15 @@ export const usePostAuthOnboarding = () => {
 
   useEffect(() => {
     const processOnboardingData = async () => {
-      // Don't process if:
-      // - Still loading auth
-      // - No user
-      // - Already processed this session
-      // - Currently processing
       if (authLoading || !user?.email || hasProcessed || isProcessing) {
         return
       }
 
-      // Check if there's onboarding data in localStorage
       const onboardingData = OnboardingStorage.load()
       if (!onboardingData) {
         return
       }
 
-      // Check if data is expired (older than 24 hours)
       if (OnboardingStorage.isExpired()) {
         console.log('Onboarding data expired, clearing localStorage')
         OnboardingStorage.clear()
@@ -51,10 +44,8 @@ export const usePostAuthOnboarding = () => {
           toast.success('Welcome! Your profile has been created successfully. 🎉')
           console.log('Onboarding data saved successfully')
           
-          // Clear the localStorage data since it's now in the database
           OnboardingStorage.clear()
           
-          // Redirect to main app after a short delay to let the toast show
           setTimeout(() => {
             router.push('/')
           }, 1500)
@@ -69,7 +60,6 @@ export const usePostAuthOnboarding = () => {
       }
     }
 
-    // Add a small delay to ensure auth state is fully settled
     const timer = setTimeout(processOnboardingData, 100)
     return () => clearTimeout(timer)
   }, [user, authLoading, hasProcessed, isProcessing, router])
