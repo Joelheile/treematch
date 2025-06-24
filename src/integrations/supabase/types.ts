@@ -9,6 +9,21 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      courses: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       skills: {
         Row: {
           created_at: string | null
@@ -33,66 +48,24 @@ export type Database = {
         }
         Relationships: []
       }
-      courses: {
-        Row: {
-          code: string | null
-          created_at: string | null
-          department: string | null
-          id: string
-          is_global: boolean
-          name: string
-          user_id: string | null
-        }
-        Insert: {
-          code?: string | null
-          created_at?: string | null
-          department?: string | null
-          id?: string
-          is_global?: boolean
-          name: string
-          user_id?: string | null
-        }
-        Update: {
-          code?: string | null
-          created_at?: string | null
-          department?: string | null
-          id?: string
-          is_global?: boolean
-          name?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       student_courses: {
         Row: {
           course_id: string | null
           created_at: string | null
-          grade: string | null
-          id: string
-          quarter: string | null
-          status: string | null
           student_id: string | null
-          year: number | null
+          updated_at: string | null
         }
         Insert: {
           course_id?: string | null
           created_at?: string | null
-          grade?: string | null
-          id?: string
-          quarter?: string | null
-          status?: string | null
           student_id?: string | null
-          year?: number | null
+          updated_at?: string | null
         }
         Update: {
           course_id?: string | null
           created_at?: string | null
-          grade?: string | null
-          id?: string
-          quarter?: string | null
-          status?: string | null
           student_id?: string | null
-          year?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {
