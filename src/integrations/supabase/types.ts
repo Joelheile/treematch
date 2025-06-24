@@ -9,6 +9,73 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      skills: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_global: boolean
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_global?: boolean
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_global?: boolean
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      student_skills: {
+        Row: {
+          created_at: string | null
+          id: string
+          skill_id: string | null
+          student_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          skill_id?: string | null
+          student_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          skill_id?: string | null
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_skills_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_skills_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students_with_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           coolest_thing: string | null
@@ -23,6 +90,7 @@ export type Database = {
           name: string | null
           phone_number: string | null
           profile_image: string | null
+          skills: string[] | null
           summer_goals: string[] | null
           updated_at: string | null
           website: string | null
@@ -40,6 +108,7 @@ export type Database = {
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
+          skills?: string[] | null
           summer_goals?: string[] | null
           updated_at?: string | null
           website?: string | null
@@ -57,71 +126,12 @@ export type Database = {
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
+          skills?: string[] | null
           summer_goals?: string[] | null
           updated_at?: string | null
           website?: string | null
         }
         Relationships: []
-      },
-      skills: {
-        Row: {
-          id: string
-          name: string
-          is_global: boolean
-          user_id: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          is_global?: boolean
-          user_id?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          is_global?: boolean
-          user_id?: string | null
-          created_at?: string | null
-        }
-        Relationships: []
-      },
-      student_skills: {
-        Row: {
-          id: string
-          student_id: string
-          skill_id: string
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          student_id: string
-          skill_id: string
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          student_id?: string
-          skill_id?: string
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_skills_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_skills_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
-          }
-        ]
       }
     }
     Views: {
