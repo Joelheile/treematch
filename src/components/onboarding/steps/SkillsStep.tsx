@@ -17,8 +17,8 @@ export default function SkillsStep({
   skillsLoading,
 }: SkillsStepProps) {
   return (
-    <div className="flex flex-col h-full min-h-[400px]">
-      <div className="text-center mb-6">
+    <div className="flex flex-col h-full">
+      <div className="text-center mb-6 flex-shrink-0">
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 px-2">
           What are your skills?
         </h2>
@@ -28,8 +28,8 @@ export default function SkillsStep({
         </p>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="border-b border-gray-200 mb-3" />
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="border-b border-gray-200 mb-4 flex-shrink-0" />
         {skillsLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-gray-500">
@@ -45,10 +45,10 @@ export default function SkillsStep({
                   <Badge
                     key={skill.id}
                     variant={isSelected ? "default" : "outline"}
-                    className={`cursor-pointer text-center justify-center py-2 px-3 text-xs sm:text-sm transition-all hover:scale-105 min-h-[36px] sm:min-h-[40px] touch-manipulation ${
+                    className={`cursor-pointer text-center justify-center py-3 px-4 text-sm transition-all hover:scale-105 min-h-[44px] touch-manipulation active:scale-95 ${
                       isSelected
-                        ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
-                        : "hover:bg-red-50 hover:border-red-200 border-gray-300"
+                        ? "bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-md"
+                        : "hover:bg-red-50 hover:border-red-200 border-gray-300 bg-white"
                     }`}
                     onClick={() => {
                       setFormData((prev) => ({

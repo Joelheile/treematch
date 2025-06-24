@@ -106,10 +106,10 @@ export default function OnboardingLogic() {
   const steps = [
     { number: 1, title: "Welcome", subtitle: "Basic Information" },
     { number: 2, title: "Skills", subtitle: "Your Expertise" },
-    { number: 3, title: "Current Project", subtitle: "What You're Building" },
+    { number: 3, title: "Projects", subtitle: "What You're Working On" },
     { number: 4, title: "Goals", subtitle: "Your Aspirations" },
-    { number: 5, title: "Socials", subtitle: "Connect With You" },
-    { number: 6, title: "Profile Photo", subtitle: "Add Your Picture" },
+    { number: 5, title: "Connect", subtitle: "Social Links" },
+    { number: 6, title: "Photo", subtitle: "Profile Picture" },
   ];
 
   const countrySuggestions = countriesData
