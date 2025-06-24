@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 import {
   Briefcase,
   Check,
@@ -36,6 +38,7 @@ interface FormData {
   name: string;
   country: string;
   university: string;
+  phoneNumber: string;
   profileImage: string;
   skillIds: string[];
   summerGoals: string;
@@ -189,6 +192,27 @@ export default function OnboardingUI({
                   }
                   placeholder="Oxford, Technical University Munich, etc."
                   className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="phoneNumber"
+                  className="text-sm font-medium text-gray-700 mb-1 block"
+                >
+                  Phone Number*
+                </Label>
+                <PhoneInput
+                  value={formData.phoneNumber}
+                  onChange={(phone) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      phoneNumber: phone,
+                    }))
+                  }
+                  inputClassName="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
+                  className="w-full"
+                  placeholder="Enter your phone number"
                 />
               </div>
 
