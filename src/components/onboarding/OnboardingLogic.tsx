@@ -16,22 +16,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import OnboardingUI from "./OnboardingUI";
+import { FormData } from "./types";
 import { TreePine } from "lucide-react";
-
-interface FormData {
-  name: string;
-  country: string;
-  university: string;
-  phoneNumber: string;
-  profileImage: string;
-  skillIds: string[];
-  summerGoals: string;
-  currentProject: string;
-  linkedinUrl: string;
-  instagramHandle: string;
-  twitterHandle: string;
-  githubUsername: string;
-}
 
 export default function OnboardingLogic() {
   const [currentStep, setCurrentStep] = useState(1);
