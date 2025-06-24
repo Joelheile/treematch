@@ -107,7 +107,7 @@ export function LandingPage() {
               className="bg-stanford-cardinal hover:bg-red-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
               size="lg"
             >
-le              Find Your People
+              Find Your People
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
