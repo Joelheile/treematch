@@ -12,6 +12,7 @@ export interface OnboardingData {
   twitterHandle: string
   githubUsername: string
   completedAt?: string
+  tempAvatarPath?: string
 }
 
 const STORAGE_KEY = 'treematch_onboarding_data'

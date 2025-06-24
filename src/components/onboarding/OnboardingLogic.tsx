@@ -6,6 +6,7 @@ import { useSkills } from "@/integrations/supabase/useSkills";
 import { useUpdateStudent } from "@/integrations/supabase/useUpdateStudent";
 import { useUpdateStudentSkills } from "@/integrations/supabase/useUpdateStudentSkills";
 import { useUploadAvatar } from "@/integrations/supabase/useUploadAvatar";
+import { moveAvatarAfterLogin } from "@/integrations/supabase/moveAvatarAfterLogin";
 import countriesData from "@/lib/countries.json";
 import {
   OnboardingStorage,
@@ -63,6 +64,7 @@ export default function OnboardingLogic() {
     code: string;
   } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [tempAvatarPath, setTempAvatarPath] = useState<string>("");
 
   useEffect(() => {
     if (student && availableSkills.length > 0) {
@@ -152,13 +154,11 @@ export default function OnboardingLogic() {
   const handleImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (!file || !user?.id) return;
-
+      if (!file) return;
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image size must be less than 5MB");
         return;
       }
-
       const allowedTypes = [
         "image/jpeg",
         "image/jpg",
@@ -169,42 +169,36 @@ export default function OnboardingLogic() {
         toast.error("Please upload a valid image file (JPG, PNG, or GIF)");
         return;
       }
-
       setIsUploadingImage(true);
-
       try {
-        const result = await uploadAvatar.mutateAsync({
-          file,
-          userId: user.id,
-        });
-
-        setFormData((prev) => ({
-          ...prev,
-          profileImage: result.url,
-        }));
-
+        const result = await uploadAvatar.mutateAsync({ file });
+        setFormData((prev) => ({ ...prev, profileImage: result.url }));
+        setTempAvatarPath(result.path);
         toast.success("Image uploaded successfully!");
       } catch (error) {
-        console.error("Error uploading image:", error);
         toast.error("Failed to upload image. Please try again.");
       } finally {
         setIsUploadingImage(false);
       }
     },
-    [user?.id, uploadAvatar]
+    [uploadAvatar]
   );
 
   const handleCompleteProfile = useCallback(async () => {
     setIsSubmitting(true);
     try {
       if (user && student) {
+        let newProfileImage = formData.profileImage;
+        if (tempAvatarPath) {
+          newProfileImage = await moveAvatarAfterLogin(tempAvatarPath, user.id);
+        }
         await Promise.all([
           updateStudent.mutateAsync({
             id: student.id,
             updates: {
               name: formData.name,
               country: formData.country,
-              profile_image: formData.profileImage || null,
+              profile_image: newProfileImage || null,
               summer_goals: formData.summerGoals ? [formData.summerGoals] : [],
               coolest_thing: formData.currentProject,
               linkedin: formData.linkedinUrl || null,
@@ -217,7 +211,6 @@ export default function OnboardingLogic() {
             skillIds: formData.skillIds,
           }),
         ]);
-
         toast.success("Your profile has been updated successfully!");
         router.push("/");
         return;
@@ -240,6 +233,7 @@ export default function OnboardingLogic() {
         instagramHandle: formData.instagramHandle,
         twitterHandle: formData.twitterHandle,
         githubUsername: formData.githubUsername,
+        tempAvatarPath,
       };
 
       OnboardingStorage.save(onboardingData);
@@ -254,13 +248,14 @@ export default function OnboardingLogic() {
       setIsSubmitting(false);
     }
   }, [
-    formData,
-    router,
-    availableSkills,
     user,
     student,
-    updateStudentSkills,
+    formData,
+    tempAvatarPath,
     updateStudent,
+    updateStudentSkills,
+    availableSkills,
+    router,
   ]);
 
   const handleNext = useCallback(() => {
