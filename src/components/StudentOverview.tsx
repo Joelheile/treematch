@@ -556,10 +556,7 @@ export const StudentOverview = () => {
                 `${students.length} Student${students.length !== 1 ? "s" : ""}`
               )}
             </h2>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Users className="w-4 h-4" />
-              <span>{totalCount} total</span>
-            </div>
+
           </div>
 
           {isLoading ? (
