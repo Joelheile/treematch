@@ -1,13 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from './client'
-import { Tables } from './types'
-
-type Student = Tables<'students'>
-type Skill = Tables<'skills'>
-
-export interface StudentWithSkills extends Omit<Student, 'skills'> {
-  skills: Skill[]
-}
+import { Student, StudentWithSkills } from '@/types/Student'
 
 export interface StudentFilters {
   country?: string
@@ -135,7 +128,7 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         if (!acc[studentId]) acc[studentId] = []
         if (skill) acc[studentId].push(skill)
         return acc
-      }, {} as Record<string, Skill[]>) || {}
+      }, {} as Record<string, StudentWithSkills['skills']>) || {}
 
       const studentsWithSkills = finalStudentsData.map(student => ({
         ...student,
