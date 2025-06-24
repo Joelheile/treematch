@@ -9,7 +9,11 @@ import { useEffect, useState } from "react";
 
 export function LandingPage() {
   const router = useRouter();
-  const { data: students } = useStudents();
+  const { data: students } = useStudents({
+    filters: {
+      isOnboarded: true
+    }
+  });
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,

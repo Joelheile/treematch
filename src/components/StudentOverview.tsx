@@ -368,32 +368,24 @@ export const StudentOverview = () => {
             <CommandInput placeholder="Search skills..." />
             <CommandList>
               <CommandEmpty>No skills found.</CommandEmpty>
-              <CommandGroup>
-                <CommandItem
-                  onSelect={() => {
-                    setSelectedSkills([]);
-                  }}
-                >
-                  <span>Clear all skills</span>
-                </CommandItem>
-              </CommandGroup>
-              {skills.length > 0 && (
-                <CommandGroup heading="Popular Skills">
-                  {skills.map((skill) => (
+              
+              {selectedSkills.length > 0 && (
+                <CommandGroup heading="Selected Skills">
+                  {selectedSkills.map((skillName) => (
                     <CommandItem
-                      key={skill.id}
-                      onSelect={() => handleSkillSelect(skill.name)}
+                      key={skillName}
+                      onSelect={() => handleSkillSelect(skillName)}
+                      className="bg-red-50"
                     >
-                      <span>{skill.name}</span>
-                      {selectedSkills.includes(skill.name) && (
-                        <Check className="ml-auto w-4 h-4 text-red-600" />
-                      )}
+                      <span className="text-red-700 font-medium">{skillName}</span>
+                      <Check className="ml-auto w-4 h-4 text-red-600" />
                     </CommandItem>
                   ))}
                 </CommandGroup>
               )}
+
               {skills.length > 0 && (
-                <CommandGroup heading="All Skills">
+                <CommandGroup heading="Available Skills">
                   {skills
                     .filter((skill) => !selectedSkills.includes(skill.name))
                     .map((skill) => (
@@ -402,9 +394,6 @@ export const StudentOverview = () => {
                         onSelect={() => handleSkillSelect(skill.name)}
                       >
                         <span>{skill.name}</span>
-                        {selectedSkills.includes(skill.name) && (
-                          <Check className="ml-auto w-4 h-4 text-red-600" />
-                        )}
                       </CommandItem>
                     ))}
                 </CommandGroup>
@@ -533,13 +522,13 @@ export const StudentOverview = () => {
                 </p>
               </div>
             </div>
-            <Link href="/meet" passHref>
+            {/* <Link href="/meet" passHref>
               <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Meet in Person</span>
                 <span className="sm:hidden">Meet</span>
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

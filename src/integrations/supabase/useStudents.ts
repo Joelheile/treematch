@@ -9,6 +9,7 @@ export interface StudentFilters {
   hasGithub?: boolean
   hasWebsite?: boolean
   search?: string
+  isOnboarded?: boolean
 }
 
 export interface StudentSearchOptions {
@@ -45,6 +46,12 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
 
       if (filters.country) {
         query = query.eq('country', filters.country)
+      }
+
+      if (filters.isOnboarded !== undefined) {
+        query = query.eq('isOnboarded', filters.isOnboarded)
+      } else {
+        query = query.eq('isOnboarded', true)
       }
 
       if (filters.hasLinkedIn !== undefined) {
