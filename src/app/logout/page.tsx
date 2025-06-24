@@ -15,10 +15,10 @@ export default function LogoutPage() {
     setLoading(true);
     try {
       await signOut();
-      router.push("/auth/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing out:", error);
     } finally {
+      router.push("/auth/login");
       setLoading(false);
     }
   };

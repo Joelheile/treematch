@@ -59,5 +59,12 @@ export const useStudentByEmail = (email: string, enabled: boolean = true) => {
       }
     },
     enabled: enabled && !!email,
+    retry: (failureCount, error: any) => {
+      if (error?.code === 'PGRST116') {
+        return failureCount < 2
+      }
+      return false
+    },
+    retryDelay: 1000,
   })
 } 

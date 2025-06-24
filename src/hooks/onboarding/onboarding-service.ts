@@ -1,5 +1,6 @@
 import { OnboardingData } from '@/lib/onboarding-storage'
 import { supabase } from '../../integrations/supabase/client'
+import { createClient } from '../../integrations/supabase/client-ssr'
 import { TablesInsert } from '../../integrations/supabase/types'
 import { moveAvatarAfterLogin } from '../../integrations/supabase/moveAvatarAfterLogin'
 
@@ -96,22 +97,30 @@ export class OnboardingService {
   ) {
     try {
       let profileImage = onboardingData.profileImage || null
+      
       if (onboardingData.tempAvatarPath && onboardingData.tempAvatarPath !== "") {
-        // Move avatar from temp-avatars to avatars bucket
-        const user = await supabase.auth.getUser()
-        if (user.data?.user?.id) {
-          profileImage = await moveAvatarAfterLogin(onboardingData.tempAvatarPath, user.data.user.id)
+        try {
+          const supabaseAuth = createClient()
+          const user = await supabaseAuth.auth.getUser()
+          if (user.data?.user?.id) {
+            const movedAvatarUrl = await moveAvatarAfterLogin(onboardingData.tempAvatarPath, user.data.user.id)
+            if (movedAvatarUrl) {
+              profileImage = movedAvatarUrl
+            }
+          }
+        } catch (avatarError) {
+          console.warn('Avatar moving failed, using existing image:', avatarError)
         }
       }
+      
       const existingStudentResponse = await this.getStudentByEmail(userEmail)
       const studentData = this.convertOnboardingDataToStudent({ ...onboardingData, profileImage }, userEmail)
+      
       if (existingStudentResponse.data) {
-        const updateData = {
-          ...studentData,
-          id: undefined,
-        }
+        const { id } = existingStudentResponse.data
+        const { id: _, ...updateData } = studentData
         const result = await this.updateStudent(
-          existingStudentResponse.data.id,
+          id,
           updateData
         )
         return result

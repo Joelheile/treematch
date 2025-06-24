@@ -34,14 +34,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const getSession = async () => {
       try {
         console.log('Getting session...')
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          if (error.message?.includes('session_not_found') || error.code === 'session_not_found') {
+            clearAllAuthData()
+            return
+          }
+          throw error
+        }
+        
         console.log('Session:', session)
         setSession(session)
         setUser(session?.user ?? null)
       } catch (error) {
         console.error('Error getting session:', error)
-        setSession(null)
-        setUser(null)
+        clearAllAuthData()
       } finally {
         setLoading(false)
       }
@@ -57,7 +66,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     )
 
-    return () => subscription.unsubscribe()
+    const validateSessionPeriodically = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error || !session) {
+          clearAllAuthData()
+        }
+      } catch (error) {
+        clearAllAuthData()
+      }
+    }
+
+    const interval = setInterval(validateSessionPeriodically, 5 * 60 * 1000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearInterval(interval)
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
@@ -77,8 +102,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError || !session) {
+        clearAllAuthData()
+        return
+      }
+      
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        if (error.message?.includes('session_not_found') || error.code === 'session_not_found') {
+          clearAllAuthData()
+          return
+        }
+        throw error
+      }
+    } catch (error: any) {
+      if (error.message?.includes('session_not_found') || error.code === 'session_not_found') {
+        clearAllAuthData()
+        return
+      }
+      throw error
+    }
+  }
+
+  const clearAllAuthData = () => {
+    setSession(null)
+    setUser(null)
+    
+    if (typeof window !== 'undefined') {
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      const cookies = document.cookie.split(';')
+      cookies.forEach(cookie => {
+        const eqPos = cookie.indexOf('=')
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
+      })
+    }
   }
 
   const signInWithGoogle = async () => {

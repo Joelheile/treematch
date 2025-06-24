@@ -22,9 +22,10 @@ export const UserMenu = () => {
     setLoading(true)
     try {
       await signOut()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing out:', error)
     } finally {
+      window.location.href = '/auth/login'
       setLoading(false)
     }
   }
