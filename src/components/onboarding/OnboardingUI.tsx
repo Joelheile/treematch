@@ -176,7 +176,7 @@ export default function OnboardingUI({
                   htmlFor="university"
                   className="text-sm font-medium text-gray-700"
                 >
-                  University*
+                  Home University*
                 </Label>
                 <Input
                   id="university"
@@ -187,7 +187,7 @@ export default function OnboardingUI({
                       university: e.target.value,
                     }))
                   }
-                  placeholder="Start typing your university..."
+                  placeholder="Oxford, Tecnical University Munic etc."
                   className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                 />
               </div>
