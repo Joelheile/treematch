@@ -77,89 +77,87 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <Card className="border-0 shadow-xl bg-card/95 backdrop-blur">
-          <CardContent className="space-y-6">
-            {(error || errorFromUrl) && (
-              <Alert variant="destructive">
-                <AlertCircle className="w-4 h-4" />
-                <AlertDescription>{error || errorFromUrl}</AlertDescription>
-              </Alert>
-            )}
+        <div className="space-y-6">
+          {(error || errorFromUrl) && (
+            <Alert variant="destructive">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>{error || errorFromUrl}</AlertDescription>
+            </Alert>
+          )}
 
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email address
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your.email@stanford.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-12"
-                    required
-                  />
-                </div>
+          <form onSubmit={handleEmailLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email address
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your.email@stanford.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-12"
+                  required
+                />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-12"
-                    required
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 text-sm font-medium"
-                disabled={loading}
-              >
-                {loading ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
-
-            <div className="text-center space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link
-                  href="/auth/signup"
-                  className="font-medium text-primary hover:text-primary/80 transition-colors"
-                >
-                  Sign up
-                </Link>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                New here?{" "}
-                <Link
-                  href="/onboarding"
-                  className="font-medium text-primary hover:text-primary/80 transition-colors"
-                >
-                  Start with our quick setup
-                </Link>
-              </p>
-              <Link
-                href="/auth/reset-password"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors block"
-              >
-                Forgot your password?
-              </Link>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                Password
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 h-12"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 text-sm font-medium"
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
+          </form>
+
+          <div className="text-center space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link
+                href="/auth/signup"
+                className="font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              New here?{" "}
+              <Link
+                href="/onboarding"
+                className="font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Start with our quick setup
+              </Link>
+            </p>
+            <Link
+              href="/auth/reset-password"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors block"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
