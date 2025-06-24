@@ -38,6 +38,7 @@ export default function OnboardingLogic() {
     phoneNumber: "",
     profileImage: "",
     skillIds: [],
+    courseIds: [],
     summerGoals: "",
     currentProject: "",
     linkedinUrl: "",
@@ -106,10 +107,11 @@ export default function OnboardingLogic() {
   const steps = [
     { number: 1, title: "Welcome", subtitle: "Basic Information" },
     { number: 2, title: "Skills", subtitle: "Your Expertise" },
-    { number: 3, title: "Projects", subtitle: "What You're Working On" },
-    { number: 4, title: "Goals", subtitle: "Your Aspirations" },
-    { number: 5, title: "Connect", subtitle: "Social Links" },
-    { number: 6, title: "Photo", subtitle: "Profile Picture" },
+    { number: 3, title: "Courses", subtitle: "Your Academic Background" },
+    { number: 4, title: "Projects", subtitle: "What You're Working On" },
+    { number: 5, title: "Goals", subtitle: "Your Aspirations" },
+    { number: 6, title: "Connect", subtitle: "Social Links" },
+    { number: 7, title: "Photo", subtitle: "Profile Picture" },
   ];
 
   const countrySuggestions = countriesData
@@ -218,6 +220,8 @@ export default function OnboardingLogic() {
         profileImage: formData.profileImage,
         skills: selectedSkillNames,
         skillIds: formData.skillIds,
+        courses: formData.courseIds,
+        courseIds: formData.courseIds,
         summerGoals: formData.summerGoals,
         currentProject: formData.currentProject,
         linkedinUrl: formData.linkedinUrl,
@@ -249,7 +253,7 @@ export default function OnboardingLogic() {
   ]);
 
   const handleNext = useCallback(() => {
-    if (currentStep < 6) {
+    if (currentStep < 7) {
       setCurrentStep(currentStep + 1);
     } else {
       handleCompleteProfile();
@@ -274,12 +278,14 @@ export default function OnboardingLogic() {
       case 2:
         return formData.skillIds.length > 0;
       case 3:
-        return formData.currentProject.trim() !== "";
-      case 4:
-        return formData.summerGoals.trim() !== "";
-      case 5:
         return true;
+      case 4:
+        return formData.currentProject.trim() !== "";
+      case 5:
+        return formData.summerGoals.trim() !== "";
       case 6:
+        return true;
+      case 7:
         return formData.profileImage.trim() !== "" && !isUploadingImage;
       default:
         return false;

@@ -5,6 +5,7 @@ export interface FormData {
   phoneNumber: string;
   profileImage: string;
   skillIds: string[];
+  courseIds: string[];
   summerGoals: string;
   currentProject: string;
   linkedinUrl: string;
@@ -16,6 +17,13 @@ export interface FormData {
 export interface Skill {
   id: string;
   name: string;
+}
+
+export interface Course {
+  id: string;
+  name: string;
+  code?: string;
+  department?: string;
 }
 
 export interface Country {
