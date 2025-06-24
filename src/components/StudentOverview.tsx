@@ -533,13 +533,13 @@ export const StudentOverview = () => {
                 </p>
               </div>
             </div>
-            <Link href="/meet" passHref>
+            {/* <Link href="/meet" passHref>
               <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Meet in Person</span>
                 <span className="sm:hidden">Meet</span>
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>
