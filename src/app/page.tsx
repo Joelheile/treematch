@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/app/auth/AuthProvider";
+import { LandingPage } from "@/components/LandingPage";
 import { StudentOverview } from "@/components/StudentOverview";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,43 +34,7 @@ export default function HomePage() {
 
   // If user is not authenticated and we've given enough time for auth processing, show landing page
   if (!authLoading && !user && delayPassed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
-        <div className="text-center space-y-8 max-w-2xl mx-auto">
-          <div className="space-y-4">
-            <div className="mx-auto w-20 h-20 bg-red-600 rounded-xl flex items-center justify-center">
-              <TreePine className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-              Welcome to TreeMatch
-            </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              Connect with fellow Stanford students for projects, collaboration,
-              and friendship.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <Button
-              onClick={() => router.push("/onboarding")}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-4 h-auto text-lg"
-              size="lg"
-            >
-              Get Started
-            </Button>
-            <p className="text-sm text-gray-500">
-              Already have an account?{" "}
-              <button
-                onClick={() => router.push("/auth/login")}
-                className="text-red-600 hover:text-red-700 font-medium underline"
-              >
-                Sign in here
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <LandingPage />;
   }
 
   // Show loading state while auth is loading or during the initial delay

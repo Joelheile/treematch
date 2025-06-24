@@ -16,6 +16,13 @@ export default {
 		},
 		extend: {
 			colors: {
+				stanford: {
+					cardinal: '#8C1515',
+					gold: '#B1040E',
+					gray: '#4D4F53',
+					'red-50': '#FEF7F7',
+					'red-100': '#FCEBEB',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
