@@ -33,6 +33,91 @@ export type Database = {
         }
         Relationships: []
       }
+      courses: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          department: string | null
+          id: string
+          is_global: boolean
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          department?: string | null
+          id?: string
+          is_global?: boolean
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          department?: string | null
+          id?: string
+          is_global?: boolean
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      student_courses: {
+        Row: {
+          course_id: string | null
+          created_at: string | null
+          grade: string | null
+          id: string
+          quarter: string | null
+          status: string | null
+          student_id: string | null
+          year: number | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string | null
+          grade?: string | null
+          id?: string
+          quarter?: string | null
+          status?: string | null
+          student_id?: string | null
+          year?: number | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string | null
+          grade?: string | null
+          id?: string
+          quarter?: string | null
+          status?: string | null
+          student_id?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_courses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_courses_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_courses_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students_with_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_skills: {
         Row: {
           created_at: string | null
