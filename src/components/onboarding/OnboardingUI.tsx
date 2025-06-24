@@ -141,7 +141,7 @@ export default function OnboardingUI({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       <OnboardingSidebar 
         currentStep={currentStep}
         steps={steps}
@@ -155,16 +155,12 @@ export default function OnboardingUI({
         isMobile={false}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0">
         <div className="flex-1 overflow-y-auto">
-          <div
-            className={`max-w-2xl mx-auto h-full ${
-              currentStep === 2
-                ? "p-4 sm:p-6 lg:p-8 pb-24 flex flex-col"
-                : "p-4 sm:p-6 lg:p-8 pb-24"
-            }`}
-          >
-            {renderStepContent()}
+          <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
+            <div className={currentStep === 2 ? "h-full flex flex-col" : ""}>
+              {renderStepContent()}
+            </div>
           </div>
         </div>
 
