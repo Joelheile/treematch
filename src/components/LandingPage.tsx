@@ -85,7 +85,10 @@ export function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500">
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="relative">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+              </div>
               <span>{studentCount} from 500+ Summer Session students</span>
             </div>
             {timeLeft.isActive && (
@@ -229,7 +232,7 @@ export function LandingPage() {
             className="bg-white text-stanford-cardinal hover:bg-gray-50 font-bold px-8 py-4 text-lg mt-8"
             size="lg"
           >
-            Join TreeMatch Now - 2 Minute Setup
+            Join TreeMatch Now - Two-Minute Setup
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
 
