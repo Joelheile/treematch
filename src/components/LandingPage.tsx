@@ -80,7 +80,7 @@ export function LandingPage() {
 
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Connect with builders, entrepreneurs, and brilliant minds across all
-            fields. Set up your profile in under 2 minutes.
+            fields. Set up your profile in under two minutes.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500">
@@ -106,7 +106,7 @@ export function LandingPage() {
             className="bg-stanford-cardinal hover:bg-red-700 text-white font-semibold px-8 py-4 text-lg mt-8"
             size="lg"
           >
-            Find Your People in 2 Minutes
+            Find Your People in Two Minutes
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
@@ -149,7 +149,7 @@ export function LandingPage() {
             TreeMatch: Your Stanford Summer Network
           </h2>
           <p className="text-stanford-cardinal font-semibold mb-16">
-            Profile setup: Under 2 minutes. First connections: Within hours.
+            Profile setup: Under two minutes. First connections: Within hours.
           </p>
 
           <div className="grid sm:grid-cols-3 gap-12">
@@ -198,33 +198,25 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* FOMO */}
-      <section className="px-4 py-20 bg-red-50 border-y border-red-200">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center space-x-2 bg-red-100 text-red-700 px-6 py-3 rounded-full font-semibold">
-            <Timer className="w-4 h-4" />
-            <span>Summer Session ends August 17th</span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Every Day You Wait is Another Brilliant Person You Won't Meet
-          </h2>
-
-          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            The best connections happen in the first few weeks. Don't graduate
-            wishing you'd met more people.
-          </p>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="px-4 py-24 bg-stanford-cardinal">
+      {/* Final CTA & Footer */}
+      <section className="px-4 py-20 bg-stanford-cardinal">
         <div className="max-w-2xl mx-auto text-center space-y-8">
+          {timeLeft.isActive && (
+            <div className="inline-flex items-center space-x-2 bg-white/10 text-white px-6 py-3 rounded-full font-semibold">
+              <Timer className="w-4 h-4" />
+              <span>
+                Only {timeLeft.days} days, {timeLeft.hours} hours left
+              </span>
+            </div>
+          )}
+
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
             Stop Settling for Your Current Circle
           </h2>
+
           <p className="text-white/90 text-lg">
-            Free for all Stanford Summer Session students
+            The best connections happen in the first few weeks. Don't graduate
+            wishing you'd met more people.
           </p>
 
           <Button
@@ -236,50 +228,33 @@ export function LandingPage() {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
 
-          <div className="space-y-3 mt-8">
-            <p className="text-white/80 text-sm">
+          <p className="text-white/80 text-sm mt-6">
+            Free for all Stanford Summer Session students
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-white/70 pt-8 mt-12 border-t border-white/20">
+            <div className="flex items-center space-x-2">
+              <TreePine className="w-4 h-4" />
+              <span className="font-medium">TreeMatch</span>
+            </div>
+            <p className="text-center">
               Already have an account?{" "}
               <button
                 onClick={() => router.push("/auth/login")}
-                className="text-white font-medium underline hover:no-underline"
+                className="text-white underline hover:no-underline"
               >
                 Sign in here
               </button>
             </p>
-            <button className="text-white/90 text-sm underline hover:no-underline">
-              See who's already here
-            </button>
           </div>
+
+          <p className="text-white/50 text-xs mt-6 text-center">
+            No trees were harmed in the making of this network. Side effects may
+            include: making friends, starting companies, and having an amazing
+            summer.
+          </p>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white/80 px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between space-y-6 sm:space-y-0 mb-8">
-            <div className="flex items-center space-x-2">
-              <TreePine className="w-5 h-5" />
-              <span className="font-semibold">TreeMatch</span>
-            </div>
-            <div className="text-sm text-center sm:text-right">
-              <p>The essential Stanford Summer Session networking tool</p>
-              {timeLeft.isActive && (
-                <p className="text-white/60 mt-1">
-                  Only {timeLeft.days} days, {timeLeft.hours} hours left
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="border-t border-gray-700 pt-6 text-center">
-            <p className="text-white/50 text-xs mt-2">
-              No trees were harmed in the making of this network. Results may
-              vary. <br /> Side effects may include: making friends, starting
-              companies, and having an amazing summer.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
