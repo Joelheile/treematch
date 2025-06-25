@@ -24,10 +24,10 @@ export default function CoursesStep({
     if (e.key === "Enter") {
       e.preventDefault();
       const trimmedInput = courseInput.trim().toUpperCase();
-      if (trimmedInput && !formData.courseIds.includes(trimmedInput)) {
+      if (trimmedInput && !formData.courses.includes(trimmedInput)) {
         setFormData((prev) => ({
           ...prev,
-          courseIds: [...prev.courseIds, trimmedInput],
+          courses: [...prev.courses, trimmedInput],
         }));
         setCourseInput("");
       }
@@ -37,7 +37,7 @@ export default function CoursesStep({
   const removeCourse = (courseToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
-      courseIds: prev.courseIds.filter((course) => course !== courseToRemove),
+      courses: prev.courses.filter((course) => course !== courseToRemove),
     }));
   };
 
@@ -64,13 +64,13 @@ export default function CoursesStep({
             autoFocus
           />
           
-          {formData.courseIds.length > 0 && (
+          {formData.courses.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-gray-700 text-center">
-                Added Courses ({formData.courseIds.length})
+                Added Courses ({formData.courses.length})
               </h3>
               <div className="flex flex-wrap gap-2 justify-center">
-                {formData.courseIds.map((course) => (
+                {formData.courses.map((course) => (
                   <Badge
                     key={course}
                     variant="secondary"
@@ -89,7 +89,7 @@ export default function CoursesStep({
             </div>
           )}
           
-          {formData.courseIds.length === 0 && (
+          {formData.courses.length === 0 && (
             <p className="text-gray-500 text-sm text-center italic">
               No courses added yet. Start by entering a course code above.
             </p>

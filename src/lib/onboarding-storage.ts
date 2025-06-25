@@ -4,16 +4,15 @@ export interface OnboardingData {
   university: string
   phoneNumber: string
   profileImage: string
-  skills: string[]
-  skillIds?: string[]
+  skillIds: string[]
   courses: string[]
-  courseIds?: string[]
   summerGoals: string
   currentProject: string
   linkedinUrl: string
   instagramHandle: string
   twitterHandle: string
   githubUsername: string
+  websiteUrl: string
   completedAt?: string
   tempAvatarPath?: string
 }

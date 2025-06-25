@@ -16,6 +16,12 @@ export default function SkillsStep({
   availableSkills,
   skillsLoading,
 }: SkillsStepProps) {
+  console.log('🎯 SkillsStep - Current state:', {
+    formDataSkillIds: formData.skillIds,
+    availableSkillsCount: availableSkills.length,
+    selectedSkillsCount: formData.skillIds.length
+  });
+  
   return (
     <div className="flex flex-col h-full">
       <div className="text-center mb-6 flex-shrink-0">

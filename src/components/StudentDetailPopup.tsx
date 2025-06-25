@@ -18,7 +18,6 @@ import {
   MapPin,
   Phone,
   Target,
-  X,
 } from "lucide-react";
 
 interface StudentDetailPopupProps {
@@ -71,7 +70,7 @@ export const StudentDetailPopup = ({
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 {student.name || "Unknown"}
               </h2>
-              
+
               {student.country && (
                 <div className="flex items-center text-gray-600 mb-3">
                   <MapPin className="w-4 h-4 mr-2" />
@@ -81,26 +80,16 @@ export const StudentDetailPopup = ({
 
               <div className="flex flex-wrap gap-2">
                 {student.email && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8"
-                    asChild
-                  >
+                  <Button variant="outline" size="sm" className="h-8" asChild>
                     <a href={`mailto:${student.email}`}>
                       <Mail className="w-3 h-3 mr-1" />
                       Email
                     </a>
                   </Button>
                 )}
-                
+
                 {student.phone_number && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8"
-                    asChild
-                  >
+                  <Button variant="outline" size="sm" className="h-8" asChild>
                     <a href={`tel:${student.phone_number}`}>
                       <Phone className="w-3 h-3 mr-1" />
                       Call
@@ -123,7 +112,9 @@ export const StudentDetailPopup = ({
                     {student.current_project}
                   </p>
                 ) : (
-                  <p className="text-gray-500 italic">No current project listed</p>
+                  <p className="text-gray-500 italic">
+                    No current project listed
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -139,7 +130,9 @@ export const StudentDetailPopup = ({
                     {student.coolest_thing}
                   </p>
                 ) : (
-                  <p className="text-gray-500 italic">No coolest thing listed</p>
+                  <p className="text-gray-500 italic">
+                    No coolest thing listed
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -166,23 +159,15 @@ export const StudentDetailPopup = ({
             </Card>
           )}
 
-          {student.summer_goals && student.summer_goals.length > 0 && (
+          {student.goals && (
             <Card>
               <CardContent className="p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Looking For ({student.summer_goals.length})
+                  Looking For
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {student.summer_goals.map((goal, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="text-sm border-gray-300 text-gray-700 hover:border-gray-400 px-3 py-1"
-                    >
-                      {goal}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {student.goals}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -262,4 +247,4 @@ export const StudentDetailPopup = ({
       </DialogContent>
     </Dialog>
   );
-}; 
+};

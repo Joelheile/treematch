@@ -15,21 +15,18 @@ export type Database = {
           id: string
           is_global: boolean
           name: string
-          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           is_global?: boolean
           name: string
-          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           is_global?: boolean
           name?: string
-          user_id?: string | null
         }
         Relationships: []
       }
@@ -58,13 +55,6 @@ export type Database = {
             columns: ["liked_student_id"]
             isOneToOne: false
             referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_likes_liked_student_id_fkey"
-            columns: ["liked_student_id"]
-            isOneToOne: false
-            referencedRelation: "students_with_metadata"
             referencedColumns: ["id"]
           },
         ]
@@ -103,13 +93,6 @@ export type Database = {
             referencedRelation: "students"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "student_skills_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students_with_metadata"
-            referencedColumns: ["id"]
-          },
         ]
       }
       students: {
@@ -123,13 +106,14 @@ export type Database = {
           github: string | null
           goals: string | null
           id: string
+          instagram: string | null
+          is_first_mover_batch: boolean | null
           isOnboarded: boolean | null
           linkedin: string | null
           name: string | null
           phone_number: string | null
           profile_image: string | null
-          skills: string[] | null
-          summer_goals: string[] | null
+          twitter: string | null
           university: string | null
           updated_at: string | null
           website: string | null
@@ -144,13 +128,14 @@ export type Database = {
           github?: string | null
           goals?: string | null
           id?: string
+          instagram?: string | null
+          is_first_mover_batch?: boolean | null
           isOnboarded?: boolean | null
           linkedin?: string | null
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
-          skills?: string[] | null
-          summer_goals?: string[] | null
+          twitter?: string | null
           university?: string | null
           updated_at?: string | null
           website?: string | null
@@ -165,13 +150,14 @@ export type Database = {
           github?: string | null
           goals?: string | null
           id?: string
+          instagram?: string | null
+          is_first_mover_batch?: boolean | null
           isOnboarded?: boolean | null
           linkedin?: string | null
           name?: string | null
           phone_number?: string | null
           profile_image?: string | null
-          skills?: string[] | null
-          summer_goals?: string[] | null
+          twitter?: string | null
           university?: string | null
           updated_at?: string | null
           website?: string | null
@@ -180,69 +166,7 @@ export type Database = {
       }
     }
     Views: {
-      students_with_metadata: {
-        Row: {
-          coolest_thing: string | null
-          country: string | null
-          created_at: string | null
-          current_project: string | null
-          email: string | null
-          github: string | null
-          goals_count: number | null
-          has_social_links: boolean | null
-          id: string | null
-          linkedin: string | null
-          name: string | null
-          phone_number: string | null
-          profile_image: string | null
-          skills: string[] | null
-          skills_count: number | null
-          summer_goals: string[] | null
-          updated_at: string | null
-          website: string | null
-        }
-        Insert: {
-          coolest_thing?: string | null
-          country?: string | null
-          created_at?: string | null
-          current_project?: string | null
-          email?: string | null
-          github?: string | null
-          goals_count?: never
-          has_social_links?: never
-          id?: string | null
-          linkedin?: string | null
-          name?: string | null
-          phone_number?: string | null
-          profile_image?: string | null
-          skills?: string[] | null
-          skills_count?: never
-          summer_goals?: string[] | null
-          updated_at?: string | null
-          website?: string | null
-        }
-        Update: {
-          coolest_thing?: string | null
-          country?: string | null
-          created_at?: string | null
-          current_project?: string | null
-          email?: string | null
-          github?: string | null
-          goals_count?: never
-          has_social_links?: never
-          id?: string | null
-          linkedin?: string | null
-          name?: string | null
-          phone_number?: string | null
-          profile_image?: string | null
-          skills?: string[] | null
-          skills_count?: never
-          summer_goals?: string[] | null
-          updated_at?: string | null
-          website?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never

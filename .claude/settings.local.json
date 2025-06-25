@@ -11,7 +11,8 @@
       "Bash(rg:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm run update-types:*)"
     ],
     "deny": []
   }
