@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentWithSkills } from "@/types/Student";
+import countriesData from "@/lib/countries.json";
 import {
   Briefcase,
   ExternalLink,
@@ -23,6 +24,19 @@ export const StudentCard = ({ student }: StudentCardProps) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { isLiked, toggleLike, isToggling } = useStudentLikes();
   const hasLinks = student.linkedin || student.github || student.website;
+
+  // Function to convert country code to flag emoji
+  const getCountryFlag = (countryName: string) => {
+    const country = countriesData.find((c) => 
+      c.name.toLowerCase() === countryName.toLowerCase()
+    );
+    if (!country) return null;
+    return country.code
+      .toUpperCase()
+      .replace(/./g, (char) =>
+        String.fromCodePoint(127397 + char.charCodeAt(0))
+      );
+  };
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -74,25 +88,32 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             </div>
           )}
           <div className="mt-3">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {student.name || "Unknown"}
-            </h3>
-            {student.country && (
-              <div className="flex items-center justify-center text-sm text-gray-600 mt-1">
-                <MapPin className="w-4 h-4 mr-1" />
-                {student.country}
-              </div>
+            <div className="flex items-center justify-center space-x-2 mb-1">
+              {student.country && (
+                <span className="flex items-center">
+                  {getCountryFlag(student.country) ? (
+                    <span className="text-base">{getCountryFlag(student.country)}</span>
+                  ) : (
+                    <MapPin className="w-4 h-4" />
+                  )}
+                </span>
+              )}
+              <h3 className="text-lg font-semibold text-gray-900">
+                {student.name || "Unknown"}
+              </h3>
+            </div>
+            {student.university && (
+              <p className="text-sm text-gray-600 text-center mb-2">
+                {student.university}
+              </p>
             )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Current Project */}
           {student.current_project && (
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                <Briefcase className="w-4 h-4 mr-1" />
-                Current Project
-              </h4>
+            <div className="text-left">
+              <h4 className="text-sm font-semibold text-gray-700 mb-1">Project:</h4>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {student.current_project}
               </p>
@@ -101,11 +122,8 @@ export const StudentCard = ({ student }: StudentCardProps) => {
 
           {/* Coolest Thing */}
           {student.coolest_thing && (
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                <Target className="w-4 h-4 mr-1" />
-                Coolest Thing
-              </h4>
+            <div className="text-left">
+              <h4 className="text-sm font-semibold text-gray-700 mb-1">Coolest Project:</h4>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {student.coolest_thing}
               </p>
@@ -115,7 +133,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           {/* Skills */}
           {student.skills && student.skills.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Skills</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Skills</h4>
               <div className="flex flex-wrap gap-1">
                 {student.skills.slice(0, 3).map((skill) => (
                   <Badge
@@ -127,13 +145,28 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                   </Badge>
                 ))}
                 {student.skills.length > 3 && (
-                  <Badge
-                    variant="secondary"
-                    className="text-xs bg-gray-100 text-gray-600"
-                  >
-                    +{student.skills.length - 3} more
-                  </Badge>
+                  <span className="text-xs text-gray-500 self-center">
+                    ...
+                  </span>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Courses */}
+          {(student as any).courses && (student as any).courses.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Courses</h4>
+              <div className="flex flex-wrap gap-1">
+                {(student as any).courses.map((course: string, index: number) => (
+                  <Badge
+                    key={`${course}-${index}`}
+                    variant="secondary"
+                    className="text-xs bg-blue-100 text-blue-800 border-blue-200"
+                  >
+                    {course}
+                  </Badge>
+                ))}
               </div>
             </div>
           )}
@@ -141,27 +174,15 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           {/* Summer Goals */}
           {student.summer_goals && student.summer_goals.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Looking For
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Summer Session Goals
               </h4>
-              <div className="flex flex-wrap gap-1">
-                {student.summer_goals.slice(0, 2).map((goal) => (
-                  <Badge
-                    key={goal}
-                    variant="outline"
-                    className="text-xs border-gray-300 text-gray-700 hover:border-gray-400"
-                  >
+              <div className="space-y-1">
+                {student.summer_goals.map((goal, index) => (
+                  <p key={index} className="text-sm text-gray-600">
                     {goal}
-                  </Badge>
+                  </p>
                 ))}
-                {student.summer_goals.length > 2 && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs border-gray-200 text-gray-600"
-                  >
-                    +{student.summer_goals.length - 2} more
-                  </Badge>
-                )}
               </div>
             </div>
           )}

@@ -11,6 +11,7 @@ export interface Student {
   id: string
   name: string | null
   country: string | null
+  university: string | null
   profile_image: string | null
   summer_goals: string[] | null
   current_project: string | null
@@ -40,6 +41,7 @@ export interface StudentFormatted {
   id: string
   name: string
   country: string
+  university: string
   profileImage?: string
   skills: Skill[]
   summerGoals: string[]
@@ -60,6 +62,7 @@ export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = 
     id: dbStudent.id,
     name: dbStudent.name || '',
     country: dbStudent.country || '',
+    university: dbStudent.university || '',
     profileImage: dbStudent.profile_image || undefined,
     skills: skills,
     summerGoals: dbStudent.summer_goals || [],
@@ -80,6 +83,7 @@ export const formatStudentForDB = (student: Partial<StudentFormatted>): StudentI
   return {
     name: student.name || null,
     country: student.country || null,
+    university: student.university || null,
     profile_image: student.profileImage || null,
     summer_goals: student.summerGoals || null,
     current_project: student.currentProject || null,
