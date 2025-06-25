@@ -94,82 +94,78 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         query = query.or(`name.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%,current_project.ilike.%${sanitizedSearch}%`)
       }
 
-      const { data: studentsData, error: studentsError, count } = await query
-
-      if (studentsError) throw studentsError
-
-      let finalStudentsData = studentsData || []
-
+      // Add skill filtering to main query if needed
       if (filters.skillIds && filters.skillIds.length > 0) {
         const validSkillIds = filters.skillIds.filter(validateUUID)
         if (validSkillIds.length > 0) {
-          const { data: studentSkillsData, error: skillFilterError } = await supabase
+          // Get student IDs that have the required skills
+          const { data: studentIdsData } = await supabase
             .from('student_skills')
             .select('student_id')
             .in('skill_id', validSkillIds)
-
-          if (skillFilterError) throw skillFilterError
-
-          const studentIdsWithSkills = studentSkillsData?.map(item => item.student_id) || []
-          finalStudentsData = studentsData?.filter(student => 
-            studentIdsWithSkills.includes(student.id)
-          ) || []
+          
+          const studentIds = studentIdsData?.map(item => item.student_id) || []
+          if (studentIds.length > 0) {
+            query = query.in('id', studentIds)
+          } else {
+            // No students found with these skills
+            return {
+              data: [],
+              totalCount: 0,
+              hasMore: false
+            }
+          }
         }
       }
 
-      if (filters.likedByUserId) {
-        if (validateUUID(filters.likedByUserId)) {
-          const { data: likedStudentsData, error: likedFilterError } = await supabase
-            .from('student_likes')
-            .select('liked_student_id')
-            .eq('liker_id', filters.likedByUserId)
-
-          if (likedFilterError) throw likedFilterError
-
-          const likedStudentIds = likedStudentsData?.map(item => item.liked_student_id) || []
-          finalStudentsData = finalStudentsData.filter(student => 
-            likedStudentIds.includes(student.id)
-          )
+      // Add liked filtering to main query if needed
+      if (filters.likedByUserId && validateUUID(filters.likedByUserId)) {
+        const { data: likedStudentsData } = await supabase
+          .from('student_likes')
+          .select('liked_student_id')
+          .eq('liker_id', filters.likedByUserId)
+        
+        const likedStudentIds = likedStudentsData?.map(item => item.liked_student_id) || []
+        if (likedStudentIds.length > 0) {
+          query = query.in('id', likedStudentIds)
+        } else {
+          // No liked students found
+          return {
+            data: [],
+            totalCount: 0,
+            hasMore: false
+          }
         }
       }
 
-      const studentIds = finalStudentsData.map(student => student.id)
-      
-      if (studentIds.length === 0) {
-        return {
-          data: [],
-          totalCount: 0,
-          hasMore: false
-        }
-      }
-
-      const { data: allSkillsData, error: allSkillsError } = await supabase
-        .from('student_skills')
+      // Single optimized query with JOIN for skills
+      const { data: studentsData, error: studentsError, count } = await query
         .select(`
-          student_id,
-          skills (
-            id,
-            name,
-            is_global,
-            created_at
+          *,
+          student_skills!left(
+            skills!inner(
+              id,
+              name,
+              is_global,
+              created_at
+            )
           )
         `)
-        .in('student_id', studentIds)
 
-      if (allSkillsError) throw allSkillsError
+      if (studentsError) throw studentsError
 
-      const skillsByStudent = allSkillsData?.reduce((acc, item) => {
-        const studentId = item.student_id
-        const skill = (item as any).skills
-        if (!acc[studentId]) acc[studentId] = []
-        if (skill) acc[studentId].push(skill)
-        return acc
-      }, {} as Record<string, StudentWithSkills['skills']>) || {}
-
-      const studentsWithSkills = finalStudentsData.map(student => ({
-        ...student,
-        skills: skillsByStudent[student.id] || []
-      })) as StudentWithSkills[]
+      // Transform the data to match expected format
+      const studentsWithSkills = (studentsData || []).map(student => {
+        const skills = (student as any).student_skills
+          ?.map((ss: any) => ss.skills)
+          ?.filter((skill: any) => skill) || []
+        
+        const { student_skills, ...cleanStudent } = student as any
+        return {
+          ...cleanStudent,
+          skills
+        }
+      }) as StudentWithSkills[]
 
       return {
         data: studentsWithSkills,
