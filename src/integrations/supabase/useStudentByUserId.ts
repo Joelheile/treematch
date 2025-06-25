@@ -9,14 +9,14 @@ export interface ServiceResponse<T> {
   error: string | null
 }
 
-export const useStudentByEmail = (email: string, enabled: boolean = true) => {
+export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
   return useQuery({
-    queryKey: ['student-by-email', email],
+    queryKey: ['student-by-user-id', userId],
     queryFn: async (): Promise<ServiceResponse<Student>> => {
       const { data: studentData, error: studentError } = await supabase
         .from('students')
         .select('*')
-        .eq('email', email)
+        .eq('id', userId)
         .single()
 
       if (studentError) {
@@ -52,7 +52,7 @@ export const useStudentByEmail = (email: string, enabled: boolean = true) => {
         error: null 
       }
     },
-    enabled: enabled && !!email,
+    enabled: enabled && !!userId,
     retry: (failureCount, error: any) => {
       if (error?.code === 'PGRST116') {
         return failureCount < 2
@@ -61,4 +61,4 @@ export const useStudentByEmail = (email: string, enabled: boolean = true) => {
     },
     retryDelay: 1000,
   })
-} 
+}
