@@ -35,7 +35,12 @@ export const StudentDetailPopup = ({
 }: StudentDetailPopupProps) => {
   if (!student) return null;
 
-  const hasLinks = student.linkedin || student.github || student.website || student.instagram || student.twitter;
+  const hasLinks =
+    student.linkedin ||
+    student.github ||
+    student.website ||
+    student.instagram ||
+    student.twitter;
 
   // Function to convert country code to flag emoji
   const getCountryFlag = (countryName: string) => {
@@ -170,7 +175,9 @@ export const StudentDetailPopup = ({
           )}
 
           {/* Spacer */}
-          {(student.current_project || student.coolest_thing || student.goals) && (
+          {(student.current_project ||
+            student.coolest_thing ||
+            student.goals) && (
             <div className="border-t border-gray-100 my-4"></div>
           )}
 
