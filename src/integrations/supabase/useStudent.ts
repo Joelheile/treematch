@@ -1,13 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from './client'
-import { Tables } from './types'
+import { StudentWithSkills } from '@/types/Student'
 
-type Student = Tables<'students'>
-type Skill = Tables<'skills'>
-
-export interface StudentWithSkills extends Student {
-  skills: Skill[]
-}
+export type { StudentWithSkills } from '@/types/Student'
 
 export const useStudent = (id: string) => {
   return useQuery({
