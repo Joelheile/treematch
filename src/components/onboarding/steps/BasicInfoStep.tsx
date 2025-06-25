@@ -104,25 +104,6 @@ export default function BasicInfoStep({
 
         <div>
           <Label
-            htmlFor="email"
-            className="text-sm font-medium text-gray-700 mb-1 block"
-          >
-            Email*
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, email: e.target.value }))
-            }
-            placeholder="Enter your email"
-            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
-          />
-        </div>
-
-        <div>
-          <Label
             htmlFor="university"
             className="text-sm font-medium text-gray-700 mb-1 block"
           >
