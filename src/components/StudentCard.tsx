@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { StudentDetailPopup } from "./StudentDetailPopup";
+import Image from "next/image";
 
 interface StudentCardProps {
   student: StudentWithSkills;
@@ -90,11 +91,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
         </button>
 
         <CardHeader className="text-center pb-3 px-4 sm:px-6">
-          <div className="flex justify-center gap-2 mb-2">
-            {student.is_first_mover_batch && (
-              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">First Mover</Badge>
-            )}
-          </div>
+
           {student.profile_image ? (
             <img
               src={student.profile_image}
@@ -114,6 +111,9 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           )}
           <div className="mt-3">
             <div className="flex items-center justify-center space-x-2 mb-1">
+            {student.is_first_mover_batch && (
+              <Image src="/Trophy Icon 48.png" alt="Trophy" width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+            )}
               {student.country && (
                 <span className="flex items-center">
                   {getCountryFlag(student.country) ? (
