@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useStudents } from "@/integrations/supabase/useStudents";
 import { ArrowRight, Clock, Timer, TreePine } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -50,8 +51,8 @@ export function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-stanford-cardinal rounded flex items-center justify-center">
-              <TreePine className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded flex items-center justify-center">
+              <Image src="/icon.png" alt="TreeMatch" width={32} height={32} className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
             <span className="text-lg sm:text-xl font-bold text-stanford-cardinal">
               TreeMatch
@@ -243,7 +244,7 @@ export function LandingPage() {
 
           <div className="flex items-center justify-center text-sm text-white/70 pt-6 mt-8 border-t border-white/20">
             <div className="flex items-center space-x-2">
-              <TreePine className="w-4 h-4" />
+              <Image src="/icon.png" alt="TreeMatch" width={16} height={16} className="w-4 h-4" />
               <span className="font-medium">TreeMatch</span>
             </div>
           </div>
