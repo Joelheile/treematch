@@ -128,7 +128,7 @@ export default function OnboardingLogic() {
         });
       }
     }
-  }, [student, availableSkills, studentLoading]);
+  }, [student, availableSkills, studentLoading, studentSkills]);
 
   const steps = [
     { number: 1, title: "Welcome", subtitle: "Basic Information" },

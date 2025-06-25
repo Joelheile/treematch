@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from './client'
+import { createClient } from './client-ssr'
 
 export const useAddSkill = () => {
   const queryClient = useQueryClient()
@@ -7,19 +7,17 @@ export const useAddSkill = () => {
   return useMutation({
     mutationFn: async ({ 
       name, 
-      userId,
-      isGlobal = false 
+      isGlobal = true 
     }: { 
       name: string
-      userId: string
       isGlobal?: boolean 
     }) => {
+      const supabase = createClient()
       const { data, error } = await supabase
         .from('skills')
         .insert([{ 
           name, 
-          is_global: isGlobal, 
-          user_id: isGlobal ? null : userId 
+          is_global: isGlobal
         }])
         .select()
         .single()

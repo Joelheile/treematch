@@ -22,22 +22,23 @@ import type { StudentFilters } from "@/integrations/supabase/useStudents";
 import { useStudents } from "@/integrations/supabase/useStudents";
 import countries from "@/lib/countries.json";
 import {
-  ArrowUpDown,
+  BookOpen,
   Check,
   ChevronDown,
   Edit,
   ExternalLink,
+  Filter,
   Github,
+  Globe,
   Heart,
   Instagram,
   Linkedin,
   Loader2,
-  MapPin,
   Search,
-  SlidersHorizontal,
   TreePine,
   Users,
   X,
+  Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -291,13 +292,13 @@ export const StudentOverview = () => {
   );
 
   const renderQuickFilters = () => (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex flex-wrap gap-2 sm:gap-3">
       {/* Sort button */}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-300 hover:border-gray-400 transition-colors whitespace-nowrap">
-            <ArrowUpDown className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">
+          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full border border-gray-300 hover:border-gray-400 transition-colors">
+            <Filter className="w-4 h-4 text-gray-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">
               {sortBy === "newest"
                 ? "Newest"
                 : sortBy === "alphabetical"
@@ -333,14 +334,14 @@ export const StudentOverview = () => {
       <Popover open={showCountryDropdown} onOpenChange={setShowCountryDropdown}>
         <PopoverTrigger asChild>
           <button
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full border transition-colors ${
               selectedCountry
                 ? "bg-red-50 border-red-300 text-red-700"
                 : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
             }`}
           >
-            <MapPin className="w-4 h-4" />
-            <span className="text-sm font-medium">
+            <Globe className="w-4 h-4" />
+            <span className="text-xs sm:text-sm font-medium">
               {selectedCountry
                 ? `${
                     countryOptions.find((c) => c.value === selectedCountry)
@@ -396,14 +397,15 @@ export const StudentOverview = () => {
       <Popover open={showSocialDropdown} onOpenChange={setShowSocialDropdown}>
         <PopoverTrigger asChild>
           <button
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap relative ${
+            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full border transition-colors relative ${
               activeSocialFilters > 0
                 ? "bg-red-50 border-red-300 text-red-700"
                 : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
             }`}
           >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm font-medium">Social Links</span>
+            <Users className="w-4 h-4" />
+            <span className="text-xs sm:text-sm font-medium hidden sm:inline">Social Links</span>
+            <span className="text-xs sm:text-sm font-medium sm:hidden">Social</span>
             {activeSocialFilters > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {activeSocialFilters}
@@ -448,14 +450,14 @@ export const StudentOverview = () => {
           <button
             key={filter.id}
             onClick={() => handleQuickFilter(filter.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full border transition-colors ${
               isActive
                 ? "bg-red-50 border-red-300 text-red-700"
                 : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
             }`}
           >
             <Icon className="w-4 h-4" />
-            <span className="text-sm font-medium">{filter.label}</span>
+            <span className="text-xs sm:text-sm font-medium">{filter.label}</span>
           </button>
         );
       })}
@@ -464,14 +466,14 @@ export const StudentOverview = () => {
       <Popover open={showSkillsDropdown} onOpenChange={setShowSkillsDropdown}>
         <PopoverTrigger asChild>
           <button
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap relative ${
+            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full border transition-colors relative ${
               selectedSkills.length > 0
                 ? "bg-red-50 border-red-300 text-red-700"
                 : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
             }`}
           >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm font-medium">Skills</span>
+            <Zap className="w-4 h-4" />
+            <span className="text-xs sm:text-sm font-medium">Skills</span>
             {selectedSkills.length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {selectedSkills.length}
@@ -487,7 +489,7 @@ export const StudentOverview = () => {
               <CommandEmpty>No skills found.</CommandEmpty>
               
               {selectedSkills.length > 0 && (
-                <CommandGroup heading="Selected Skills">
+                <CommandGroup>
                   {selectedSkills.map((skillName) => (
                     <CommandItem
                       key={skillName}
@@ -502,7 +504,7 @@ export const StudentOverview = () => {
               )}
 
               {skills.length > 0 && (
-                <CommandGroup heading="Available Skills">
+                <CommandGroup>
                   {skills
                     .filter((skill) => !selectedSkills.includes(skill.name))
                     .map((skill) => (
@@ -524,14 +526,14 @@ export const StudentOverview = () => {
       <Popover open={showCoursesDropdown} onOpenChange={setShowCoursesDropdown}>
         <PopoverTrigger asChild>
           <button
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap relative ${
+            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full border transition-colors relative ${
               selectedCourses.length > 0
                 ? "bg-blue-50 border-blue-300 text-blue-700"
                 : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
             }`}
           >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm font-medium">Courses</span>
+            <BookOpen className="w-4 h-4" />
+            <span className="text-xs sm:text-sm font-medium">Courses</span>
             {selectedCourses.length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {selectedCourses.length}
@@ -547,7 +549,7 @@ export const StudentOverview = () => {
               <CommandEmpty>No courses found.</CommandEmpty>
               
               {selectedCourses.length > 0 && (
-                <CommandGroup heading="Selected Courses">
+                <CommandGroup>
                   {selectedCourses.map((courseName) => (
                     <CommandItem
                       key={courseName}
@@ -562,7 +564,7 @@ export const StudentOverview = () => {
               )}
 
               {availableCourses.length > 0 && (
-                <CommandGroup heading="Available Courses">
+                <CommandGroup>
                   {availableCourses
                     .filter((course) => !selectedCourses.includes(course))
                     .map((course) => (
@@ -586,16 +588,16 @@ export const StudentOverview = () => {
     if (!hasActiveFilters) return null;
 
     return (
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
-          <span className="text-sm text-gray-600 whitespace-nowrap">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs sm:text-sm text-gray-600 shrink-0">
             Active:
           </span>
 
           {searchTerm && (
             <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
               <Search className="w-3 h-3" />
-              <span className="text-sm font-medium">"{searchTerm}"</span>
+              <span className="text-xs sm:text-sm font-medium">"{searchTerm}"</span>
               <button onClick={() => setSearchTerm("")} className="ml-1">
                 <X className="w-3 h-3 hover:text-blue-900" />
               </button>
@@ -604,8 +606,8 @@ export const StudentOverview = () => {
 
           {selectedCountry && (
             <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-200">
-              <MapPin className="w-3 h-3" />
-              <span className="text-sm font-medium">{selectedCountry}</span>
+              <Globe className="w-3 h-3" />
+              <span className="text-xs sm:text-sm font-medium">{selectedCountry}</span>
               <button onClick={() => setSelectedCountry("")} className="ml-1">
                 <X className="w-3 h-3 hover:text-green-900" />
               </button>
@@ -617,7 +619,7 @@ export const StudentOverview = () => {
               key={skill}
               className="flex items-center gap-1 bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-200"
             >
-              <span className="text-sm font-medium">{skill}</span>
+              <span className="text-xs sm:text-sm font-medium">{skill}</span>
               <button onClick={() => handleSkillSelect(skill)} className="ml-1">
                 <X className="w-3 h-3 hover:text-purple-900" />
               </button>
@@ -629,19 +631,19 @@ export const StudentOverview = () => {
               key={course}
               className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200"
             >
-              <span className="text-sm font-medium">{course}</span>
+              <span className="text-xs sm:text-sm font-medium">{course}</span>
               <button onClick={() => handleCourseSelect(course)} className="ml-1">
                 <X className="w-3 h-3 hover:text-blue-900" />
               </button>
             </div>
           ))}
 
-          {hasLinkedIn && (
+          {socialMediaFilters.hasLinkedIn && (
             <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
               <Linkedin className="w-3 h-3" />
-              <span className="text-sm font-medium">Has LinkedIn</span>
+              <span className="text-xs sm:text-sm font-medium">Has LinkedIn</span>
               <button
-                onClick={() => setHasLinkedIn(undefined)}
+                onClick={() => handleSocialMediaFilter('hasLinkedIn')}
                 className="ml-1"
               >
                 <X className="w-3 h-3 hover:text-blue-900" />
@@ -649,12 +651,22 @@ export const StudentOverview = () => {
             </div>
           )}
 
-          {hasGithub && (
+          {socialMediaFilters.hasGithub && (
             <div className="flex items-center gap-1 bg-gray-50 text-gray-700 px-3 py-1 rounded-full border border-gray-200">
               <Github className="w-3 h-3" />
-              <span className="text-sm font-medium">Has GitHub</span>
-              <button onClick={() => setHasGithub(undefined)} className="ml-1">
+              <span className="text-xs sm:text-sm font-medium">Has GitHub</span>
+              <button onClick={() => handleSocialMediaFilter('hasGithub')} className="ml-1">
                 <X className="w-3 h-3 hover:text-gray-900" />
+              </button>
+            </div>
+          )}
+
+          {socialMediaFilters.hasWebsite && (
+            <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-200">
+              <ExternalLink className="w-3 h-3" />
+              <span className="text-xs sm:text-sm font-medium">Has Website</span>
+              <button onClick={() => handleSocialMediaFilter('hasWebsite')} className="ml-1">
+                <X className="w-3 h-3 hover:text-green-900" />
               </button>
             </div>
           )}
@@ -662,7 +674,7 @@ export const StudentOverview = () => {
           {showLiked && (
             <div className="flex items-center gap-1 bg-red-50 text-red-700 px-3 py-1 rounded-full border border-red-200">
               <Heart className="w-3 h-3" />
-              <span className="text-sm font-medium">Liked</span>
+              <span className="text-xs sm:text-sm font-medium">Liked</span>
               <button onClick={() => setShowLiked(false)} className="ml-1">
                 <X className="w-3 h-3 hover:text-red-900" />
               </button>
@@ -672,10 +684,10 @@ export const StudentOverview = () => {
 
         <button
           onClick={clearAllFilters}
-          className="flex items-center gap-1 bg-red-50 text-red-700 px-3 py-1 rounded-full border border-red-200 hover:bg-red-100 transition-colors whitespace-nowrap shrink-0"
+          className="flex items-center gap-1 bg-red-50 text-red-700 px-3 py-1 rounded-full border border-red-200 hover:bg-red-100 transition-colors shrink-0 self-start sm:self-center"
         >
           <X className="w-3 h-3" />
-          <span className="text-sm font-medium">Clear All</span>
+          <span className="text-xs sm:text-sm font-medium">Clear All</span>
         </button>
       </div>
     );

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from './client'
+import { createClient } from './client-ssr'
 import { StudentRow, StudentWithSkills } from '@/types/Student'
 
 export type { StudentWithSkills } from '@/types/Student'
@@ -53,6 +53,7 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         orderDirection = 'desc'
       } = options
 
+      const supabase = createClient()
       let query = supabase
         .from('students')
         .select('*', { count: 'exact' })
@@ -150,7 +151,6 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
             id,
             name,
             is_global,
-            user_id,
             created_at
           )
         `)

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/auth/AuthProvider'
-import { supabase } from './client'
+import { createClient } from './client-ssr'
 import { Tables, TablesUpdate } from './types'
 
 type Student = Tables<'students'>
@@ -22,6 +22,7 @@ export const useUpdateStudent = () => {
         throw new Error('User not authenticated')
       }
 
+      const supabase = createClient()
       const { data: existingStudent, error: fetchError } = await supabase
         .from('students')
         .select('email')

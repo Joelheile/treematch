@@ -40,21 +40,13 @@ export default function LoginPage() {
     const sanitizedPassword = password.trim()
 
     if (!validateEmail(sanitizedEmail)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Email",
-        description: "Please use a valid Stanford email address (@stanford.edu)",
-      });
+      toast.error("Please use a valid Stanford email address (@stanford.edu)");
       setLoading(false);
       return;
     }
 
     if (sanitizedPassword.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Password",
-        description: "Password must be at least 6 characters long",
-      });
+      toast.error("Password must be at least 6 characters long");
       setLoading(false);
       return;
     }
@@ -65,10 +57,7 @@ export default function LoginPage() {
         OnboardingStorage.exists() && !OnboardingStorage.isExpired();
 
       if (hasOnboardingData) {
-        toast({
-          title: "Welcome back!",
-          description: "Setting up your profile...",
-        });
+        toast.success("Welcome back! Setting up your profile...");
       }
 
       router.push("/");
