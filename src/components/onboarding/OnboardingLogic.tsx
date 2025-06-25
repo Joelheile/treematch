@@ -2,22 +2,25 @@
 
 import { useAuth } from "@/app/auth/AuthProvider";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
-import { useSkills } from "@/integrations/supabase/useSkills";
-import { useUpdateStudent } from "@/integrations/supabase/useUpdateStudent";
-import { useUpdateStudentSkills } from "@/integrations/supabase/useUpdateStudentSkills";
-import { useUploadAvatar } from "@/integrations/supabase/useUploadAvatar";
 import { moveAvatarAfterLogin } from "@/integrations/supabase/moveAvatarAfterLogin";
+import { useSkills } from "@/integrations/supabase/useSkills";
+import {
+  useStudentSkills,
+  useUpdateStudentSkills,
+} from "@/integrations/supabase/useStudentSkills";
+import { useUpdateStudent } from "@/integrations/supabase/useUpdateStudent";
+import { useUploadAvatar } from "@/integrations/supabase/useUploadAvatar";
 import countriesData from "@/lib/countries.json";
 import {
   OnboardingStorage,
   type OnboardingData,
 } from "@/lib/onboarding-storage";
+import { TreePine } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import OnboardingUI from "./OnboardingUI";
 import { FormData } from "./types";
-import { TreePine } from "lucide-react";
 
 export default function OnboardingLogic() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -28,6 +31,7 @@ export default function OnboardingLogic() {
   const { student, isLoading: studentLoading } = useCurrentStudent();
   const { data: availableSkills = [], isLoading: skillsLoading } = useSkills();
   const updateStudentSkills = useUpdateStudentSkills();
+  const { data: studentSkills = [] } = useStudentSkills(student?.id);
   const updateStudent = useUpdateStudent();
   const uploadAvatar = useUploadAvatar();
 
@@ -38,7 +42,7 @@ export default function OnboardingLogic() {
     phoneNumber: "",
     profileImage: "",
     skillIds: [],
-    courseIds: [],
+    courses: [],
     summerGoals: "",
     currentProject: "",
     linkedinUrl: "",
@@ -58,11 +62,12 @@ export default function OnboardingLogic() {
   const [tempAvatarPath, setTempAvatarPath] = useState<string>("");
 
   useEffect(() => {
-    if (student && availableSkills.length > 0) {
-      // Convert skill names back to skill IDs for the form
-      const studentSkillIds = availableSkills
-        .filter((skill) => (student.skills || []).includes(skill.name))
-        .map((skill) => skill.id);
+    if (student) {
+      // Get current student's skill IDs from junction table
+      const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
+
+      // Get social media from localStorage (not in DB yet)
+      const savedData = OnboardingStorage.load();
 
       setFormData({
         name: student.name || "",
@@ -70,13 +75,13 @@ export default function OnboardingLogic() {
         university: student.university || "",
         phoneNumber: student.phone_number || "",
         profileImage: student.profile_image || "",
-        skillIds: studentSkillIds,
-        courseIds: (student as any).courses || [],
-        summerGoals: (student as any).goals || "",
+        skillIds: currentSkillIds,
+        courses: student.courses || [],
+        summerGoals: student.goals || "",
         currentProject: student.current_project || "",
         linkedinUrl: student.linkedin || "",
-        instagramHandle: "",
-        twitterHandle: "",
+        instagramHandle: savedData?.instagramHandle || "",
+        twitterHandle: savedData?.twitterHandle || "",
         githubUsername: student.github || "",
         websiteUrl: student.website || "",
       });
@@ -92,8 +97,19 @@ export default function OnboardingLogic() {
         }
       }
     } else if (!studentLoading) {
+      console.log("💾 Loading from localStorage (no student data)");
       const savedData = OnboardingStorage.load();
       if (savedData) {
+        console.log("💾 Found saved data:", {
+          hasSkillIds: !!savedData.skillIds,
+          skillIdsLength: savedData.skillIds?.length || 0,
+          skillIds: savedData.skillIds,
+          socialMedia: {
+            instagram: savedData.instagramHandle,
+            twitter: savedData.twitterHandle,
+            website: savedData.websiteUrl,
+          },
+        });
         setFormData({
           name: savedData.name || "",
           country: savedData.country || "",
@@ -101,7 +117,7 @@ export default function OnboardingLogic() {
           phoneNumber: savedData.phoneNumber || "",
           profileImage: savedData.profileImage || "",
           skillIds: savedData.skillIds || [],
-          courseIds: savedData.courseIds || [],
+          courses: savedData.courses || (savedData as any).courseIds || [],
           summerGoals: savedData.summerGoals || "",
           currentProject: savedData.currentProject || "",
           linkedinUrl: savedData.linkedinUrl || "",
@@ -195,10 +211,11 @@ export default function OnboardingLogic() {
         if (tempAvatarPath) {
           newProfileImage = await moveAvatarAfterLogin(tempAvatarPath, user.id);
         }
-        // Convert skill IDs to skill names for the skills array field
-        const selectedSkillNames = availableSkills
-          .filter((skill) => formData.skillIds.includes(skill.id))
-          .map((skill) => skill.name);
+        // Update skills using proper junction table
+        await updateStudentSkills.mutateAsync({
+          studentId: student.id,
+          skillIds: formData.skillIds,
+        });
 
         await updateStudent.mutateAsync({
           id: student.id,
@@ -211,31 +228,49 @@ export default function OnboardingLogic() {
             current_project: formData.currentProject || null,
             coolest_thing: formData.currentProject || null,
             goals: formData.summerGoals || null,
-            skills: selectedSkillNames,
-            courses: formData.courseIds,
+
+            courses: formData.courses,
             linkedin: formData.linkedinUrl || null,
             github: formData.githubUsername || null,
             website: formData.websiteUrl || null,
             isOnboarded: true,
+            instagram: formData.instagramHandle || null,
+            twitter: formData.twitterHandle || null,
           },
         });
+
+        // Also save current form data to localStorage for fields not in database
+        const currentFormAsLocalStorage: OnboardingData = {
+          name: formData.name,
+          country: formData.country,
+          university: formData.university,
+          phoneNumber: formData.phoneNumber,
+          profileImage: formData.profileImage,
+          skillIds: formData.skillIds,
+          courses: formData.courses,
+          summerGoals: formData.summerGoals,
+          currentProject: formData.currentProject,
+          linkedinUrl: formData.linkedinUrl,
+          instagramHandle: formData.instagramHandle,
+          twitterHandle: formData.twitterHandle,
+          githubUsername: formData.githubUsername,
+          websiteUrl: formData.websiteUrl,
+        };
+
+        OnboardingStorage.save(currentFormAsLocalStorage);
+
         toast.success("Your profile has been updated successfully!");
         router.push("/");
         return;
       }
-      const selectedSkillNames = availableSkills
-        .filter((skill) => formData.skillIds.includes(skill.id))
-        .map((skill) => skill.name);
       const onboardingData: OnboardingData = {
         name: formData.name,
         country: formData.country,
         university: formData.university,
         phoneNumber: formData.phoneNumber,
         profileImage: formData.profileImage,
-        skills: selectedSkillNames,
         skillIds: formData.skillIds,
-        courses: formData.courseIds,
-        courseIds: formData.courseIds,
+        courses: formData.courses,
         summerGoals: formData.summerGoals,
         currentProject: formData.currentProject,
         linkedinUrl: formData.linkedinUrl,

@@ -1,10 +1,8 @@
 import { OnboardingData } from '@/lib/onboarding-storage'
+import { StudentInsert } from '@/types/Student'
 import { supabase } from '../../integrations/supabase/client'
 import { createClient } from '../../integrations/supabase/client-ssr'
-import { TablesInsert } from '../../integrations/supabase/types'
 import { moveAvatarAfterLogin } from '../../integrations/supabase/moveAvatarAfterLogin'
-
-type StudentInsert = TablesInsert<'students'>
 
 export class OnboardingService {
   private formatSocialUrl(platform: string, input: string): string | null {
@@ -41,15 +39,41 @@ export class OnboardingService {
       email: userEmail,
       country: onboardingData.country,
       profile_image: onboardingData.profileImage || null,
-      skills: onboardingData.skillIds ? onboardingData.skillIds : [],
-      summer_goals: [onboardingData.summerGoals],
+      goals: onboardingData.summerGoals,
       current_project: onboardingData.currentProject,
       phone_number: null,
       linkedin: this.formatSocialUrl("linkedin", onboardingData.linkedinUrl),
       github: this.formatSocialUrl("github", onboardingData.githubUsername),
       website: this.formatSocialUrl("twitter", onboardingData.twitterHandle),
+      instagram: this.formatSocialUrl("instagram", onboardingData.instagramHandle),
       isOnboarded: true,
     }
+  }
+
+  async createStudentSkills(studentId: string, skillIds: string[]) {
+    if (skillIds.length === 0) return
+
+    const studentSkills = skillIds.map(skillId => ({
+      student_id: studentId,
+      skill_id: skillId
+    }))
+
+    const { error } = await supabase
+      .from('student_skills')
+      .insert(studentSkills)
+
+    if (error) throw error
+  }
+
+  async updateStudentSkills(studentId: string, skillIds: string[]) {
+    const { error: deleteError } = await supabase
+      .from('student_skills')
+      .delete()
+      .eq('student_id', studentId)
+
+    if (deleteError) throw deleteError
+
+    await this.createStudentSkills(studentId, skillIds)
   }
 
   async getStudentByEmail(email: string) {
@@ -71,8 +95,8 @@ export class OnboardingService {
     return { data: studentData, error: null }
   }
 
-  async createStudent(student: StudentInsert) {
-    console.log('createStudent called with:', student)
+  async createStudent(student: StudentInsert, skillIds: string[] = []) {
+    console.log('createStudent called with:', { student, skillIds })
     const { data, error } = await supabase
       .from('students')
       .insert(student)
@@ -81,11 +105,16 @@ export class OnboardingService {
 
     console.log('createStudent result:', { data, error })
     if (error) throw error
+
+    if (skillIds.length > 0) {
+      await this.createStudentSkills(data.id, skillIds)
+    }
+
     return { data, error: null }
   }
 
-  async updateStudent(id: string, updates: Partial<StudentInsert>) {
-    console.log('updateStudent called with:', { id, updates })
+  async updateStudent(id: string, updates: Partial<StudentInsert>, skillIds?: string[]) {
+    console.log('updateStudent called with:', { id, updates, skillIds })
     const { data, error } = await supabase
       .from('students')
       .update(updates)
@@ -97,6 +126,11 @@ export class OnboardingService {
     }
     console.log('updateStudent result:', { data, error })
     if (error) throw error
+
+    if (skillIds !== undefined) {
+      await this.updateStudentSkills(id, skillIds)
+    }
+
     return { data, error: null }
   }
 
@@ -107,6 +141,7 @@ export class OnboardingService {
     try {
       let profileImage = onboardingData.profileImage || null
       console.log('saveOnboardingDataToDatabase called with:', { onboardingData, userEmail })
+      
       if (onboardingData.tempAvatarPath && onboardingData.tempAvatarPath !== "") {
         try {
           const supabaseAuth = createClient()
@@ -123,23 +158,26 @@ export class OnboardingService {
           console.warn('Avatar moving failed, using existing image:', avatarError)
         }
       }
+      
       const existingStudentResponse = await this.getStudentByEmail(userEmail)
       console.log('existingStudentResponse:', existingStudentResponse)
+      
       const studentData = this.convertOnboardingDataToStudent({ ...onboardingData, profileImage }, userEmail)
+      const skillIds = onboardingData.skillIds
+      
       console.log('studentData for insert/update:', studentData)
+      console.log('skillIds:', skillIds)
+      
       if (existingStudentResponse.data) {
         const { id } = existingStudentResponse.data
         const { id: _, ...updateData } = studentData
-        console.log('Calling updateStudent with:', { id, updateData })
-        const result = await this.updateStudent(
-          id,
-          updateData
-        )
+        console.log('Calling updateStudent with:', { id, updateData, skillIds })
+        const result = await this.updateStudent(id, updateData, skillIds)
         console.log('updateStudent result:', result)
         return result
       } else {
-        console.log('Calling createStudent with:', studentData)
-        const result = await this.createStudent(studentData)
+        console.log('Calling createStudent with:', { studentData, skillIds })
+        const result = await this.createStudent(studentData, skillIds)
         console.log('createStudent result:', result)
         return result
       }

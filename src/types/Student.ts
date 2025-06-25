@@ -7,103 +7,38 @@ export type SkillRow = Tables<'skills'>
 export type StudentSkillRow = Tables<'student_skills'>
 export type StudentSkillInsert = TablesInsert<'student_skills'>
 
-export interface Student {
-  id: string
-  name: string | null
-  country: string | null
-  university: string | null
-  profile_image: string | null
-  current_project: string | null
-  coolest_thing: string | null
-  skills: string[] | null
-  courses: string[] | null
-  goals: string | null
-  phone_number: string | null
-  email: string | null
-  linkedin: string | null
-  github: string | null
-  website: string | null
-  created_at: string | null
-  updated_at: string | null
-}
-
-export interface StudentWithSkills extends Omit<Student, 'skills'> {
+export interface StudentWithSkills extends StudentRow {
   skills: SkillRow[]
 }
 
-export interface Skill {
-  id: string
-  name: string
-  is_global: boolean
-  user_id: string | null
-  created_at: string | null
-}
-
-export interface StudentFormatted {
-  id: string
-  name: string
-  country: string
-  university: string
-  profileImage?: string
-  skills: Skill[]
-  courses: string[]
-  currentProject: string
-  coolestThing: string
-  goals: string
-  phoneNumber: string
-  email: string
-  linkedin?: string
-  github?: string
-  isOnboarded: boolean
-  website?: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = []): StudentFormatted => {
+export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = []): StudentWithSkills => {
   return {
-    id: dbStudent.id,
-    name: dbStudent.name || '',
-    country: dbStudent.country || '',
-    university: dbStudent.university || '',
-    profileImage: dbStudent.profile_image || undefined,
-    skills: skills,
-    courses: dbStudent.courses || [],
-    currentProject: dbStudent.current_project || '',
-    coolestThing: dbStudent.coolest_thing || '',
-    goals: dbStudent.goals || '',
-    phoneNumber: dbStudent.phone_number || '',
-    email: dbStudent.email || '',
-    linkedin: dbStudent.linkedin || undefined,
-    github: dbStudent.github || undefined,
-    isOnboarded: dbStudent.isOnboarded || false,
-    website: dbStudent.website || undefined,
-    createdAt: new Date(dbStudent.created_at || ''),
-    updatedAt: new Date(dbStudent.updated_at || '')
+    ...dbStudent,
+    skills: skills
   }
 }
 
-export const formatStudentForDB = (student: Partial<StudentFormatted>): StudentInsert => {
+export const formatStudentForDB = (student: Partial<StudentRow>): StudentInsert => {
   return {
     name: student.name || null,
     country: student.country || null,
     university: student.university || null,
-    profile_image: student.profileImage || null,
-    skills: student.skills?.map(s => s.name) || null,
+    profile_image: student.profile_image || null,
     courses: student.courses || null,
-    current_project: student.currentProject || null,
-    coolest_thing: student.coolestThing || null,
+    current_project: student.current_project || null,
+    coolest_thing: student.coolest_thing || null,
     goals: student.goals || null,
-    phone_number: student.phoneNumber || null,
+    phone_number: student.phone_number || null,
     email: student.email || null,
     linkedin: student.linkedin || null,
     github: student.github || null,
-    isOnboarded: student.isOnboarded || false,
-    website: student.website || null
+    instagram: student.instagram || null,
+    website: student.website || null,
+    isOnboarded: student.isOnboarded || false
   }
 }
 
-export const isValidStudent = (obj: any): obj is Student => {
+export const isValidStudent = (obj: any): obj is StudentRow => {
   return (
     obj &&
     typeof obj.id === 'string' &&
@@ -111,14 +46,11 @@ export const isValidStudent = (obj: any): obj is Student => {
   )
 }
 
-export const isValidStudentFormatted = (obj: any): obj is StudentFormatted => {
+export const isValidStudentWithSkills = (obj: any): obj is StudentWithSkills => {
   return (
-    obj &&
-    typeof obj.id === 'string' &&
-    typeof obj.name === 'string' &&
-    typeof obj.email === 'string' &&
-    Array.isArray(obj.skills) &&
-    typeof obj.goals === 'string'
+    isValidStudent(obj) &&
+    'skills' in obj &&
+    Array.isArray(obj.skills)
   )
 }
 
@@ -127,7 +59,6 @@ export const createEmptyStudent = (): StudentInsert => ({
   country: null,
   university: null,
   profile_image: null,
-  skills: [],
   courses: [],
   current_project: null,
   coolest_thing: null,
@@ -136,7 +67,9 @@ export const createEmptyStudent = (): StudentInsert => ({
   email: null,
   linkedin: null,
   github: null,
-  website: null
+  instagram: null,
+  website: null,
+  isOnboarded: false
 })
 
 export const createStudentWithDefaults = (
@@ -144,6 +77,5 @@ export const createStudentWithDefaults = (
 ): StudentInsert => ({
   ...createEmptyStudent(),
   name: required.name,
-  email: required.email,
-  summer_goals: []
-})
+  email: required.email
+}) 
