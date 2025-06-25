@@ -132,6 +132,22 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                 {student.university}
               </p>
             )}
+            {/* Courses under university */}
+            {(student as any).courses && (student as any).courses.length > 0 && (
+              <div className="mb-2">
+                <div className="flex flex-wrap justify-center gap-1">
+                  {(student as any).courses.map((course: string, index: number) => (
+                    <Badge
+                      key={`${course}-${index}`}
+                      variant="secondary"
+                      className="text-xs bg-blue-100 text-blue-800 border-blue-200"
+                    >
+                      {course}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
@@ -155,10 +171,21 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             </div>
           )}
 
-          {/* Skills */}
+          {/* Summer Goals */}
+          {(student as any).goals && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Summer Session Goals
+              </h4>
+              <p className="text-sm text-gray-600">
+                {(student as any).goals}
+              </p>
+            </div>
+          )}
+
+          {/* Skills above social links */}
           {student.skills && student.skills.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Skills</h4>
               <div className="flex flex-wrap gap-1">
                 {student.skills.slice(0, window.innerWidth < 640 ? 2 : 3).map((skill) => (
                   <Badge
@@ -175,36 +202,6 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                   </span>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Courses */}
-          {(student as any).courses && (student as any).courses.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Courses</h4>
-              <div className="flex flex-wrap gap-1">
-                {(student as any).courses.map((course: string, index: number) => (
-                  <Badge
-                    key={`${course}-${index}`}
-                    variant="secondary"
-                    className="text-xs bg-blue-100 text-blue-800 border-blue-200"
-                  >
-                    {course}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Summer Goals */}
-          {(student as any).goals && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                Summer Session Goals
-              </h4>
-              <p className="text-sm text-gray-600">
-                {(student as any).goals}
-              </p>
             </div>
           )}
 

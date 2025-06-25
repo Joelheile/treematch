@@ -1,33 +1,34 @@
 import { OnboardingData } from '@/lib/onboarding-storage'
 import { StudentInsert } from '@/types/Student'
-import { supabase } from '../../integrations/supabase/client'
 import { createClient } from '../../integrations/supabase/client-ssr'
 import { moveAvatarAfterLogin } from '../../integrations/supabase/moveAvatarAfterLogin'
 
 export class OnboardingService {
-  private formatSocialUrl(platform: string, input: string): string | null {
+  private extractUsername(platform: string, input: string): string | null {
     if (!input.trim()) return null
 
+    // Remove any existing URL prefixes to get just the username
+    let cleanInput = input.trim()
+    
     switch (platform) {
       case "linkedin":
-        return input.startsWith("http")
-          ? input
-          : `https://www.linkedin.com/in/${input.replace("@", "")}`
+        cleanInput = cleanInput.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')
+        break
       case "github":
-        return input.startsWith("http")
-          ? input
-          : `https://github.com/${input.replace("@", "")}`
+        cleanInput = cleanInput.replace(/^https?:\/\/(www\.)?github\.com\//, '')
+        break
       case "twitter":
-        return input.startsWith("http")
-          ? input
-          : `https://twitter.com/${input.replace("@", "")}`
+        cleanInput = cleanInput.replace(/^https?:\/\/(www\.)?(twitter\.com\/|x\.com\/)/, '')
+        break
       case "instagram":
-        return input.startsWith("http")
-          ? input
-          : `https://instagram.com/${input.replace("@", "")}`
-      default:
-        return input
+        cleanInput = cleanInput.replace(/^https?:\/\/(www\.)?instagram\.com\//, '')
+        break
     }
+    
+    // Remove @ symbol and trailing slashes
+    cleanInput = cleanInput.replace(/^@/, '').replace(/\/$/, '')
+    
+    return cleanInput || null
   }
 
   convertOnboardingDataToStudent(
@@ -38,14 +39,17 @@ export class OnboardingService {
       name: onboardingData.name,
       email: userEmail,
       country: onboardingData.country,
+      university: onboardingData.university,
+      courses: onboardingData.courses,
       profile_image: onboardingData.profileImage || null,
       goals: onboardingData.summerGoals,
       current_project: onboardingData.currentProject,
-      phone_number: null,
-      linkedin: this.formatSocialUrl("linkedin", onboardingData.linkedinUrl),
-      github: this.formatSocialUrl("github", onboardingData.githubUsername),
-      website: this.formatSocialUrl("twitter", onboardingData.twitterHandle),
-      instagram: this.formatSocialUrl("instagram", onboardingData.instagramHandle),
+      phone_number: onboardingData.phoneNumber || null,
+      linkedin: this.extractUsername("linkedin", onboardingData.linkedinUrl),
+      github: this.extractUsername("github", onboardingData.githubUsername),
+      website: onboardingData.websiteUrl || null,
+      instagram: this.extractUsername("instagram", onboardingData.instagramHandle),
+      twitter: this.extractUsername("twitter", onboardingData.twitterHandle),
       isOnboarded: true,
     }
   }
@@ -58,6 +62,7 @@ export class OnboardingService {
       skill_id: skillId
     }))
 
+    const supabase = createClient()
     const { error } = await supabase
       .from('student_skills')
       .insert(studentSkills)
@@ -66,6 +71,7 @@ export class OnboardingService {
   }
 
   async updateStudentSkills(studentId: string, skillIds: string[]) {
+    const supabase = createClient()
     const { error: deleteError } = await supabase
       .from('student_skills')
       .delete()
@@ -78,6 +84,7 @@ export class OnboardingService {
 
   async getStudentByEmail(email: string) {
     console.log('getStudentByEmail called with:', email)
+    const supabase = createClient()
     const { data: studentData, error: studentError } = await supabase
       .from('students')
       .select('*')
@@ -97,6 +104,7 @@ export class OnboardingService {
 
   async createStudent(student: StudentInsert, skillIds: string[] = []) {
     console.log('createStudent called with:', { student, skillIds })
+    const supabase = createClient()
     const { data, error } = await supabase
       .from('students')
       .insert(student)
@@ -115,6 +123,7 @@ export class OnboardingService {
 
   async updateStudent(id: string, updates: Partial<StudentInsert>, skillIds?: string[]) {
     console.log('updateStudent called with:', { id, updates, skillIds })
+    const supabase = createClient()
     const { data, error } = await supabase
       .from('students')
       .update(updates)

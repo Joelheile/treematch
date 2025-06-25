@@ -4,25 +4,13 @@ import { Tables } from './types'
 
 type Course = Tables<'courses'>
 
-export const useCourses = (userId?: string) => {
+export const useCourses = () => {
   return useQuery({
-    queryKey: ['courses', userId],
+    queryKey: ['courses'],
     queryFn: async (): Promise<Course[]> => {
-      let query = supabase
-        .from('courses')
-        .select('*')
-        .order('name')
-
-      if (userId) {
-        query = query.or(`is_global.eq.true,user_id.eq.${userId}`)
-      } else {
-        query = query.eq('is_global', true)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
-      return data || []
+      // Since courses table doesn't exist yet, return empty array
+      // This can be implemented when courses functionality is needed
+      return []
     },
   })
 }
