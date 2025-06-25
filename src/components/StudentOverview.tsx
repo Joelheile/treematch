@@ -56,6 +56,7 @@ export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [hasLinkedIn, setHasLinkedIn] = useState<boolean | undefined>(
     undefined
   );
@@ -64,6 +65,7 @@ export const StudentOverview = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [showCoursesDropdown, setShowCoursesDropdown] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [sortBy, setSortBy] = useState<
     "newest" | "alphabetical" | "mostSkills"
@@ -93,7 +95,7 @@ export const StudentOverview = () => {
     }));
   }, []);
 
-  // Build filters object
+  // Build filters object (without courses since we'll filter client-side)
   const filters: StudentFilters = useMemo(() => {
     const result: StudentFilters = {};
     if (searchTerm.trim()) result.search = searchTerm.trim();
@@ -123,8 +125,23 @@ export const StudentOverview = () => {
     orderDirection: sortBy === "newest" ? "desc" : "asc",
   });
 
-  const students = studentsResponse?.data || [];
-  const totalCount = studentsResponse?.totalCount || 0;
+  const allStudents = studentsResponse?.data || [];
+  
+  // Client-side course filtering
+  const students = useMemo(() => {
+    if (selectedCourses.length === 0) return allStudents;
+    
+    return allStudents.filter((student) => {
+      const studentCourses = (student as any).courses || [];
+      return selectedCourses.some((selectedCourse) =>
+        studentCourses.some((course: string) =>
+          course.toLowerCase().includes(selectedCourse.toLowerCase())
+        )
+      );
+    });
+  }, [allStudents, selectedCourses]);
+
+  const totalCount = students.length;
 
   // Get unique countries from actual students
   const availableCountries = useMemo(() => {
@@ -137,9 +154,29 @@ export const StudentOverview = () => {
     return Array.from(countrySet).sort();
   }, [students]);
 
+  // Get unique courses from all students
+  const availableCourses = useMemo(() => {
+    const courseSet = new Set<string>();
+    allStudents.forEach((student) => {
+      const studentCourses = (student as any).courses || [];
+      studentCourses.forEach((course: string) => {
+        if (course && course.trim()) {
+          courseSet.add(course.trim());
+        }
+      });
+    });
+    return Array.from(courseSet).sort();
+  }, [allStudents]);
+
   const handleSkillSelect = (skill: string) => {
     setSelectedSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const handleCourseSelect = (course: string) => {
+    setSelectedCourses((prev) =>
+      prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]
     );
   };
 
@@ -161,6 +198,7 @@ export const StudentOverview = () => {
     setSearchTerm("");
     setSelectedCountry("");
     setSelectedSkills([]);
+    setSelectedCourses([]);
     setHasLinkedIn(undefined);
     setHasGithub(undefined);
     setShowLiked(false);
@@ -170,6 +208,7 @@ export const StudentOverview = () => {
     searchTerm ||
     selectedCountry ||
     selectedSkills.length > 0 ||
+    selectedCourses.length > 0 ||
     hasLinkedIn !== undefined ||
     hasGithub !== undefined ||
     showLiked;
@@ -179,12 +218,15 @@ export const StudentOverview = () => {
       searchTerm,
       selectedCountry,
       selectedSkills.length > 0,
+      selectedCourses.length > 0,
       hasLinkedIn !== undefined,
       hasGithub !== undefined,
       showLiked,
     ].filter(Boolean).length +
-    selectedSkills.length -
-    (selectedSkills.length > 0 ? 1 : 0);
+    selectedSkills.length +
+    selectedCourses.length -
+    (selectedSkills.length > 0 ? 1 : 0) -
+    (selectedCourses.length > 0 ? 1 : 0);
 
   // Focus search on mobile when component mounts
   useEffect(() => {
@@ -416,6 +458,66 @@ export const StudentOverview = () => {
           </Command>
         </PopoverContent>
       </Popover>
+
+      {/* Courses filter */}
+      <Popover open={showCoursesDropdown} onOpenChange={setShowCoursesDropdown}>
+        <PopoverTrigger asChild>
+          <button
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap relative ${
+              selectedCourses.length > 0
+                ? "bg-blue-50 border-blue-300 text-blue-700"
+                : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="text-sm font-medium">Courses</span>
+            {selectedCourses.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {selectedCourses.length}
+              </span>
+            )}
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0 max-h-96 overflow-hidden">
+          <Command>
+            <CommandInput placeholder="Search courses..." />
+            <CommandList>
+              <CommandEmpty>No courses found.</CommandEmpty>
+              
+              {selectedCourses.length > 0 && (
+                <CommandGroup heading="Selected Courses">
+                  {selectedCourses.map((courseName) => (
+                    <CommandItem
+                      key={courseName}
+                      onSelect={() => handleCourseSelect(courseName)}
+                      className="bg-blue-50"
+                    >
+                      <span className="text-blue-700 font-medium">{courseName}</span>
+                      <Check className="ml-auto w-4 h-4 text-blue-600" />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {availableCourses.length > 0 && (
+                <CommandGroup heading="Available Courses">
+                  {availableCourses
+                    .filter((course) => !selectedCourses.includes(course))
+                    .map((course) => (
+                      <CommandItem
+                        key={course}
+                        onSelect={() => handleCourseSelect(course)}
+                      >
+                        <span>{course}</span>
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 
@@ -457,6 +559,18 @@ export const StudentOverview = () => {
               <span className="text-sm font-medium">{skill}</span>
               <button onClick={() => handleSkillSelect(skill)} className="ml-1">
                 <X className="w-3 h-3 hover:text-purple-900" />
+              </button>
+            </div>
+          ))}
+
+          {selectedCourses.map((course) => (
+            <div
+              key={course}
+              className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200"
+            >
+              <span className="text-sm font-medium">{course}</span>
+              <button onClick={() => handleCourseSelect(course)} className="ml-1">
+                <X className="w-3 h-3 hover:text-blue-900" />
               </button>
             </div>
           ))}

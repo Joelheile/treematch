@@ -58,16 +58,21 @@ export default function OnboardingLogic() {
 
   useEffect(() => {
     if (student && availableSkills.length > 0) {
+      // Convert skill names back to skill IDs for the form
+      const studentSkillIds = availableSkills
+        .filter((skill) => (student.skills || []).includes(skill.name))
+        .map((skill) => skill.id);
+
       setFormData({
         name: student.name || "",
         country: student.country || "",
         university: student.university || "",
         phoneNumber: student.phone_number || "",
         profileImage: student.profile_image || "",
-        skillIds: student.skills || [],
-        courseIds: [],
-        summerGoals: student.summer_goals?.join("\n") || "",
-        currentProject: student.coolest_thing || "",
+        skillIds: studentSkillIds,
+        courseIds: (student as any).courses || [],
+        summerGoals: (student as any).goals || "",
+        currentProject: student.current_project || "",
         linkedinUrl: student.linkedin || "",
         instagramHandle: "",
         twitterHandle: "",
@@ -187,28 +192,30 @@ export default function OnboardingLogic() {
         if (tempAvatarPath) {
           newProfileImage = await moveAvatarAfterLogin(tempAvatarPath, user.id);
         }
-        await Promise.all([
-          updateStudent.mutateAsync({
-            id: student.id,
-            updates: {
-              name: formData.name,
-              country: formData.country,
-              university: formData.university || null,
-              phone_number: formData.phoneNumber || null,
-              profile_image: newProfileImage || null,
-              summer_goals: formData.summerGoals ? [formData.summerGoals] : [],
-              coolest_thing: formData.currentProject,
-              linkedin: formData.linkedinUrl || null,
-              github: formData.githubUsername || null,
-              website: formData.twitterHandle || null,
-              isOnboarded: true,
-            },
-          }),
-          updateStudentSkills.mutateAsync({
-            studentId: student.id,
-            skillIds: formData.skillIds,
-          }),
-        ]);
+        // Convert skill IDs to skill names for the skills array field
+        const selectedSkillNames = availableSkills
+          .filter((skill) => formData.skillIds.includes(skill.id))
+          .map((skill) => skill.name);
+
+        await updateStudent.mutateAsync({
+          id: student.id,
+          updates: {
+            name: formData.name,
+            country: formData.country,
+            university: formData.university || null,
+            phone_number: formData.phoneNumber || null,
+            profile_image: newProfileImage || null,
+            current_project: formData.currentProject || null,
+            coolest_thing: formData.currentProject || null,
+            goals: formData.summerGoals || null,
+            skills: selectedSkillNames,
+            courses: formData.courseIds,
+            linkedin: formData.linkedinUrl || null,
+            github: formData.githubUsername || null,
+            website: formData.twitterHandle || null,
+            isOnboarded: true,
+          },
+        });
         toast.success("Your profile has been updated successfully!");
         router.push("/");
         return;

@@ -9,7 +9,8 @@
       "Bash(npm run build:*)",
       "Bash(npm run test:*)",
       "Bash(rg:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
