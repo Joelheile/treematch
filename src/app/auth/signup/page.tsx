@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
 import { OnboardingStorage } from "@/lib/onboarding-storage";
 import { CheckCircle, Lock, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../AuthProvider";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -22,7 +22,6 @@ export default function SignupPage() {
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
   const router = useRouter();
   const { signUp, signInWithGoogle } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     setHasOnboardingData(
@@ -37,11 +36,7 @@ export default function SignupPage() {
     setSuccess(false);
 
     if (!email.endsWith("@stanford.edu")) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Email Domain",
-        description: "Please use your Stanford email address (@stanford.edu)",
-      });
+      toast.error("Please use your Stanford email address (@stanford.edu)");
       setLoading(false);
       return;
     }
