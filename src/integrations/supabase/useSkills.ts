@@ -4,22 +4,15 @@ import { Tables } from './types'
 
 type Skill = Tables<'skills'>
 
-export const useSkills = (userId?: string) => {
+export const useSkills = () => {
   return useQuery({
-    queryKey: ['skills', userId],
+    queryKey: ['skills'],
     queryFn: async (): Promise<Skill[]> => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('skills')
         .select('*')
+        .eq('is_global', true)
         .order('name')
-
-      if (userId) {
-        query = query.or(`is_global.eq.true,user_id.eq.${userId}`)
-      } else {
-        query = query.eq('is_global', true)
-      }
-
-      const { data, error } = await query
 
       if (error) throw error
       return data || []

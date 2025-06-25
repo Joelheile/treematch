@@ -1,5 +1,5 @@
 import { useAuth } from '@/app/auth/AuthProvider'
-import { useStudentByEmail } from '@/integrations/supabase/useStudentByEmail'
+import { useStudentByUserId } from '@/integrations/supabase/useStudentByUserId'
 
 export const useCurrentStudent = () => {
   const { user } = useAuth()
@@ -9,7 +9,7 @@ export const useCurrentStudent = () => {
     isLoading,
     error,
     refetch
-  } = useStudentByEmail(user?.email || '', !!user?.email)
+  } = useStudentByUserId(user?.id || '', !!user?.id)
 
   const student = studentResponse?.data
   
