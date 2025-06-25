@@ -36,6 +36,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -535,8 +536,14 @@ export const StudentOverview = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-red-600 p-2 rounded-xl">
-                <TreePine className="w-6 h-6 text-white" />
+              <div className="p-1 rounded-xl">
+                <Image 
+                  src="/icon.png" 
+                  alt="TreeMatch Logo" 
+                  width={40} 
+                  height={40} 
+                  className="w-10 h-10"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Treematch</h1>
