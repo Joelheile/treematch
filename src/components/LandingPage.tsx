@@ -93,7 +93,7 @@ export function LandingPage() {
                 <div className="absolute top-0 left-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
               </div>
               <span className="text-center sm:text-left">
-                Explore {studentCount} fascinating profiles
+                {studentCount} from 500+ Summer Session students
               </span>
             </div>
             {timeLeft.isActive && (
@@ -201,7 +201,7 @@ export function LandingPage() {
       <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-            Explore {studentCount} fascinating profiles
+            {studentCount} from 500+ Summer Session students
           </h2>
           <p className="text-gray-600 leading-relaxed text-sm sm:text-base px-2">
             Join the growing community of Stanford Summer Session students
