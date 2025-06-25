@@ -1,17 +1,17 @@
 "use client";
 
-import OnboardingSidebar from "./OnboardingSidebar";
 import OnboardingNavigation from "./OnboardingNavigation";
+import OnboardingSidebar from "./OnboardingSidebar";
 import {
   BasicInfoStep,
-  SkillsStep,
   CoursesStep,
   CurrentProjectStep,
   GoalsStep,
-  SocialsStep,
   ProfilePhotoStep,
+  SkillsStep,
+  SocialsStep,
 } from "./steps";
-import { FormData, Skill, Course, Country, Step } from "./types";
+import { Country, FormData, Skill, Step } from "./types";
 
 interface OnboardingUIProps {
   currentStep: number;
@@ -23,6 +23,7 @@ interface OnboardingUIProps {
   selectedCountry: Country | null;
   countrySuggestions: Country[];
   availableSkills: Skill[];
+  suggestedSkills: Skill[];
   skillsLoading: boolean;
   firstName: string;
   lastName: string;
@@ -36,6 +37,9 @@ interface OnboardingUIProps {
   handleCountrySelect: (country: Country) => void;
   handleNameChange: (field: "first" | "last", value: string) => void;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSuggestSkill: () => void;
+  suggestedSkill: string;
+  setSuggestedSkill: (value: string) => void;
   handleNext: () => void;
   handleBack: () => void;
   setShowCountrySuggestions: (show: boolean) => void;
@@ -51,6 +55,7 @@ export default function OnboardingUI({
   selectedCountry,
   countrySuggestions,
   availableSkills,
+  suggestedSkills,
   skillsLoading,
   firstName,
   lastName,
@@ -64,6 +69,9 @@ export default function OnboardingUI({
   handleCountrySelect,
   handleNameChange,
   handleImageUpload,
+  handleSuggestSkill,
+  suggestedSkill,
+  setSuggestedSkill,
   handleNext,
   handleBack,
   setShowCountrySuggestions,
@@ -96,7 +104,11 @@ export default function OnboardingUI({
             formData={formData}
             setFormData={setFormData}
             availableSkills={availableSkills}
+            suggestedSkills={suggestedSkills}
             skillsLoading={skillsLoading}
+            suggestedSkill={suggestedSkill}
+            setSuggestedSkill={setSuggestedSkill}
+            handleSuggestSkill={handleSuggestSkill}
           />
         );
 
@@ -113,27 +125,14 @@ export default function OnboardingUI({
 
       case 4:
         return (
-          <CurrentProjectStep
-            formData={formData}
-            setFormData={setFormData}
-          />
+          <CurrentProjectStep formData={formData} setFormData={setFormData} />
         );
 
       case 5:
-        return (
-          <GoalsStep
-            formData={formData}
-            setFormData={setFormData}
-          />
-        );
+        return <GoalsStep formData={formData} setFormData={setFormData} />;
 
       case 6:
-        return (
-          <SocialsStep
-            formData={formData}
-            setFormData={setFormData}
-          />
-        );
+        return <SocialsStep formData={formData} setFormData={setFormData} />;
 
       case 7:
         return (
@@ -154,13 +153,13 @@ export default function OnboardingUI({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
-      <OnboardingSidebar 
+      <OnboardingSidebar
         currentStep={currentStep}
         steps={steps}
         progressPercentage={progressPercentage}
         isMobile={true}
       />
-      <OnboardingSidebar 
+      <OnboardingSidebar
         currentStep={currentStep}
         steps={steps}
         progressPercentage={progressPercentage}

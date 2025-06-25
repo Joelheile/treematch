@@ -20,6 +20,8 @@ export interface FormData {
 export interface Skill {
   id: string;
   name: string;
+  is_global: boolean;
+  user_id: string | null;
 }
 
 export interface Course {

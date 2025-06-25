@@ -3,6 +3,7 @@
 import { useAuth } from "@/app/auth/AuthProvider";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { moveAvatarAfterLogin } from "@/integrations/supabase/moveAvatarAfterLogin";
+import { useAddSkill } from "@/integrations/supabase/useAddSkill";
 import { useSkills } from "@/integrations/supabase/useSkills";
 import {
   useStudentSkills,
@@ -29,11 +30,22 @@ export default function OnboardingLogic() {
 
   const { user, signInWithMagicLink } = useAuth();
   const { student, isLoading: studentLoading } = useCurrentStudent();
-  const { data: availableSkills = [], isLoading: skillsLoading } = useSkills();
+  const { data: allSkills = [], isLoading: skillsLoading } = useSkills();
+
+  const availableSkills = useMemo(() => {
+    return allSkills.filter((skill) => skill.is_global);
+  }, [allSkills]);
+
+  const suggestedSkills = useMemo(() => {
+    return allSkills.filter((skill) => !skill.is_global);
+  }, [allSkills]);
   const updateStudentSkills = useUpdateStudentSkills();
   const { data: studentSkills = [] } = useStudentSkills(student?.id);
   const updateStudent = useUpdateStudent();
   const uploadAvatar = useUploadAvatar();
+  const addSkill = useAddSkill();
+
+  const [suggestedSkill, setSuggestedSkill] = useState("");
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -163,6 +175,28 @@ export default function OnboardingLogic() {
     setSelectedCountry(country);
     setShowCountrySuggestions(false);
     setFormData((prev) => ({ ...prev, country: country.name }));
+  };
+
+  const handleSuggestSkill = async () => {
+    if (suggestedSkill.trim() === "") return;
+
+    try {
+      const newSkill = await addSkill.mutateAsync({
+        name: suggestedSkill.trim(),
+        is_global: false,
+      });
+
+      if (newSkill) {
+        setFormData((prev) => ({
+          ...prev,
+          skillIds: [...prev.skillIds, newSkill.id],
+        }));
+        setSuggestedSkill("");
+        toast.success(`Skill "${newSkill.name}" added and selected!`);
+      }
+    } catch (error) {
+      toast.error("Failed to add skill. Please try again.");
+    }
   };
 
   const handleImageUpload = useCallback(
@@ -397,6 +431,7 @@ export default function OnboardingLogic() {
       selectedCountry={selectedCountry}
       countrySuggestions={countrySuggestions}
       availableSkills={availableSkills}
+      suggestedSkills={suggestedSkills}
       skillsLoading={skillsLoading}
       firstName={firstName}
       lastName={lastName}
@@ -410,6 +445,9 @@ export default function OnboardingLogic() {
       handleCountrySelect={handleCountrySelect}
       handleNameChange={handleNameChange}
       handleImageUpload={handleImageUpload}
+      handleSuggestSkill={handleSuggestSkill}
+      suggestedSkill={suggestedSkill}
+      setSuggestedSkill={setSuggestedSkill}
       handleNext={handleNext}
       handleBack={handleBack}
       setShowCountrySuggestions={setShowCountrySuggestions}
