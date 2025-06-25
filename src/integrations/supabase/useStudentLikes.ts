@@ -72,11 +72,29 @@ export const useStudentLikes = () => {
     toggleLikeMutation.mutate(studentId);
   };
 
+  // Add mutual like check
+  const isMutualLike = async (studentId: string): Promise<boolean> => {
+    if (!user?.id) return false;
+    // Check if current user liked student
+    const likedByMe = likedStudentIds.includes(studentId);
+    if (!likedByMe) return false;
+    // Check if student liked current user
+    const { data, error } = await supabase
+      .from("student_likes")
+      .select("liked_student_id")
+      .eq("liker_id", studentId)
+      .eq("liked_student_id", user.id)
+      .single();
+    if (error) return false;
+    return !!data;
+  };
+
   return {
     likedStudentIds,
     isLoading,
     isLiked,
     toggleLike,
     isToggling: toggleLikeMutation.isPending,
+    isMutualLike,
   };
 }; 
