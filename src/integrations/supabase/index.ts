@@ -16,7 +16,7 @@ export { useStudentSkills } from './useStudentSkills'
 export { useUpdateSkill } from './useUpdateSkill'
 export { useUploadAvatar } from './useUploadAvatar'
 
-// Types
+// Typess
 export type { ServiceResponse } from './useStudentByEmail'
 export type { PaginatedResponse, StudentFilters, StudentSearchOptions, StudentWithSkills } from './useStudents'
 
