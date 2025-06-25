@@ -211,7 +211,7 @@ export default function OnboardingLogic() {
         if (tempAvatarPath) {
           newProfileImage = await moveAvatarAfterLogin(tempAvatarPath, user.id);
         }
-        // Update skills using proper junction table
+        // Update skills using proper junction tablee
         await updateStudentSkills.mutateAsync({
           studentId: student.id,
           skillIds: formData.skillIds,
