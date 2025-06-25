@@ -15,18 +15,21 @@ export type Database = {
           id: string
           is_global: boolean
           name: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           is_global?: boolean
           name: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           is_global?: boolean
           name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -105,9 +108,9 @@ export type Database = {
           email: string | null
           github: string | null
           goals: string | null
+          icon: string | null
           id: string
           instagram: string | null
-          icon: string | null
           isOnboarded: boolean | null
           linkedin: string | null
           name: string | null
@@ -127,9 +130,9 @@ export type Database = {
           email?: string | null
           github?: string | null
           goals?: string | null
+          icon?: string | null
           id?: string
           instagram?: string | null
-          icon?: string | null
           isOnboarded?: boolean | null
           linkedin?: string | null
           name?: string | null
@@ -149,9 +152,9 @@ export type Database = {
           email?: string | null
           github?: string | null
           goals?: string | null
+          icon?: string | null
           id?: string
           instagram?: string | null
-          icon?: string | null
           isOnboarded?: boolean | null
           linkedin?: string | null
           name?: string | null

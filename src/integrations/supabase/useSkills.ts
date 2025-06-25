@@ -12,7 +12,6 @@ export const useSkills = () => {
       const { data, error } = await supabase
         .from('skills')
         .select('*')
-        .eq('is_global', true)
         .order('name')
 
       if (error) throw error

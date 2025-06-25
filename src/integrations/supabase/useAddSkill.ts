@@ -7,17 +7,22 @@ export const useAddSkill = () => {
   return useMutation({
     mutationFn: async ({ 
       name, 
-      isGlobal = true 
+      is_global = false 
     }: { 
       name: string
-      isGlobal?: boolean 
+      is_global?: boolean 
     }) => {
       const supabase = createClient()
+      
+      // Get current user for user_id
+      const { data: { user } } = await supabase.auth.getUser()
+      
       const { data, error } = await supabase
         .from('skills')
         .insert([{ 
           name, 
-          is_global: isGlobal
+          is_global,
+          user_id: is_global ? null : user?.id || null
         }])
         .select()
         .single()
