@@ -19,26 +19,6 @@ import OnboardingUI from "./OnboardingUI";
 import { FormData } from "./types";
 import { TreePine } from "lucide-react";
 
-const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>]/g, '').substring(0, 500)
-}
-
-const validateUrl = (url: string): boolean => {
-  if (!url.trim()) return true
-  try {
-    new URL(url.startsWith('http') ? url : `https://${url}`)
-    return true
-  } catch {
-    return false
-  }
-}
-
-const validatePhoneNumber = (phone: string): boolean => {
-  if (!phone.trim()) return true
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))
-}
-
 export default function OnboardingLogic() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +61,7 @@ export default function OnboardingLogic() {
       setFormData({
         name: student.name || "",
         country: student.country || "",
-        university: "",
+        university: student.university || "",
         phoneNumber: student.phone_number || "",
         profileImage: student.profile_image || "",
         skillIds: student.skills || [],
@@ -143,12 +123,11 @@ export default function OnboardingLogic() {
     .slice(0, 5);
 
   const handleCountryInputChange = (value: string) => {
-    const sanitizedValue = sanitizeInput(value)
-    setCountryInput(sanitizedValue);
-    setShowCountrySuggestions(sanitizedValue.length > 0);
+    setCountryInput(value);
+    setShowCountrySuggestions(value.length > 0);
 
     const exactMatch = countriesData.find(
-      (country) => country.name.toLowerCase() === sanitizedValue.toLowerCase()
+      (country) => country.name.toLowerCase() === value.toLowerCase()
     );
 
     if (exactMatch) {
@@ -156,7 +135,7 @@ export default function OnboardingLogic() {
       setFormData((prev) => ({ ...prev, country: exactMatch.name }));
     } else {
       setSelectedCountry(null);
-      setFormData((prev) => ({ ...prev, country: sanitizedValue }));
+      setFormData((prev) => ({ ...prev, country: value }));
     }
   };
 
@@ -171,31 +150,33 @@ export default function OnboardingLogic() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      
-      console.log('Starting image upload for user:', user?.id, 'file:', file.name);
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a valid image file (JPG, PNG, or GIF)");
+        return;
+      }
       setIsUploadingImage(true);
       try {
-        const result = await uploadAvatar.mutateAsync({ 
-          file, 
-          userId: user?.id 
-        });
-        console.log('Upload result:', result);
+        const result = await uploadAvatar.mutateAsync({ file });
         setFormData((prev) => ({ ...prev, profileImage: result.url }));
-        if (!user?.id) {
-          setTempAvatarPath(result.path);
-          console.log('Set temp avatar path:', result.path);
-        } else {
-          console.log('Avatar uploaded directly to permanent location');
-        }
+        setTempAvatarPath(result.path);
         toast.success("Image uploaded successfully!");
       } catch (error) {
-        console.error('Upload error:', error);
         toast.error("Failed to upload image. Please try again.");
       } finally {
         setIsUploadingImage(false);
       }
     },
-    [uploadAvatar, user?.id]
+    [uploadAvatar]
   );
 
   const handleCompleteProfile = useCallback(async () => {
@@ -203,44 +184,25 @@ export default function OnboardingLogic() {
     try {
       if (user && student) {
         let newProfileImage = formData.profileImage;
-        console.log('Completing profile with tempAvatarPath:', tempAvatarPath, 'user.id:', user.id);
-        if (tempAvatarPath && user.id) {
-          console.log('Moving avatar from temp to permanent location');
+        if (tempAvatarPath) {
           newProfileImage = await moveAvatarAfterLogin(tempAvatarPath, user.id);
-          console.log('Moved avatar result:', newProfileImage);
         }
-        
-        const sanitizedUpdates = {
-          name: sanitizeInput(formData.name),
-          country: sanitizeInput(formData.country),
-          phone_number: formData.phoneNumber ? sanitizeInput(formData.phoneNumber) : null,
-          profile_image: newProfileImage || null,
-          summer_goals: formData.summerGoals ? [sanitizeInput(formData.summerGoals)] : [],
-          coolest_thing: sanitizeInput(formData.currentProject),
-          linkedin: formData.linkedinUrl ? sanitizeInput(formData.linkedinUrl) : null,
-          github: formData.githubUsername ? sanitizeInput(formData.githubUsername) : null,
-          website: formData.twitterHandle ? sanitizeInput(formData.twitterHandle) : null,
-        }
-
-        console.log('Saving profile with updates:', sanitizedUpdates);
-
-        if (!validateUrl(sanitizedUpdates.linkedin || '')) {
-          throw new Error('Invalid LinkedIn URL')
-        }
-        if (!validateUrl(sanitizedUpdates.github || '')) {
-          throw new Error('Invalid GitHub URL')
-        }
-        if (!validateUrl(sanitizedUpdates.website || '')) {
-          throw new Error('Invalid website URL')
-        }
-        if (!validatePhoneNumber(sanitizedUpdates.phone_number || '')) {
-          throw new Error('Invalid phone number')
-        }
-
         await Promise.all([
           updateStudent.mutateAsync({
             id: student.id,
-            updates: sanitizedUpdates,
+            updates: {
+              name: formData.name,
+              country: formData.country,
+              university: formData.university || null,
+              phone_number: formData.phoneNumber || null,
+              profile_image: newProfileImage || null,
+              summer_goals: formData.summerGoals ? [formData.summerGoals] : [],
+              coolest_thing: formData.currentProject,
+              linkedin: formData.linkedinUrl || null,
+              github: formData.githubUsername || null,
+              website: formData.twitterHandle || null,
+              isOnboarded: true,
+            },
           }),
           updateStudentSkills.mutateAsync({
             studentId: student.id,
@@ -251,51 +213,35 @@ export default function OnboardingLogic() {
         router.push("/");
         return;
       }
-      
       const selectedSkillNames = availableSkills
         .filter((skill) => formData.skillIds.includes(skill.id))
         .map((skill) => skill.name);
-        
-      const sanitizedOnboardingData: OnboardingData = {
-        name: sanitizeInput(formData.name),
-        country: sanitizeInput(formData.country),
-        university: sanitizeInput(formData.university),
-        phoneNumber: sanitizeInput(formData.phoneNumber),
+      const onboardingData: OnboardingData = {
+        name: formData.name,
+        country: formData.country,
+        university: formData.university,
+        phoneNumber: formData.phoneNumber,
         profileImage: formData.profileImage,
         skills: selectedSkillNames,
         skillIds: formData.skillIds,
         courses: formData.courseIds,
         courseIds: formData.courseIds,
-        summerGoals: sanitizeInput(formData.summerGoals),
-        currentProject: sanitizeInput(formData.currentProject),
-        linkedinUrl: sanitizeInput(formData.linkedinUrl),
-        instagramHandle: sanitizeInput(formData.instagramHandle),
-        twitterHandle: sanitizeInput(formData.twitterHandle),
-        githubUsername: sanitizeInput(formData.githubUsername),
+        summerGoals: formData.summerGoals,
+        currentProject: formData.currentProject,
+        linkedinUrl: formData.linkedinUrl,
+        instagramHandle: formData.instagramHandle,
+        twitterHandle: formData.twitterHandle,
+        githubUsername: formData.githubUsername,
         tempAvatarPath,
       };
-
-      if (!validateUrl(sanitizedOnboardingData.linkedinUrl)) {
-        throw new Error('Invalid LinkedIn URL')
-      }
-      if (!validateUrl(sanitizedOnboardingData.githubUsername)) {
-        throw new Error('Invalid GitHub URL')
-      }
-      if (!validateUrl(sanitizedOnboardingData.twitterHandle)) {
-        throw new Error('Invalid Twitter URL')
-      }
-      if (!validatePhoneNumber(sanitizedOnboardingData.phoneNumber)) {
-        throw new Error('Invalid phone number')
-      }
-
-      OnboardingStorage.save(sanitizedOnboardingData);
+      OnboardingStorage.save(onboardingData);
       toast.success(
         "Profile information saved! Now let's create your account."
       );
       router.push("/auth/signup");
     } catch (error) {
       console.error("Error saving profile:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to save profile. Please try again.");
+      toast.error("Failed to save profile. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -361,16 +307,15 @@ export default function OnboardingLogic() {
   }, [formData.name]);
 
   const handleNameChange = (field: "first" | "last", value: string) => {
-    const sanitizedValue = sanitizeInput(value)
     if (field === "first") {
       setFormData((prev) => ({
         ...prev,
-        name: lastName ? `${sanitizedValue} ${lastName}` : sanitizedValue,
+        name: lastName ? `${value} ${lastName}` : value,
       }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        name: firstName ? `${firstName} ${sanitizedValue}` : sanitizedValue,
+        name: firstName ? `${firstName} ${value}` : value,
       }));
     }
   };
