@@ -9,6 +9,7 @@ import { ExternalLink, Github, Heart, Instagram, Linkedin, MapPin, Twitter } fro
 import Image from "next/image";
 import { useState } from "react";
 import { StudentDetailPopup } from "./StudentDetailPopup";
+import { ICON_OPTIONS } from './onboarding/types'
 
 interface StudentCardProps {
   student: StudentWithSkills;
@@ -114,14 +115,11 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           )}
           <div className="mt-3">
             <div className="flex items-center justify-center space-x-2 mb-1">
-              {student.is_first_mover_batch && (
-                <Image
-                  src="/Trophy Icon 48.png"
-                  alt="Trophy"
-                  width={16}
-                  height={16}
-                  style={{ minWidth: 16, minHeight: 16 }}
-                />
+              {student.icon && (
+                (() => {
+                  const found = ICON_OPTIONS.find(opt => opt.value === student.icon)
+                  return found ? <span style={{ fontSize: 16 }}>{found.emoji}</span> : <span style={{ fontSize: 16 }}>{student.icon}</span>
+                })()
               )}
               {student.country && (
                 <span className="flex items-center">

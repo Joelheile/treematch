@@ -13,6 +13,7 @@ export interface FormData {
   twitterHandle: string;
   githubUsername: string;
   websiteUrl: string;
+  icon: string;
 }
 
 export interface Skill {
@@ -36,4 +37,17 @@ export interface Step {
   number: number;
   title: string;
   subtitle: string;
-} 
+}
+
+export type IconOption = {
+  value: string;
+  label: string;
+  emoji: string;
+}
+
+export const ICON_OPTIONS: IconOption[] = [
+  { value: 'trophy', label: 'Trophy', emoji: '🏆' },
+  { value: 'turtle', label: 'Turtle', emoji: '🐢' },
+  { value: 'rabbit', label: 'Rabbit', emoji: '🐇' },
+  { value: 'sheep', label: 'Sheep', emoji: '🐑' },
+] 
