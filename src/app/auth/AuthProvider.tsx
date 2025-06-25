@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const getSession = async () => {
       try {
-        console.log('Getting session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -45,7 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           throw error
         }
         
-        console.log('Session:', session)
         setSession(session)
         setUser(session?.user ?? null)
       } catch (error) {
@@ -86,16 +84,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error('Email and password are required')
+    }
+    
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     })
     if (error) throw error
   }
 
   const signUp = async (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error('Email and password are required')
+    }
+    
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters long')
+    }
+    
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     })
     if (error) throw error
@@ -132,15 +142,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null)
     
     if (typeof window !== 'undefined') {
-      localStorage.clear()
-      sessionStorage.clear()
-      
-      const cookies = document.cookie.split(';')
-      cookies.forEach(cookie => {
-        const eqPos = cookie.indexOf('=')
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
-        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
-      })
+      try {
+        localStorage.clear()
+        sessionStorage.clear()
+        
+        const cookies = document.cookie.split(';')
+        cookies.forEach(cookie => {
+          const eqPos = cookie.indexOf('=')
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
+        })
+      } catch (error) {
+        console.error('Error clearing auth data:', error)
+      }
     }
   }
 

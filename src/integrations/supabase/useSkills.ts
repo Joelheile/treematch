@@ -8,11 +8,18 @@ export const useSkills = (userId?: string) => {
   return useQuery({
     queryKey: ['skills', userId],
     queryFn: async (): Promise<Skill[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('skills')
         .select('*')
-        .or(`is_global.eq.true${userId ? `,user_id.eq.${userId}` : ''}`)
         .order('name')
+
+      if (userId) {
+        query = query.or(`is_global.eq.true,user_id.eq.${userId}`)
+      } else {
+        query = query.eq('is_global', true)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return data || []

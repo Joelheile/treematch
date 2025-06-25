@@ -5,12 +5,19 @@ export async function moveAvatarAfterLogin(tempPath: string, userId: string) {
   const newPath = `${userId}/avatar.jpg`
   
   try {
+    console.log('Moving avatar from temp path:', tempPath, 'to new path:', newPath)
+    
     const { data, error: downloadError } = await supabase.storage
       .from('temp-avatars')
       .download(tempPath)
     
     if (downloadError) {
       console.error('Failed to download temp avatar:', downloadError)
+      return null
+    }
+    
+    if (!data) {
+      console.error('No data received from temp avatar download')
       return null
     }
     
@@ -23,9 +30,16 @@ export async function moveAvatarAfterLogin(tempPath: string, userId: string) {
       return null
     }
     
-    await supabase.storage.from('temp-avatars').remove([tempPath])
+    const { error: removeError } = await supabase.storage
+      .from('temp-avatars')
+      .remove([tempPath])
+    
+    if (removeError) {
+      console.warn('Failed to remove temp avatar:', removeError)
+    }
     
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(newPath)
+    console.log('Successfully moved avatar to:', publicUrl)
     return publicUrl
   } catch (error) {
     console.error('Error moving avatar:', error)

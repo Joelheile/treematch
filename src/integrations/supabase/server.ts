@@ -2,8 +2,14 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from './types'
 
-const SUPABASE_URL = "https://zlggajmzyjrwojzhidlo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZ2dham16eWpyd29qemhpZGxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NDU5MTYsImV4cCI6MjA2NjIyMTkxNn0.HSRXxseFiCnX5VpM51NjJ18sMJ3XNNKCnq_8hV1e_dc";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Missing Supabase environment variables. Please create a .env.local file with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  );
+}
 
 export const createClient = () => {
   const cookieStore = cookies()

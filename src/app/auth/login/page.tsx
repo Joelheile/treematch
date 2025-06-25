@@ -13,6 +13,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../AuthProvider";
 
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email) && email.endsWith("@stanford.edu")
+}
+
+const sanitizeInput = (input: string): string => {
+  return input.trim().replace(/[<>]/g, '').substring(0, 255)
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,24 +37,35 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    if (!email.endsWith("@stanford.edu")) {
+    const sanitizedEmail = sanitizeInput(email)
+    const sanitizedPassword = password.trim()
+
+    if (!validateEmail(sanitizedEmail)) {
       toast({
         variant: "destructive",
-        title: "Invalid Email Domain",
-        description: "Please use your Stanford email address (@stanford.edu)",
+        title: "Invalid Email",
+        description: "Please use a valid Stanford email address (@stanford.edu)",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (sanitizedPassword.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters long",
       });
       setLoading(false);
       return;
     }
 
     try {
-      await signIn(email, password);
-      // Check if user has onboarding data that needs to be processed
+      await signIn(sanitizedEmail, sanitizedPassword);
       const hasOnboardingData =
         OnboardingStorage.exists() && !OnboardingStorage.isExpired();
 
       if (hasOnboardingData) {
-        // Let the post-auth hook handle the redirect and data saving
         toast({
           title: "Welcome back!",
           description: "Setting up your profile...",
@@ -54,7 +74,7 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "An error occurred during sign in");
     } finally {
       setLoading(false);
     }
@@ -100,6 +120,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-12"
                   required
+                  maxLength={255}
                 />
               </div>
             </div>
@@ -118,6 +139,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 h-12"
                   required
+                  minLength={6}
                 />
               </div>
             </div>

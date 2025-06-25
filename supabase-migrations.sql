@@ -1,3 +1,40 @@
+-- Create students table
+CREATE TABLE IF NOT EXISTS students (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT,
+  email TEXT UNIQUE NOT NULL,
+  country TEXT,
+  profile_image TEXT,
+  summer_goals TEXT[],
+  current_project TEXT,
+  coolest_thing TEXT,
+  phone_number TEXT,
+  linkedin TEXT,
+  github TEXT,
+  website TEXT,
+  isOnboarded BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Create skills table
+CREATE TABLE IF NOT EXISTS skills (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  is_global BOOLEAN DEFAULT true,
+  user_id UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Create student_skills junction table
+CREATE TABLE IF NOT EXISTS student_skills (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(student_id, skill_id)
+);
+
 -- Create courses table
 CREATE TABLE IF NOT EXISTS courses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -30,6 +67,49 @@ CREATE TABLE IF NOT EXISTS student_likes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   UNIQUE(liker_id, liked_student_id)
 );
+
+-- Create storage buckets for avatars
+INSERT INTO storage.buckets (id, name, public) VALUES 
+  ('avatars', 'avatars', true),
+  ('temp-avatars', 'temp-avatars', true)
+ON CONFLICT (id) DO UPDATE SET 
+  public = EXCLUDED.public;
+
+-- Create storage policies for avatars bucket
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "Authenticated users can upload avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can update their own avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+CREATE POLICY "Users can delete their own avatars" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+-- Create storage policies for temp-avatars bucket
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'temp-avatars');
+CREATE POLICY "Anyone can upload temp avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'temp-avatars');
+CREATE POLICY "Anyone can update temp avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'temp-avatars');
+CREATE POLICY "Anyone can delete temp avatars" ON storage.objects FOR DELETE USING (bucket_id = 'temp-avatars');
+
+-- Insert default skills
+INSERT INTO skills (name, is_global, user_id) VALUES
+  ('JavaScript', true, null),
+  ('Python', true, null),
+  ('React', true, null),
+  ('Node.js', true, null),
+  ('TypeScript', true, null),
+  ('SQL', true, null),
+  ('Git', true, null),
+  ('AWS', true, null),
+  ('Docker', true, null),
+  ('Machine Learning', true, null),
+  ('Data Science', true, null),
+  ('UI/UX Design', true, null),
+  ('Product Management', true, null),
+  ('Marketing', true, null),
+  ('Sales', true, null),
+  ('Finance', true, null),
+  ('Operations', true, null),
+  ('Human Resources', true, null),
+  ('Legal', true, null),
+  ('Research', true, null)
+ON CONFLICT DO NOTHING;
 
 -- Insert default Stanford courses
 INSERT INTO courses (name, code, department, is_global, user_id) VALUES
@@ -67,9 +147,16 @@ INSERT INTO courses (name, code, department, is_global, user_id) VALUES
 ON CONFLICT DO NOTHING;
 
 -- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_students_email ON students(email);
+CREATE INDEX IF NOT EXISTS idx_students_name ON students(name);
+CREATE INDEX IF NOT EXISTS idx_students_country ON students(country);
+CREATE INDEX IF NOT EXISTS idx_skills_name ON skills(name);
+CREATE INDEX IF NOT EXISTS idx_skills_is_global ON skills(is_global);
 CREATE INDEX IF NOT EXISTS idx_courses_name ON courses(name);
 CREATE INDEX IF NOT EXISTS idx_courses_code ON courses(code);
 CREATE INDEX IF NOT EXISTS idx_courses_department ON courses(department);
+CREATE INDEX IF NOT EXISTS idx_student_skills_student_id ON student_skills(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_skills_skill_id ON student_skills(skill_id);
 CREATE INDEX IF NOT EXISTS idx_student_courses_student_id ON student_courses(student_id);
 CREATE INDEX IF NOT EXISTS idx_student_courses_course_id ON student_courses(course_id);
 CREATE INDEX IF NOT EXISTS idx_student_likes_liker_id ON student_likes(liker_id);
@@ -77,11 +164,57 @@ CREATE INDEX IF NOT EXISTS idx_student_likes_liked_student_id ON student_likes(l
 CREATE INDEX IF NOT EXISTS idx_student_likes_created_at ON student_likes(created_at);
 
 -- Enable RLS (Row Level Security)
+ALTER TABLE students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_likes ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
+-- Create RLS policies for students
+CREATE POLICY "Students are viewable by everyone" 
+ON students FOR SELECT 
+USING (true);
+
+CREATE POLICY "Users can create their own student profile"
+ON students FOR INSERT
+WITH CHECK (auth.uid()::text = id);
+
+CREATE POLICY "Users can update their own student profile"
+ON students FOR UPDATE
+USING (auth.uid()::text = id);
+
+CREATE POLICY "Users can delete their own student profile"
+ON students FOR DELETE
+USING (auth.uid()::text = id);
+
+-- Create RLS policies for skills
+CREATE POLICY "Skills are viewable by everyone" 
+ON skills FOR SELECT 
+USING (true);
+
+CREATE POLICY "Global skills can be created by authenticated users"
+ON skills FOR INSERT
+WITH CHECK (auth.role() = 'authenticated' AND is_global = true);
+
+CREATE POLICY "Users can create their own custom skills"
+ON skills FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own custom skills"
+ON skills FOR UPDATE
+USING (auth.uid() = user_id);
+
+-- Create RLS policies for student_skills
+CREATE POLICY "Student skills are viewable by everyone"
+ON student_skills FOR SELECT
+USING (true);
+
+CREATE POLICY "Students can manage their own skills"
+ON student_skills FOR ALL
+USING (auth.uid()::text = (SELECT id FROM students WHERE id = student_skills.student_id));
+
+-- Create RLS policies for courses
 CREATE POLICY "Courses are viewable by everyone" 
 ON courses FOR SELECT 
 USING (true);
