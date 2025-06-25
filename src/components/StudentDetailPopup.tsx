@@ -7,6 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
 import countriesData from "@/lib/countries.json";
 import {
@@ -21,8 +23,6 @@ import {
   Twitter,
 } from "lucide-react";
 import Image from "next/image";
-import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
-import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { useEffect, useState } from "react";
 
 interface StudentDetailPopupProps {
@@ -36,17 +36,26 @@ export const StudentDetailPopup = ({
   isOpen,
   onClose,
 }: StudentDetailPopupProps) => {
-  if (!student) return null;
-
-  const hasLinks = student.linkedin || student.github || student.website || student.instagram || student.twitter;
+  // Move all hooks to the top before any conditional returns
   const { isMutualLike } = useStudentLikes();
   const { student: currentStudent } = useCurrentStudent();
   const [mutual, setMutual] = useState(false);
+
   useEffect(() => {
     if (student && currentStudent) {
       isMutualLike(student.id).then(setMutual);
     }
-  }, [student, currentStudent]);
+  }, [student, currentStudent, isMutualLike]);
+
+  // Early return after all hooks are called
+  if (!student) return null;
+
+  const hasLinks =
+    student.linkedin ||
+    student.github ||
+    student.website ||
+    student.instagram ||
+    student.twitter;
 
   // Function to convert country code to flag emoji
   const getCountryFlag = (countryName: string) => {
@@ -69,17 +78,19 @@ export const StudentDetailPopup = ({
       return;
     }
     const vCard = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
+      "BEGIN:VCARD",
+      "VERSION:3.0",
       `FN:${student.name || ""}`,
-      student.email ? `EMAIL:${student.email}` : '',
-      student.phone_number ? `TEL;TYPE=CELL:${student.phone_number}` : '',
-      'END:VCARD',
-    ].filter(Boolean).join('\n');
+      student.email ? `EMAIL:${student.email}` : "",
+      student.phone_number ? `TEL;TYPE=CELL:${student.phone_number}` : "",
+      "END:VCARD",
+    ]
+      .filter(Boolean)
+      .join("\n");
     try {
-      const blob = new Blob([vCard], { type: 'text/vcard' });
+      const blob = new Blob([vCard], { type: "text/vcard" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `${student.name || "contact"}.vcf`;
       document.body.appendChild(a);
@@ -188,13 +199,20 @@ export const StudentDetailPopup = ({
                   </Button>
                 )}
                 {student.phone_number && mutual && (
-                  <Button variant="outline" size="sm" className="h-8" onClick={handleAddToContacts}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={handleAddToContacts}
+                  >
                     <Phone className="w-3 h-3 mr-1" />
                     Add to Contacts
                   </Button>
                 )}
                 {student.phone_number && !mutual && (
-                  <span className="text-xs text-gray-500 self-center">Phone number is only visible if you both liked each other</span>
+                  <span className="text-xs text-gray-500 self-center">
+                    Phone number is only visible if you both liked each other
+                  </span>
                 )}
               </div>
             </div>

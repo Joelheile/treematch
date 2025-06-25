@@ -16,10 +16,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useStudentSkillsFilter } from "@/integrations/supabase/useStudentSkillsFilter";
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentFilters } from "@/integrations/supabase/useStudents";
 import { useStudents } from "@/integrations/supabase/useStudents";
+import { useStudentSkillsFilter } from "@/integrations/supabase/useStudentSkillsFilter";
 import countries from "@/lib/countries.json";
 import {
   BookOpen,
@@ -31,11 +31,9 @@ import {
   Github,
   Globe,
   Heart,
-  Instagram,
   Linkedin,
   Loader2,
   Search,
-  TreePine,
   Users,
   X,
   Zap,
@@ -56,9 +54,7 @@ const SOCIAL_MEDIA_FILTERS = [
   { id: "hasWebsite", label: "Website", icon: ExternalLink },
 ];
 
-const OTHER_FILTERS = [
-  { id: "liked", label: "Liked", icon: Heart },
-];
+const OTHER_FILTERS = [{ id: "liked", label: "Liked", icon: Heart }];
 
 export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -121,7 +117,14 @@ export const StudentOverview = () => {
     if (socialMediaFilters.hasWebsite) result.hasWebsite = true;
     if (showLiked && user?.id) result.likedByUserId = user.id;
     return result;
-  }, [searchTerm, selectedCountry, selectedSkills, socialMediaFilters, showLiked, user?.id]);
+  }, [
+    searchTerm,
+    selectedCountry,
+    selectedSkillIds,
+    socialMediaFilters,
+    showLiked,
+    user?.id,
+  ]);
 
   // Fetch students with filters
   const {
@@ -141,12 +144,15 @@ export const StudentOverview = () => {
     orderDirection: sortBy === "newest" ? "desc" : "asc",
   });
 
-  const allStudents = studentsResponse?.data || [];
-  
+  // Wrap allStudents in useMemo to avoid dependency issues
+  const allStudents = useMemo(() => {
+    return studentsResponse?.data || [];
+  }, [studentsResponse?.data]);
+
   // Client-side course filtering
   const students = useMemo(() => {
     if (selectedCourses.length === 0) return allStudents;
-    
+
     return allStudents.filter((student) => {
       const studentCourses = (student as any).courses || [];
       return selectedCourses.some((selectedCourse) =>
@@ -185,27 +191,33 @@ export const StudentOverview = () => {
   }, [allStudents]);
 
   const handleSkillSelect = (skillName: string) => {
-    const skill = skillsWithCounts.find(s => s.name === skillName)
-    if (!skill) return
-    
+    const skill = skillsWithCounts.find((s) => s.name === skillName);
+    if (!skill) return;
+
     setSelectedSkills((prev) =>
-      prev.includes(skillName) ? prev.filter((s) => s !== skillName) : [...prev, skillName]
+      prev.includes(skillName)
+        ? prev.filter((s) => s !== skillName)
+        : [...prev, skillName]
     );
     setSelectedSkillIds((prev) =>
-      prev.includes(skill.id) ? prev.filter((id) => id !== skill.id) : [...prev, skill.id]
+      prev.includes(skill.id)
+        ? prev.filter((id) => id !== skill.id)
+        : [...prev, skill.id]
     );
   };
 
   const handleCourseSelect = (course: string) => {
     setSelectedCourses((prev) =>
-      prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]
+      prev.includes(course)
+        ? prev.filter((c) => c !== course)
+        : [...prev, course]
     );
   };
 
   const handleSocialMediaFilter = (filterType: string) => {
-    setSocialMediaFilters(prev => ({
+    setSocialMediaFilters((prev) => ({
       ...prev,
-      [filterType]: !prev[filterType as keyof typeof prev]
+      [filterType]: !prev[filterType as keyof typeof prev],
     }));
   };
 
@@ -237,7 +249,8 @@ export const StudentOverview = () => {
     Object.values(socialMediaFilters).some(Boolean) ||
     showLiked;
 
-  const activeSocialFilters = Object.values(socialMediaFilters).filter(Boolean).length;
+  const activeSocialFilters =
+    Object.values(socialMediaFilters).filter(Boolean).length;
   const activeFilterCount =
     [
       searchTerm,
@@ -412,8 +425,12 @@ export const StudentOverview = () => {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span className="text-xs sm:text-sm font-medium hidden sm:inline">Social Links</span>
-            <span className="text-xs sm:text-sm font-medium sm:hidden">Social</span>
+            <span className="text-xs sm:text-sm font-medium hidden sm:inline">
+              Social Links
+            </span>
+            <span className="text-xs sm:text-sm font-medium sm:hidden">
+              Social
+            </span>
             {activeSocialFilters > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                 {activeSocialFilters}
@@ -424,11 +441,16 @@ export const StudentOverview = () => {
         </PopoverTrigger>
         <PopoverContent className="w-56 p-3">
           <div className="space-y-2">
-            <div className="font-medium text-sm text-gray-700 mb-3">Show students with:</div>
+            <div className="font-medium text-sm text-gray-700 mb-3">
+              Show students with:
+            </div>
             {SOCIAL_MEDIA_FILTERS.map((filter) => {
               const Icon = filter.icon;
-              const isChecked = socialMediaFilters[filter.id as keyof typeof socialMediaFilters];
-              
+              const isChecked =
+                socialMediaFilters[
+                  filter.id as keyof typeof socialMediaFilters
+                ];
+
               return (
                 <label
                   key={filter.id}
@@ -465,7 +487,9 @@ export const StudentOverview = () => {
             }`}
           >
             <Icon className="w-4 h-4" />
-            <span className="text-xs sm:text-sm font-medium">{filter.label}</span>
+            <span className="text-xs sm:text-sm font-medium">
+              {filter.label}
+            </span>
           </button>
         );
       })}
@@ -495,7 +519,7 @@ export const StudentOverview = () => {
             <CommandInput placeholder="Search skills..." />
             <CommandList>
               <CommandEmpty>No skills found.</CommandEmpty>
-              
+
               {selectedSkills.length > 0 && (
                 <CommandGroup>
                   {selectedSkills.map((skillName) => (
@@ -504,7 +528,9 @@ export const StudentOverview = () => {
                       onSelect={() => handleSkillSelect(skillName)}
                       className="bg-red-50"
                     >
-                      <span className="text-red-700 font-medium">{skillName}</span>
+                      <span className="text-red-700 font-medium">
+                        {skillName}
+                      </span>
                       <Check className="ml-auto w-4 h-4 text-red-600" />
                     </CommandItem>
                   ))}
@@ -520,7 +546,9 @@ export const StudentOverview = () => {
                         key={skill.id}
                         onSelect={() => handleSkillSelect(skill.name)}
                       >
-                        <span>{skill.name} ({skill.student_count})</span>
+                        <span>
+                          {skill.name} ({skill.student_count})
+                        </span>
                       </CommandItem>
                     ))}
                 </CommandGroup>
@@ -555,7 +583,7 @@ export const StudentOverview = () => {
             <CommandInput placeholder="Search courses..." />
             <CommandList>
               <CommandEmpty>No courses found.</CommandEmpty>
-              
+
               {selectedCourses.length > 0 && (
                 <CommandGroup>
                   {selectedCourses.map((courseName) => (
@@ -564,7 +592,9 @@ export const StudentOverview = () => {
                       onSelect={() => handleCourseSelect(courseName)}
                       className="bg-blue-50"
                     >
-                      <span className="text-blue-700 font-medium">{courseName}</span>
+                      <span className="text-blue-700 font-medium">
+                        {courseName}
+                      </span>
                       <Check className="ml-auto w-4 h-4 text-blue-600" />
                     </CommandItem>
                   ))}
@@ -605,7 +635,9 @@ export const StudentOverview = () => {
           {searchTerm && (
             <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
               <Search className="w-3 h-3" />
-              <span className="text-xs sm:text-sm font-medium">"{searchTerm}"</span>
+              <span className="text-xs sm:text-sm font-medium">
+                "{searchTerm}"
+              </span>
               <button onClick={() => setSearchTerm("")} className="ml-1">
                 <X className="w-3 h-3 hover:text-blue-900" />
               </button>
@@ -615,7 +647,9 @@ export const StudentOverview = () => {
           {selectedCountry && (
             <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-200">
               <Globe className="w-3 h-3" />
-              <span className="text-xs sm:text-sm font-medium">{selectedCountry}</span>
+              <span className="text-xs sm:text-sm font-medium">
+                {selectedCountry}
+              </span>
               <button onClick={() => setSelectedCountry("")} className="ml-1">
                 <X className="w-3 h-3 hover:text-green-900" />
               </button>
@@ -640,7 +674,10 @@ export const StudentOverview = () => {
               className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200"
             >
               <span className="text-xs sm:text-sm font-medium">{course}</span>
-              <button onClick={() => handleCourseSelect(course)} className="ml-1">
+              <button
+                onClick={() => handleCourseSelect(course)}
+                className="ml-1"
+              >
                 <X className="w-3 h-3 hover:text-blue-900" />
               </button>
             </div>
@@ -649,9 +686,11 @@ export const StudentOverview = () => {
           {socialMediaFilters.hasLinkedIn && (
             <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
               <Linkedin className="w-3 h-3" />
-              <span className="text-xs sm:text-sm font-medium">Has LinkedIn</span>
+              <span className="text-xs sm:text-sm font-medium">
+                Has LinkedIn
+              </span>
               <button
-                onClick={() => handleSocialMediaFilter('hasLinkedIn')}
+                onClick={() => handleSocialMediaFilter("hasLinkedIn")}
                 className="ml-1"
               >
                 <X className="w-3 h-3 hover:text-blue-900" />
@@ -663,7 +702,10 @@ export const StudentOverview = () => {
             <div className="flex items-center gap-1 bg-gray-50 text-gray-700 px-3 py-1 rounded-full border border-gray-200">
               <Github className="w-3 h-3" />
               <span className="text-xs sm:text-sm font-medium">Has GitHub</span>
-              <button onClick={() => handleSocialMediaFilter('hasGithub')} className="ml-1">
+              <button
+                onClick={() => handleSocialMediaFilter("hasGithub")}
+                className="ml-1"
+              >
                 <X className="w-3 h-3 hover:text-gray-900" />
               </button>
             </div>
@@ -672,8 +714,13 @@ export const StudentOverview = () => {
           {socialMediaFilters.hasWebsite && (
             <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full border border-green-200">
               <ExternalLink className="w-3 h-3" />
-              <span className="text-xs sm:text-sm font-medium">Has Website</span>
-              <button onClick={() => handleSocialMediaFilter('hasWebsite')} className="ml-1">
+              <span className="text-xs sm:text-sm font-medium">
+                Has Website
+              </span>
+              <button
+                onClick={() => handleSocialMediaFilter("hasWebsite")}
+                className="ml-1"
+              >
                 <X className="w-3 h-3 hover:text-green-900" />
               </button>
             </div>
@@ -732,11 +779,11 @@ export const StudentOverview = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="p-1 rounded-xl">
-                <Image 
-                  src="/icon.png" 
-                  alt="TreeMatch Logo" 
-                  width={40} 
-                  height={40} 
+                <Image
+                  src="/icon.png"
+                  alt="TreeMatch Logo"
+                  width={40}
+                  height={40}
                   className="w-10 h-10"
                 />
               </div>
@@ -781,7 +828,6 @@ export const StudentOverview = () => {
                 `${students.length} Student${students.length !== 1 ? "s" : ""}`
               )}
             </h2>
-
           </div>
 
           {isLoading ? (

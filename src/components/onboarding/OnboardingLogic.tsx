@@ -97,19 +97,8 @@ export default function OnboardingLogic() {
         }
       }
     } else if (!studentLoading) {
-      console.log("💾 Loading from localStorage (no student data)");
       const savedData = OnboardingStorage.load();
       if (savedData) {
-        console.log("💾 Found saved data:", {
-          hasSkillIds: !!savedData.skillIds,
-          skillIdsLength: savedData.skillIds?.length || 0,
-          skillIds: savedData.skillIds,
-          socialMedia: {
-            instagram: savedData.instagramHandle,
-            twitter: savedData.twitterHandle,
-            website: savedData.websiteUrl,
-          },
-        });
         setFormData({
           name: savedData.name || "",
           country: savedData.country || "",
@@ -286,7 +275,6 @@ export default function OnboardingLogic() {
       );
       router.push("/auth/signup");
     } catch (error) {
-      console.error("Error saving profile:", error);
       toast.error("Failed to save profile. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -298,7 +286,6 @@ export default function OnboardingLogic() {
     tempAvatarPath,
     updateStudent,
     updateStudentSkills,
-    availableSkills,
     router,
   ]);
 
