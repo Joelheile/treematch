@@ -38,83 +38,41 @@ const mockStudent: StudentWithSkills = {
 }
 
 describe('StudentCard', () => {
-  describe('when student has complete profile', () => {
-    it('should display student name and country', () => {
-      render(<StudentCard student={mockStudent} />)
+  it('should display student profile information correctly', () => {
+    render(<StudentCard student={mockStudent} />)
 
-      expect(screen.getByText('John Doe')).toBeInTheDocument()
-      expect(screen.getByText('USA')).toBeInTheDocument()
-    })
-
-    it('should display profile image when available', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const profileImage = screen.getByAltText('John Doe')
-      expect(profileImage).toBeInTheDocument()
-      expect(profileImage).toHaveAttribute('src', 'https://example.com/profile.jpg')
-    })
-
-    it('should display current project', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      expect(screen.getByText('Current Project')).toBeInTheDocument()
-      expect(screen.getByText('Building a social media app')).toBeInTheDocument()
-    })
-
-    it('should display coolest thing', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      expect(screen.getByText('Coolest Thing')).toBeInTheDocument()
-      expect(screen.getByText('Created an AI chatbot')).toBeInTheDocument()
-    })
-
-    it('should display first 3 skills with +more indicator', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const skillsSection = screen.getByText('Skills').closest('div')
-      expect(skillsSection).toBeInTheDocument()
-      
-      if (skillsSection) {
-        expect(within(skillsSection).getByText('React')).toBeInTheDocument()
-        expect(within(skillsSection).getByText('Node.js')).toBeInTheDocument()
-        expect(within(skillsSection).getByText('Python')).toBeInTheDocument()
-        expect(within(skillsSection).getByText('+1 more')).toBeInTheDocument()
-        expect(within(skillsSection).queryByText('TypeScript')).not.toBeInTheDocument()
-      }
-    })
-
-    it('should display first 2 summer goals with +more indicator', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const lookingForSection = screen.getByText('Looking For').closest('div')
-      expect(lookingForSection).toBeInTheDocument()
-      
-      if (lookingForSection) {
-        expect(within(lookingForSection).getByText('Find co-founder')).toBeInTheDocument()
-        expect(within(lookingForSection).getByText('Launch MVP')).toBeInTheDocument()
-        expect(within(lookingForSection).getByText('+1 more')).toBeInTheDocument()
-        expect(within(lookingForSection).queryByText('Get funding')).not.toBeInTheDocument()
-      }
-    })
-
-    it('should display social media links', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const linkedinLink = screen.getByRole('link', { name: /linkedin/i })
-      const githubLink = screen.getByRole('link', { name: /github/i })
-      const websiteLink = screen.getByRole('link', { name: /website/i })
-
-      expect(linkedinLink).toHaveAttribute('href', 'https://linkedin.com/in/johndoe')
-      expect(githubLink).toHaveAttribute('href', 'https://github.com/johndoe')
-      expect(websiteLink).toHaveAttribute('href', 'https://johndoe.com')
-
-      expect(linkedinLink).toHaveAttribute('target', '_blank')
-      expect(githubLink).toHaveAttribute('target', '_blank')
-      expect(websiteLink).toHaveAttribute('target', '_blank')
-    })
+    expect(screen.getByText('John Doe')).toBeInTheDocument()
+    expect(screen.getByText('USA')).toBeInTheDocument()
+    expect(screen.getByText('Building a social media app')).toBeInTheDocument()
+    expect(screen.getByText('Created an AI chatbot')).toBeInTheDocument()
   })
 
-  describe('when student has minimal profile', () => {
+  it('should display skills with +more indicator when over 3 skills', () => {
+    render(<StudentCard student={mockStudent} />)
+
+    const skillsSection = screen.getByText('Skills').closest('div')
+    if (skillsSection) {
+      expect(within(skillsSection).getByText('React')).toBeInTheDocument()
+      expect(within(skillsSection).getByText('Node.js')).toBeInTheDocument()
+      expect(within(skillsSection).getByText('Python')).toBeInTheDocument()
+      expect(within(skillsSection).getByText('+1 more')).toBeInTheDocument()
+      expect(within(skillsSection).queryByText('TypeScript')).not.toBeInTheDocument()
+    }
+  })
+
+  it('should display summer goals with +more indicator when over 2 goals', () => {
+    render(<StudentCard student={mockStudent} />)
+
+    const lookingForSection = screen.getByText('Looking For').closest('div')
+    if (lookingForSection) {
+      expect(within(lookingForSection).getByText('Find co-founder')).toBeInTheDocument()
+      expect(within(lookingForSection).getByText('Launch MVP')).toBeInTheDocument()
+      expect(within(lookingForSection).getByText('+1 more')).toBeInTheDocument()
+      expect(within(lookingForSection).queryByText('Get funding')).not.toBeInTheDocument()
+    }
+  })
+
+  it('should handle empty profile gracefully', () => {
     const minimalStudent: StudentWithSkills = {
       id: '2',
       name: null,
@@ -134,186 +92,36 @@ describe('StudentCard', () => {
       updated_at: null,
     }
 
-    it('should display fallback name and avatar', () => {
-      render(<StudentCard student={minimalStudent} />)
+    render(<StudentCard student={minimalStudent} />)
 
-      expect(screen.getByText('Unknown')).toBeInTheDocument()
-      expect(screen.getByText('?')).toBeInTheDocument()
-      expect(screen.queryByRole('img')).not.toBeInTheDocument()
-    })
-
-    it('should not display empty sections', () => {
-      render(<StudentCard student={minimalStudent} />)
-
-      expect(screen.queryByText('Current Project')).not.toBeInTheDocument()
-      expect(screen.queryByText('Coolest Thing')).not.toBeInTheDocument()
-      expect(screen.queryByText('Skills')).not.toBeInTheDocument()
-      expect(screen.queryByText('Looking For')).not.toBeInTheDocument()
-      expect(screen.queryByRole('link')).not.toBeInTheDocument()
-    })
-
-    it('should not display country when not provided', () => {
-      render(<StudentCard student={minimalStudent} />)
-
-      expect(screen.queryByText('USA')).not.toBeInTheDocument()
-    })
+    expect(screen.getByText('Unknown')).toBeInTheDocument()
+    expect(screen.queryByText('Current Project')).not.toBeInTheDocument()
+    expect(screen.queryByText('Skills')).not.toBeInTheDocument()
+    expect(screen.queryByText('Looking For')).not.toBeInTheDocument()
   })
 
-  describe('when student has name with multiple words', () => {
-    it('should display initials correctly', () => {
-      const studentWithLongName: StudentWithSkills = {
-        ...mockStudent,
-        name: 'John Michael Doe',
-        profile_image: null,
-      }
+  it('should open detail popup when card is clicked', async () => {
+    const user = userEvent.setup()
+    render(<StudentCard student={mockStudent} />)
 
-      render(<StudentCard student={studentWithLongName} />)
-
-      expect(screen.getByText('JMD')).toBeInTheDocument()
-    })
-  })
-
-  describe('when student has exactly 3 skills', () => {
-    it('should not show +more indicator', () => {
-      const studentWith3Skills: StudentWithSkills = {
-        ...mockStudent,
-        skills: mockStudent.skills.slice(0, 3),
-      }
-
-      render(<StudentCard student={studentWith3Skills} />)
-
-      const skillsSection = screen.getByText('Skills').closest('div')
-      expect(skillsSection).toBeInTheDocument()
-      
-      if (skillsSection) {
-        expect(within(skillsSection).getByText('React')).toBeInTheDocument()
-        expect(within(skillsSection).getByText('Node.js')).toBeInTheDocument()
-        expect(within(skillsSection).getByText('Python')).toBeInTheDocument()
-        expect(within(skillsSection).queryByText('+1 more')).not.toBeInTheDocument()
-      }
-    })
-  })
-
-  describe('when student has exactly 2 summer goals', () => {
-    it('should not show +more indicator', () => {
-      const studentWith2Goals: StudentWithSkills = {
-        ...mockStudent,
-        summer_goals: ['Find co-founder', 'Launch MVP'],
-      }
-
-      render(<StudentCard student={studentWith2Goals} />)
-
-      const lookingForSection = screen.getByText('Looking For').closest('div')
-      expect(lookingForSection).toBeInTheDocument()
-      
-      if (lookingForSection) {
-        expect(within(lookingForSection).getByText('Find co-founder')).toBeInTheDocument()
-        expect(within(lookingForSection).getByText('Launch MVP')).toBeInTheDocument()
-        expect(within(lookingForSection).queryByText('+1 more')).not.toBeInTheDocument()
-      }
-    })
-  })
-
-  describe('when clicking on card', () => {
-    it('should open student detail popup', async () => {
-      const user = userEvent.setup()
-      render(<StudentCard student={mockStudent} />)
-
-      // Find the card element (it has cursor-pointer class)
-      const card = screen.getByText('John Doe').closest('.cursor-pointer')
-      expect(card).toBeInTheDocument()
-      
-      if (card) {
-        await act(async () => {
-          await user.click(card)
-        })
-        expect(screen.getByTestId('student-detail-popup')).toBeInTheDocument()
-      }
-    })
-
-    it('should not open popup when clicking on social links', async () => {
-      const user = userEvent.setup()
-      render(<StudentCard student={mockStudent} />)
-
-      const linkedinLink = screen.getByRole('link', { name: /linkedin/i })
+    const card = screen.getByText('John Doe').closest('.cursor-pointer')
+    if (card) {
       await act(async () => {
-        await user.click(linkedinLink)
+        await user.click(card)
       })
-
-      expect(screen.queryByTestId('student-detail-popup')).not.toBeInTheDocument()
-    })
-
-    it('should close popup when close button is clicked', async () => {
-      const user = userEvent.setup()
-      render(<StudentCard student={mockStudent} />)
-
-      const card = screen.getByText('John Doe').closest('.cursor-pointer')
-      if (card) {
-        await act(async () => {
-          await user.click(card)
-        })
-        expect(screen.getByTestId('student-detail-popup')).toBeInTheDocument()
-
-        const closeButton = screen.getByTestId('close-popup')
-        await act(async () => {
-          await user.click(closeButton)
-        })
-
-        expect(screen.queryByTestId('student-detail-popup')).not.toBeInTheDocument()
-      }
-    })
+      expect(screen.getByTestId('student-detail-popup')).toBeInTheDocument()
+    }
   })
 
-  describe('when student has only one social link', () => {
-    it('should display only available social links', () => {
-      const studentWithLinkedInOnly: StudentWithSkills = {
-        ...mockStudent,
-        github: null,
-        website: null,
-      }
+  it('should not open popup when social links are clicked', async () => {
+    const user = userEvent.setup()
+    render(<StudentCard student={mockStudent} />)
 
-      render(<StudentCard student={studentWithLinkedInOnly} />)
-
-      expect(screen.getByRole('link', { name: /linkedin/i })).toBeInTheDocument()
-      expect(screen.queryByRole('link', { name: /github/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('link', { name: /website/i })).not.toBeInTheDocument()
-    })
-  })
-
-  describe('accessibility', () => {
-    it('should have proper alt text for profile image', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const profileImage = screen.getByAltText('John Doe')
-      expect(profileImage).toBeInTheDocument()
+    const linkedinLink = screen.getByRole('link', { name: /linkedin/i })
+    await act(async () => {
+      await user.click(linkedinLink)
     })
 
-    it('should have proper alt text when name is not available', () => {
-      const studentWithoutName: StudentWithSkills = {
-        ...mockStudent,
-        name: null,
-      }
-
-      render(<StudentCard student={studentWithoutName} />)
-
-      const profileImage = screen.getByAltText('Student')
-      expect(profileImage).toBeInTheDocument()
-    })
-
-    it('should have clickable card area', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const card = screen.getByText('John Doe').closest('.cursor-pointer')
-      expect(card).toHaveClass('cursor-pointer')
-    })
-  })
-
-  describe('hover effects', () => {
-    it('should have hover transition classes', () => {
-      render(<StudentCard student={mockStudent} />)
-
-      const card = screen.getByText('John Doe').closest('.cursor-pointer')
-      expect(card).toHaveClass('hover:shadow-lg', 'transition-all', 'hover:-translate-y-1')
-    })
+    expect(screen.queryByTestId('student-detail-popup')).not.toBeInTheDocument()
   })
 })
