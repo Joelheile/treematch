@@ -14,6 +14,6 @@ export { useSkills } from './useSkills'
 export { useUpdateSkill } from './useUpdateSkill'
 
 // Types
-export type { ServiceResponse, StudentWithSkills } from './useStudentByEmail'
-export type { PaginatedResponse, StudentFilters, StudentSearchOptions } from './useStudents'
+export type { ServiceResponse } from './useStudentByEmail'
+export type { PaginatedResponse, StudentFilters, StudentSearchOptions, StudentWithSkills } from './useStudents'
 

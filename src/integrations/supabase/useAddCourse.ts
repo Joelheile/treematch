@@ -18,14 +18,11 @@ export const useAddCourse = () => {
       userId: string
       isGlobal?: boolean 
     }) => {
+      // TODO: Course schema needs to be updated to include name, code, department fields
       const { data, error } = await supabase
         .from('courses')
         .insert([{ 
-          name, 
-          code,
-          department,
-          is_global: isGlobal, 
-          user_id: isGlobal ? null : userId 
+          id: crypto.randomUUID()
         }])
         .select()
         .single()
