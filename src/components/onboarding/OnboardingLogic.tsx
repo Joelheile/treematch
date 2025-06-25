@@ -80,8 +80,8 @@ export default function OnboardingLogic() {
         summerGoals: student.goals || "",
         currentProject: student.current_project || "",
         linkedinUrl: student.linkedin || "",
-        instagramHandle: savedData?.instagramHandle || "",
-        twitterHandle: savedData?.twitterHandle || "",
+        instagramHandle: student.instagram || "",
+        twitterHandle: student.twitter || "",
         githubUsername: student.github || "",
         websiteUrl: student.website || "",
       });
