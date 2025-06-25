@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+
 import {
   Dialog,
   DialogContent,
@@ -13,10 +13,12 @@ import {
   Calendar,
   ExternalLink,
   Github,
+  Instagram,
   Linkedin,
   Mail,
   MapPin,
   Phone,
+  Twitter,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -33,12 +35,12 @@ export const StudentDetailPopup = ({
 }: StudentDetailPopupProps) => {
   if (!student) return null;
 
-  const hasLinks = student.linkedin || student.github || student.website;
+  const hasLinks = student.linkedin || student.github || student.website || student.instagram || student.twitter;
 
   // Function to convert country code to flag emoji
   const getCountryFlag = (countryName: string) => {
-    const country = countriesData.find((c) => 
-      c.name.toLowerCase() === countryName.toLowerCase()
+    const country = countriesData.find(
+      (c) => c.name.toLowerCase() === countryName.toLowerCase()
     );
     if (!country) return null;
     return country.code
@@ -87,7 +89,9 @@ export const StudentDetailPopup = ({
                 {student.country && (
                   <span className="flex items-center">
                     {getCountryFlag(student.country) ? (
-                      <span className="text-lg">{getCountryFlag(student.country)}</span>
+                      <span className="text-lg">
+                        {getCountryFlag(student.country)}
+                      </span>
                     ) : (
                       <MapPin className="w-4 h-4" />
                     )}
@@ -97,7 +101,13 @@ export const StudentDetailPopup = ({
                   {student.name || "Unknown"}
                 </h2>
                 {student.is_first_mover_batch && (
-                  <Image src="/Trophy Icon 48.png" alt="Trophy" width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+                  <Image
+                    src="/Trophy Icon 48.png"
+                    alt="Trophy"
+                    width={16}
+                    height={16}
+                    style={{ minWidth: 16, minHeight: 16 }}
+                  />
                 )}
               </div>
 
@@ -108,21 +118,24 @@ export const StudentDetailPopup = ({
               )}
 
               {/* Courses under university */}
-              {(student as any).courses && (student as any).courses.length > 0 && (
-                <div className="mb-3">
-                  <div className="flex flex-wrap gap-1">
-                    {(student as any).courses.map((course: string, index: number) => (
-                      <Badge
-                        key={`${course}-${index}`}
-                        variant="secondary"
-                        className="text-xs bg-blue-100 text-blue-800 border-blue-200"
-                      >
-                        {course}
-                      </Badge>
-                    ))}
+              {(student as any).courses &&
+                (student as any).courses.length > 0 && (
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-1">
+                      {(student as any).courses.map(
+                        (course: string, index: number) => (
+                          <Badge
+                            key={`${course}-${index}`}
+                            variant="secondary"
+                            className="text-xs bg-blue-100 text-blue-800 border-blue-200"
+                          >
+                            {course}
+                          </Badge>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="flex flex-wrap gap-2">
                 {student.email && (
@@ -149,23 +162,39 @@ export const StudentDetailPopup = ({
           {/* Current Project */}
           {student.current_project && (
             <div className="text-left mb-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-1">Project:</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-1">
+                Project:
+              </h4>
               <p className="text-sm text-gray-600">{student.current_project}</p>
             </div>
+          )}
+
+          {/* Spacer */}
+          {(student.current_project || student.coolest_thing || student.goals) && (
+            <div className="border-t border-gray-100 my-4"></div>
           )}
 
           {/* Coolest Thing */}
           {student.coolest_thing && (
             <div className="text-left mb-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-1">Coolest Project:</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-1">
+                Most Proud Of:
+              </h4>
               <p className="text-sm text-gray-600">{student.coolest_thing}</p>
             </div>
+          )}
+
+          {/* Spacer */}
+          {student.coolest_thing && student.goals && (
+            <div className="border-t border-gray-100 my-4"></div>
           )}
 
           {/* Summer Goals */}
           {student.goals && (
             <div className="mb-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Summer Session Goals:</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Summer Goals:
+              </h4>
               <p className="text-sm text-gray-600">{student.goals}</p>
             </div>
           )}
@@ -191,11 +220,27 @@ export const StudentDetailPopup = ({
           {hasLinks && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-1.5">
+                {student.instagram && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    asChild
+                  >
+                    <a
+                      href={`https://instagram.com/${student.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Instagram className="w-3 h-3" />
+                    </a>
+                  </Button>
+                )}
                 {student.linkedin && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs"
+                    className="h-7 w-7 p-0"
                     asChild
                   >
                     <a
@@ -203,8 +248,7 @@ export const StudentDetailPopup = ({
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Linkedin className="w-3 h-3 mr-1" />
-                      LinkedIn
+                      <Linkedin className="w-3 h-3" />
                     </a>
                   </Button>
                 )}
@@ -212,7 +256,7 @@ export const StudentDetailPopup = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs"
+                    className="h-7 w-7 p-0"
                     asChild
                   >
                     <a
@@ -220,8 +264,23 @@ export const StudentDetailPopup = ({
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Github className="w-3 h-3 mr-1" />
-                      GitHub
+                      <Github className="w-3 h-3" />
+                    </a>
+                  </Button>
+                )}
+                {student.twitter && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    asChild
+                  >
+                    <a
+                      href={`https://twitter.com/${student.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Twitter className="w-3 h-3" />
                     </a>
                   </Button>
                 )}
@@ -229,16 +288,19 @@ export const StudentDetailPopup = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs"
+                    className="h-7 w-7 p-0"
                     asChild
                   >
                     <a
-                      href={student.website.startsWith('http') ? student.website : `https://${student.website}`}
+                      href={
+                        student.website.startsWith("http")
+                          ? student.website
+                          : `https://${student.website}`
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <ExternalLink className="w-3 h-3 mr-1" />
-                      Website
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   </Button>
                 )}

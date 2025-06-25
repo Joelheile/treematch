@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { X, Plus } from "lucide-react";
 import { FormData } from "../types";
 
 interface CoursesStepProps {
@@ -20,17 +21,21 @@ export default function CoursesStep({
 }: CoursesStepProps) {
   const [courseInput, setCourseInput] = useState("");
 
+  const addCourse = () => {
+    const trimmedInput = courseInput.trim().toUpperCase();
+    if (trimmedInput && !formData.courses.includes(trimmedInput)) {
+      setFormData((prev) => ({
+        ...prev,
+        courses: [...prev.courses, trimmedInput],
+      }));
+      setCourseInput("");
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const trimmedInput = courseInput.trim().toUpperCase();
-      if (trimmedInput && !formData.courses.includes(trimmedInput)) {
-        setFormData((prev) => ({
-          ...prev,
-          courses: [...prev.courses, trimmedInput],
-        }));
-        setCourseInput("");
-      }
+      addCourse();
     }
   };
 
@@ -48,21 +53,31 @@ export default function CoursesStep({
           What courses have you taken?
         </h2>
         <p className="text-gray-600 text-sm sm:text-base px-2 leading-relaxed">
-          Enter course codes (like CS229, ENGR145) and press Enter to add them. You can add multiple courses.
+          Enter course codes (like CS229, ENGR145) and press Enter or tap the + button to add them.
         </p>
       </div>
 
       <div className="flex-1 flex flex-col justify-center items-center min-h-0">
         <div className="w-full max-w-2xl px-2 space-y-6">
-          <Input
-            type="text"
-            placeholder="Enter course code and press Enter"
-            value={courseInput}
-            onChange={(e) => setCourseInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="w-full text-lg py-4"
-            autoFocus
-          />
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Enter course code"
+              value={courseInput}
+              onChange={(e) => setCourseInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full text-lg py-4 pr-14"
+              autoFocus
+            />
+            <Button
+              type="button"
+              onClick={addCourse}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-red-600 hover:bg-red-700 rounded-md"
+              disabled={!courseInput.trim()}
+            >
+              <Plus className="w-4 h-4 text-white" />
+            </Button>
+          </div>
           
           {formData.courses.length > 0 && (
             <div className="space-y-3">
