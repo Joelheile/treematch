@@ -117,7 +117,6 @@ export type Database = {
           university: string | null
           updated_at: string | null
           website: string | null
-          is_first_mover_batch: boolean | null
         }
         Insert: {
           coolest_thing?: string | null
@@ -140,7 +139,6 @@ export type Database = {
           university?: string | null
           updated_at?: string | null
           website?: string | null
-          is_first_mover_batch?: boolean | null
         }
         Update: {
           coolest_thing?: string | null
@@ -163,7 +161,6 @@ export type Database = {
           university?: string | null
           updated_at?: string | null
           website?: string | null
-          is_first_mover_batch?: boolean | null
         }
         Relationships: []
       }
@@ -172,7 +169,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never

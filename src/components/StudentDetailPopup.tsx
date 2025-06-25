@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -60,10 +61,13 @@ export const StudentDetailPopup = ({
           <div className="flex items-start space-x-6">
             <div className="flex-shrink-0">
               {student.profile_image ? (
-                <img
+                <Image
                   src={student.profile_image}
                   alt={student.name || "Student"}
+                  width={96}
+                  height={96}
                   className="w-24 h-24 rounded-full object-cover border-4 border-red-100"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-2xl font-bold">

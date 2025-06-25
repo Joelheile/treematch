@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Image from "next/image";
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentWithSkills } from "@/types/Student";
 import countriesData from "@/lib/countries.json";
@@ -75,7 +76,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
   return (
     <>
       <Card 
-        className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer relative"
+        className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer relative"
         onClick={handleCardClick}
       >
         <button
@@ -93,10 +94,13 @@ export const StudentCard = ({ student }: StudentCardProps) => {
         <CardHeader className="text-center pb-3 px-4 sm:px-6">
 
           {student.profile_image ? (
-            <img
+            <Image
               src={student.profile_image}
               alt={student.name || "Student"}
+              width={80}
+              height={80}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto object-cover border-3 border-red-100"
+              loading="lazy"
             />
           ) : (
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-lg sm:text-xl font-bold">
@@ -150,7 +154,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+        <CardContent className="flex-1 flex flex-col space-y-3 sm:space-y-4 px-4 sm:px-6">
           {/* Current Project */}
           {student.current_project && (
             <div className="text-left">
@@ -177,15 +181,18 @@ export const StudentCard = ({ student }: StudentCardProps) => {
               <h4 className="text-sm font-semibold text-gray-700 mb-2">
                 Summer Session Goals
               </h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 line-clamp-3">
                 {(student as any).goals}
               </p>
             </div>
           )}
 
+          {/* Spacer to push content to bottom */}
+          <div className="flex-1"></div>
+
           {/* Skills at bottom */}
           {student.skills && student.skills.length > 0 && (
-            <div>
+            <div className="mt-auto">
               <div className="flex flex-wrap gap-1">
                 {student.skills.slice(0, window.innerWidth < 640 ? 2 : 3).map((skill) => (
                   <Badge
