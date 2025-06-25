@@ -16,24 +16,17 @@ export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const { student, isOnboarded, isLoading: studentLoading, error } = useCurrentStudent();
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
-  const [delayPassed, setDelayPassed] = useState(false);
-
   useEffect(() => {
     setHasOnboardingData(
       OnboardingStorage.exists() && !OnboardingStorage.isExpired()
     );
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDelayPassed(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!authLoading && !user && delayPassed) {
+  if (!authLoading && !user) {
     return <LandingPage />;
   }
 
-  if (authLoading || !delayPassed) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
         <div className="text-center space-y-4">

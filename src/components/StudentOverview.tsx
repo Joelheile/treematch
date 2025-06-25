@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSkills } from "@/integrations/supabase/useSkills";
+import { useStudentSkillsFilter } from "@/integrations/supabase/useStudentSkillsFilter";
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentFilters } from "@/integrations/supabase/useStudents";
 import { useStudents } from "@/integrations/supabase/useStudents";
@@ -64,6 +64,7 @@ export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [socialMediaFilters, setSocialMediaFilters] = useState<{
     hasLinkedIn: boolean;
@@ -87,7 +88,7 @@ export const StudentOverview = () => {
 
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  const { data: skills = [] } = useSkills(user?.id);
+  const { data: skillsWithCounts = [] } = useStudentSkillsFilter();
   const { likedStudentIds } = useStudentLikes();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,7 +115,7 @@ export const StudentOverview = () => {
     const result: StudentFilters = {};
     if (searchTerm.trim()) result.search = searchTerm.trim();
     if (selectedCountry) result.country = selectedCountry;
-    if (selectedSkills.length > 0) result.skillIds = selectedSkills;
+    if (selectedSkillIds.length > 0) result.skillIds = selectedSkillIds;
     if (socialMediaFilters.hasLinkedIn) result.hasLinkedIn = true;
     if (socialMediaFilters.hasGithub) result.hasGithub = true;
     if (socialMediaFilters.hasWebsite) result.hasWebsite = true;
@@ -183,9 +184,15 @@ export const StudentOverview = () => {
     return Array.from(courseSet).sort();
   }, [allStudents]);
 
-  const handleSkillSelect = (skill: string) => {
+  const handleSkillSelect = (skillName: string) => {
+    const skill = skillsWithCounts.find(s => s.name === skillName)
+    if (!skill) return
+    
     setSelectedSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+      prev.includes(skillName) ? prev.filter((s) => s !== skillName) : [...prev, skillName]
+    );
+    setSelectedSkillIds((prev) =>
+      prev.includes(skill.id) ? prev.filter((id) => id !== skill.id) : [...prev, skill.id]
     );
   };
 
@@ -212,6 +219,7 @@ export const StudentOverview = () => {
     setSearchTerm("");
     setSelectedCountry("");
     setSelectedSkills([]);
+    setSelectedSkillIds([]);
     setSelectedCourses([]);
     setSocialMediaFilters({
       hasLinkedIn: false,
@@ -234,15 +242,15 @@ export const StudentOverview = () => {
     [
       searchTerm,
       selectedCountry,
-      selectedSkills.length > 0,
+      selectedSkillIds.length > 0,
       selectedCourses.length > 0,
       activeSocialFilters > 0,
       showLiked,
     ].filter(Boolean).length +
-    selectedSkills.length +
+    selectedSkillIds.length +
     selectedCourses.length +
     activeSocialFilters -
-    (selectedSkills.length > 0 ? 1 : 0) -
+    (selectedSkillIds.length > 0 ? 1 : 0) -
     (selectedCourses.length > 0 ? 1 : 0) -
     (activeSocialFilters > 0 ? 1 : 0);
 
@@ -474,9 +482,9 @@ export const StudentOverview = () => {
           >
             <Zap className="w-4 h-4" />
             <span className="text-xs sm:text-sm font-medium">Skills</span>
-            {selectedSkills.length > 0 && (
+            {selectedSkillIds.length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                {selectedSkills.length}
+                {selectedSkillIds.length}
               </span>
             )}
             <ChevronDown className="w-4 h-4" />
@@ -503,16 +511,16 @@ export const StudentOverview = () => {
                 </CommandGroup>
               )}
 
-              {skills.length > 0 && (
+              {skillsWithCounts.length > 0 && (
                 <CommandGroup>
-                  {skills
+                  {skillsWithCounts
                     .filter((skill) => !selectedSkills.includes(skill.name))
                     .map((skill) => (
                       <CommandItem
                         key={skill.id}
                         onSelect={() => handleSkillSelect(skill.name)}
                       >
-                        <span>{skill.name}</span>
+                        <span>{skill.name} ({skill.student_count})</span>
                       </CommandItem>
                     ))}
                 </CommandGroup>
