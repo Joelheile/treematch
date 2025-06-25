@@ -20,6 +20,9 @@ import {
   Target,
 } from "lucide-react";
 import Image from "next/image";
+import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { useEffect, useState } from "react";
 
 interface StudentDetailPopupProps {
   student: StudentWithSkills | null;
@@ -35,6 +38,45 @@ export const StudentDetailPopup = ({
   if (!student) return null;
 
   const hasLinks = student.linkedin || student.github || student.website;
+  const { isMutualLike } = useStudentLikes();
+  const { student: currentStudent } = useCurrentStudent();
+  const [mutual, setMutual] = useState(false);
+
+  useEffect(() => {
+    if (student && currentStudent) {
+      isMutualLike(student.id).then(setMutual);
+    }
+  }, [student, currentStudent]);
+
+  const handleAddToContacts = () => {
+    if (!student) {
+      return;
+    }
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+    const vCard = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${student.name || ""}`,
+      student.email ? `EMAIL:${student.email}` : '',
+      student.phone_number ? `TEL;TYPE=CELL:${student.phone_number}` : '',
+      'END:VCARD',
+    ].filter(Boolean).join('\n');
+    try {
+      const blob = new Blob([vCard], { type: 'text/vcard' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${student.name || "contact"}.vcf`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    } catch (e) {}
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -91,14 +133,14 @@ export const StudentDetailPopup = ({
                     </a>
                   </Button>
                 )}
-
-                {student.phone_number && (
-                  <Button variant="outline" size="sm" className="h-8" asChild>
-                    <a href={`tel:${student.phone_number}`}>
-                      <Phone className="w-3 h-3 mr-1" />
-                      Call
-                    </a>
+                {student.phone_number && mutual && (
+                  <Button variant="outline" size="sm" className="h-8" onClick={handleAddToContacts}>
+                    <Phone className="w-3 h-3 mr-1" />
+                    Add to Contacts
                   </Button>
+                )}
+                {student.phone_number && !mutual && (
+                  <span className="text-xs text-gray-500 self-center">Phone number is only visible if you both liked each other</span>
                 )}
               </div>
             </div>
