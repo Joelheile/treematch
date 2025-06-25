@@ -1,11 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentWithSkills } from "@/types/Student";
 import {
   Briefcase,
   ExternalLink,
   Github,
+  Heart,
   Linkedin,
   MapPin,
   Target,
@@ -19,6 +21,7 @@ interface StudentCardProps {
 
 export const StudentCard = ({ student }: StudentCardProps) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const { isLiked, toggleLike, isToggling } = useStudentLikes();
   const hasLinks = student.linkedin || student.github || student.website;
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -29,12 +32,29 @@ export const StudentCard = ({ student }: StudentCardProps) => {
     setIsPopupOpen(true);
   };
 
+  const handleHeartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleLike(student.id);
+  };
+
   return (
     <>
       <Card 
-        className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer"
+        className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer relative"
         onClick={handleCardClick}
       >
+        <button
+          onClick={handleHeartClick}
+          disabled={isToggling}
+          className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-200 ${
+            isLiked(student.id)
+              ? "bg-red-500 text-white shadow-lg"
+              : "bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 border border-gray-200"
+          } ${isToggling ? "opacity-50" : ""}`}
+        >
+          <Heart className={`w-4 h-4 ${isLiked(student.id) ? "fill-current" : ""}`} />
+        </button>
+
         <CardHeader className="text-center pb-3">
           {student.profile_image ? (
             <img

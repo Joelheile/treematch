@@ -22,6 +22,15 @@ CREATE TABLE IF NOT EXISTS student_courses (
   UNIQUE(student_id, course_id)
 );
 
+-- Create student_likes table for heart/like functionality
+CREATE TABLE IF NOT EXISTS student_likes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  liker_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  liked_student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(liker_id, liked_student_id)
+);
+
 -- Insert default Stanford courses
 INSERT INTO courses (name, code, department, is_global, user_id) VALUES
   ('Machine Learning', 'CS229', 'Computer Science', true, null),
@@ -63,10 +72,14 @@ CREATE INDEX IF NOT EXISTS idx_courses_code ON courses(code);
 CREATE INDEX IF NOT EXISTS idx_courses_department ON courses(department);
 CREATE INDEX IF NOT EXISTS idx_student_courses_student_id ON student_courses(student_id);
 CREATE INDEX IF NOT EXISTS idx_student_courses_course_id ON student_courses(course_id);
+CREATE INDEX IF NOT EXISTS idx_student_likes_liker_id ON student_likes(liker_id);
+CREATE INDEX IF NOT EXISTS idx_student_likes_liked_student_id ON student_likes(liked_student_id);
+CREATE INDEX IF NOT EXISTS idx_student_likes_created_at ON student_likes(created_at);
 
 -- Enable RLS (Row Level Security)
 ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_likes ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies
 CREATE POLICY "Courses are viewable by everyone" 
@@ -92,3 +105,16 @@ USING (auth.uid()::text = (SELECT id FROM students WHERE id = student_courses.st
 CREATE POLICY "Students can manage their own course enrollments"
 ON student_courses FOR ALL
 USING (auth.uid()::text = (SELECT id FROM students WHERE id = student_courses.student_id));
+
+-- Student likes policies
+CREATE POLICY "Users can view their own likes"
+ON student_likes FOR SELECT
+USING (auth.uid() = liker_id);
+
+CREATE POLICY "Users can create their own likes"
+ON student_likes FOR INSERT
+WITH CHECK (auth.uid() = liker_id);
+
+CREATE POLICY "Users can delete their own likes"
+ON student_likes FOR DELETE
+USING (auth.uid() = liker_id);
