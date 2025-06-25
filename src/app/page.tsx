@@ -75,7 +75,7 @@ export default function HomePage() {
             </p>
           </div>
           <Button
-            onClick={() => router.push("/onboarding")}
+            onClick={() => router.push("/edit")}
             className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3"
           >
             Complete Your Profile
