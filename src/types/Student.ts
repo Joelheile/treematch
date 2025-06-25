@@ -13,9 +13,11 @@ export interface Student {
   country: string | null
   university: string | null
   profile_image: string | null
-  summer_goals: string[] | null
   current_project: string | null
   coolest_thing: string | null
+  skills: string[] | null
+  courses: string[] | null
+  goals: string | null
   phone_number: string | null
   email: string | null
   linkedin: string | null
@@ -25,7 +27,7 @@ export interface Student {
   updated_at: string | null
 }
 
-export interface StudentWithSkills extends Student {
+export interface StudentWithSkills extends Omit<Student, 'skills'> {
   skills: SkillRow[]
 }
 
@@ -44,9 +46,10 @@ export interface StudentFormatted {
   university: string
   profileImage?: string
   skills: Skill[]
-  summerGoals: string[]
+  courses: string[]
   currentProject: string
   coolestThing: string
+  goals: string
   phoneNumber: string
   email: string
   linkedin?: string
@@ -65,9 +68,10 @@ export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = 
     university: dbStudent.university || '',
     profileImage: dbStudent.profile_image || undefined,
     skills: skills,
-    summerGoals: dbStudent.summer_goals || [],
+    courses: dbStudent.courses || [],
     currentProject: dbStudent.current_project || '',
     coolestThing: dbStudent.coolest_thing || '',
+    goals: dbStudent.goals || '',
     phoneNumber: dbStudent.phone_number || '',
     email: dbStudent.email || '',
     linkedin: dbStudent.linkedin || undefined,
@@ -85,9 +89,11 @@ export const formatStudentForDB = (student: Partial<StudentFormatted>): StudentI
     country: student.country || null,
     university: student.university || null,
     profile_image: student.profileImage || null,
-    summer_goals: student.summerGoals || null,
+    skills: student.skills?.map(s => s.name) || null,
+    courses: student.courses || null,
     current_project: student.currentProject || null,
     coolest_thing: student.coolestThing || null,
+    goals: student.goals || null,
     phone_number: student.phoneNumber || null,
     email: student.email || null,
     linkedin: student.linkedin || null,
@@ -112,17 +118,20 @@ export const isValidStudentFormatted = (obj: any): obj is StudentFormatted => {
     typeof obj.name === 'string' &&
     typeof obj.email === 'string' &&
     Array.isArray(obj.skills) &&
-    Array.isArray(obj.summerGoals)
+    typeof obj.goals === 'string'
   )
 }
 
 export const createEmptyStudent = (): StudentInsert => ({
   name: null,
   country: null,
+  university: null,
   profile_image: null,
-  summer_goals: [],
+  skills: [],
+  courses: [],
   current_project: null,
   coolest_thing: null,
+  goals: null,
   phone_number: null,
   email: null,
   linkedin: null,

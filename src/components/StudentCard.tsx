@@ -172,18 +172,14 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           )}
 
           {/* Summer Goals */}
-          {student.summer_goals && student.summer_goals.length > 0 && (
+          {(student as any).goals && (
             <div>
               <h4 className="text-sm font-semibold text-gray-700 mb-2">
                 Summer Session Goals
               </h4>
-              <div className="space-y-1">
-                {student.summer_goals.map((goal, index) => (
-                  <p key={index} className="text-sm text-gray-600">
-                    {goal}
-                  </p>
-                ))}
-              </div>
+              <p className="text-sm text-gray-600">
+                {(student as any).goals}
+              </p>
             </div>
           )}
 

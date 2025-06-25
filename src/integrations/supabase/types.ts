@@ -9,21 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      courses: {
-        Row: {
-          created_at: string
-          id: string
-        }
-        Insert: {
-          created_at?: string
-          id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-        }
-        Relationships: []
-      }
       skills: {
         Row: {
           created_at: string | null
@@ -47,49 +32,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
-      }
-      student_courses: {
-        Row: {
-          course_id: string | null
-          created_at: string | null
-          student_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          course_id?: string | null
-          created_at?: string | null
-          student_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          course_id?: string | null
-          created_at?: string | null
-          student_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_courses_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_courses_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_courses_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students_with_metadata"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       student_likes: {
         Row: {
@@ -174,10 +116,12 @@ export type Database = {
         Row: {
           coolest_thing: string | null
           country: string | null
+          courses: string[] | null
           created_at: string | null
           current_project: string | null
           email: string | null
           github: string | null
+          goals: string | null
           id: string
           isOnboarded: boolean | null
           linkedin: string | null
@@ -193,10 +137,12 @@ export type Database = {
         Insert: {
           coolest_thing?: string | null
           country?: string | null
+          courses?: string[] | null
           created_at?: string | null
           current_project?: string | null
           email?: string | null
           github?: string | null
+          goals?: string | null
           id?: string
           isOnboarded?: boolean | null
           linkedin?: string | null
@@ -212,10 +158,12 @@ export type Database = {
         Update: {
           coolest_thing?: string | null
           country?: string | null
+          courses?: string[] | null
           created_at?: string | null
           current_project?: string | null
           email?: string | null
           github?: string | null
+          goals?: string | null
           id?: string
           isOnboarded?: boolean | null
           linkedin?: string | null
