@@ -42,7 +42,6 @@ export const StudentDetailPopup = ({
   const { isMutualLike } = useStudentLikes();
   const { student: currentStudent } = useCurrentStudent();
   const [mutual, setMutual] = useState(false);
-
   useEffect(() => {
     if (student && currentStudent) {
       isMutualLike(student.id).then(setMutual);
@@ -212,7 +211,9 @@ export const StudentDetailPopup = ({
           )}
 
           {/* Spacer */}
-          {(student.current_project || student.coolest_thing || student.goals) && (
+          {(student.current_project ||
+            student.coolest_thing ||
+            student.goals) && (
             <div className="border-t border-gray-100 my-4"></div>
           )}
 

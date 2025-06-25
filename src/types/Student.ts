@@ -23,11 +23,11 @@ export interface Student {
   linkedin: string | null
   github: string | null
   website: string | null
+  instagram: string | null
+  twitter: string | null
   created_at: string | null
   updated_at: string | null
   is_first_mover_batch: boolean | null
-  instagram: string | null
-  twitter: string | null
 }
 
 export interface StudentWithSkills extends Omit<Student, 'skills'> {
@@ -70,9 +70,9 @@ export const formatStudentForDB = (student: Partial<StudentRow>): StudentInsert 
     linkedin: student.linkedin || null,
     github: student.github || null,
     website: student.website || null,
-    is_first_mover_batch: student.is_first_mover_batch || false,
     instagram: student.instagram || null,
-    twitter: student.twitter || null
+    twitter: student.twitter || null,
+    is_first_mover_batch: student.is_first_mover_batch || false
   }
 }
 
@@ -106,9 +106,9 @@ export const createEmptyStudent = (): StudentInsert => ({
   linkedin: null,
   github: null,
   website: null,
-  is_first_mover_batch: false,
   instagram: null,
-  twitter: null
+  twitter: null,
+  is_first_mover_batch: false
 })
 
 export const createStudentWithDefaults = (
