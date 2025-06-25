@@ -25,8 +25,11 @@ import {
   ArrowUpDown,
   Check,
   ChevronDown,
+  Edit,
+  ExternalLink,
   Github,
   Heart,
+  Instagram,
   Linkedin,
   Loader2,
   MapPin,
@@ -46,9 +49,13 @@ const useStudentAnalytics = () => ({
   isLoading: false,
 });
 
-const QUICK_FILTERS = [
-  { id: "hasLinkedIn", label: "Has LinkedIn", icon: Linkedin },
-  { id: "hasGithub", label: "Has GitHub", icon: Github },
+const SOCIAL_MEDIA_FILTERS = [
+  { id: "hasLinkedIn", label: "LinkedIn", icon: Linkedin },
+  { id: "hasGithub", label: "GitHub", icon: Github },
+  { id: "hasWebsite", label: "Website", icon: ExternalLink },
+];
+
+const OTHER_FILTERS = [
   { id: "liked", label: "Liked", icon: Heart },
 ];
 
@@ -57,10 +64,16 @@ export const StudentOverview = () => {
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
-  const [hasLinkedIn, setHasLinkedIn] = useState<boolean | undefined>(
-    undefined
-  );
-  const [hasGithub, setHasGithub] = useState<boolean | undefined>(undefined);
+  const [socialMediaFilters, setSocialMediaFilters] = useState<{
+    hasLinkedIn: boolean;
+    hasGithub: boolean;
+    hasWebsite: boolean;
+  }>({
+    hasLinkedIn: false,
+    hasGithub: false,
+    hasWebsite: false,
+  });
+  const [showSocialDropdown, setShowSocialDropdown] = useState(false);
   const [showLiked, setShowLiked] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
@@ -101,11 +114,12 @@ export const StudentOverview = () => {
     if (searchTerm.trim()) result.search = searchTerm.trim();
     if (selectedCountry) result.country = selectedCountry;
     if (selectedSkills.length > 0) result.skillIds = selectedSkills;
-    if (hasLinkedIn !== undefined) result.hasLinkedIn = hasLinkedIn;
-    if (hasGithub !== undefined) result.hasGithub = hasGithub;
+    if (socialMediaFilters.hasLinkedIn) result.hasLinkedIn = true;
+    if (socialMediaFilters.hasGithub) result.hasGithub = true;
+    if (socialMediaFilters.hasWebsite) result.hasWebsite = true;
     if (showLiked && user?.id) result.likedByUserId = user.id;
     return result;
-  }, [searchTerm, selectedCountry, selectedSkills, hasLinkedIn, hasGithub, showLiked, user?.id]);
+  }, [searchTerm, selectedCountry, selectedSkills, socialMediaFilters, showLiked, user?.id]);
 
   // Fetch students with filters
   const {
@@ -180,17 +194,16 @@ export const StudentOverview = () => {
     );
   };
 
+  const handleSocialMediaFilter = (filterType: string) => {
+    setSocialMediaFilters(prev => ({
+      ...prev,
+      [filterType]: !prev[filterType as keyof typeof prev]
+    }));
+  };
+
   const handleQuickFilter = (filterType: string) => {
-    switch (filterType) {
-      case "hasLinkedIn":
-        setHasLinkedIn((prev) => (prev === true ? undefined : true));
-        break;
-      case "hasGithub":
-        setHasGithub((prev) => (prev === true ? undefined : true));
-        break;
-      case "liked":
-        setShowLiked((prev) => !prev);
-        break;
+    if (filterType === "liked") {
+      setShowLiked((prev) => !prev);
     }
   };
 
@@ -199,8 +212,11 @@ export const StudentOverview = () => {
     setSelectedCountry("");
     setSelectedSkills([]);
     setSelectedCourses([]);
-    setHasLinkedIn(undefined);
-    setHasGithub(undefined);
+    setSocialMediaFilters({
+      hasLinkedIn: false,
+      hasGithub: false,
+      hasWebsite: false,
+    });
     setShowLiked(false);
   };
 
@@ -209,24 +225,25 @@ export const StudentOverview = () => {
     selectedCountry ||
     selectedSkills.length > 0 ||
     selectedCourses.length > 0 ||
-    hasLinkedIn !== undefined ||
-    hasGithub !== undefined ||
+    Object.values(socialMediaFilters).some(Boolean) ||
     showLiked;
 
+  const activeSocialFilters = Object.values(socialMediaFilters).filter(Boolean).length;
   const activeFilterCount =
     [
       searchTerm,
       selectedCountry,
       selectedSkills.length > 0,
       selectedCourses.length > 0,
-      hasLinkedIn !== undefined,
-      hasGithub !== undefined,
+      activeSocialFilters > 0,
       showLiked,
     ].filter(Boolean).length +
     selectedSkills.length +
-    selectedCourses.length -
+    selectedCourses.length +
+    activeSocialFilters -
     (selectedSkills.length > 0 ? 1 : 0) -
-    (selectedCourses.length > 0 ? 1 : 0);
+    (selectedCourses.length > 0 ? 1 : 0) -
+    (activeSocialFilters > 0 ? 1 : 0);
 
   // Focus search on mobile when component mounts
   useEffect(() => {
@@ -375,12 +392,56 @@ export const StudentOverview = () => {
         </PopoverContent>
       </Popover>
 
-      {/* Quick social filters */}
-      {QUICK_FILTERS.map((filter) => {
-        const isActive =
-          (filter.id === "hasLinkedIn" && hasLinkedIn) ||
-          (filter.id === "hasGithub" && hasGithub) ||
-          (filter.id === "liked" && showLiked);
+      {/* Social Media Filters Dropdown */}
+      <Popover open={showSocialDropdown} onOpenChange={setShowSocialDropdown}>
+        <PopoverTrigger asChild>
+          <button
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors whitespace-nowrap relative ${
+              activeSocialFilters > 0
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "bg-white border-gray-300 hover:border-gray-400 text-gray-700"
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="text-sm font-medium">Social Links</span>
+            {activeSocialFilters > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {activeSocialFilters}
+              </span>
+            )}
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-3">
+          <div className="space-y-2">
+            <div className="font-medium text-sm text-gray-700 mb-3">Show students with:</div>
+            {SOCIAL_MEDIA_FILTERS.map((filter) => {
+              const Icon = filter.icon;
+              const isChecked = socialMediaFilters[filter.id as keyof typeof socialMediaFilters];
+              
+              return (
+                <label
+                  key={filter.id}
+                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleSocialMediaFilter(filter.id)}
+                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  />
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm text-gray-700">{filter.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Other Quick Filters */}
+      {OTHER_FILTERS.map((filter) => {
+        const isActive = filter.id === "liked" && showLiked;
         const Icon = filter.icon;
 
         return (
@@ -666,13 +727,13 @@ export const StudentOverview = () => {
                 </p>
               </div>
             </div>
-            {/* <Link href="/meet" passHref>
+            <Link href="/edit">
               <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Meet in Person</span>
-                <span className="sm:hidden">Meet</span>
+                <Edit className="w-4 h-4" />
+                <span className="hidden sm:inline">Edit Profile</span>
+                <span className="sm:hidden">Edit</span>
               </Button>
-            </Link> */}
+            </Link>
           </div>
         </div>
       </div>

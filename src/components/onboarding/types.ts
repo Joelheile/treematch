@@ -12,6 +12,7 @@ export interface FormData {
   instagramHandle: string;
   twitterHandle: string;
   githubUsername: string;
+  websiteUrl: string;
 }
 
 export interface Skill {

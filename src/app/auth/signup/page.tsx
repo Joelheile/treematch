@@ -208,7 +208,7 @@ export default function SignupPage() {
               <p className="text-xs text-muted-foreground">
                 New here?{" "}
                 <Link
-                  href="/onboarding"
+                  href="/edit"
                   className="font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   Start with our quick setup
