@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-import { Country, FormData, ICON_OPTIONS } from "../types";
+import { Country, FormData } from "../types";
 import { countryToFlag } from "../utils";
 
 interface BasicInfoStepProps {
@@ -193,35 +193,6 @@ export default function BasicInfoStep({
                 </span>
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <div className="flex justify-center gap-4">
-            {ICON_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() =>
-                  setFormData((prev: any) => ({ ...prev, icon: option.value }))
-                }
-                style={{
-                  fontSize: 24,
-                  border:
-                    formData.icon === option.value
-                      ? "2px solid #b91c1c"
-                      : "1px solid #ccc",
-                  borderRadius: 8,
-                  padding: 8,
-                  background: "white",
-                }}
-              >
-                {option.emoji}
-              </button>
-            ))}
-          </div>
-          <div className="text-center text-xs text-gray-500 mt-2">
-            Choose your icon
           </div>
         </div>
       </div>
