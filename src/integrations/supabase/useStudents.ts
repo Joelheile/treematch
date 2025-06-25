@@ -19,7 +19,7 @@ export interface StudentSearchOptions {
   limit?: number
   offset?: number
   filters?: StudentFilters
-  orderBy?: keyof StudentRow
+  orderBy?: string
   orderDirection?: 'asc' | 'desc'
 }
 
@@ -27,6 +27,18 @@ export interface PaginatedResponse<T> {
   data: T[]
   totalCount: number
   hasMore: boolean
+}
+
+const sanitizeSearchTerm = (search: string): string => {
+  return search
+    .trim()
+    .replace(/[<>]/g, '')
+    .substring(0, 100)
+}
+
+const validateUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return uuidRegex.test(id)
 }
 
 export const useStudents = (options: StudentSearchOptions = {}) => {
@@ -48,7 +60,8 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         .range(offset, offset + limit - 1)
 
       if (filters.country) {
-        query = query.eq('country', filters.country)
+        const sanitizedCountry = filters.country.trim().substring(0, 100)
+        query = query.eq('country', sanitizedCountry)
       }
 
       if (filters.isOnboarded !== undefined) {
@@ -76,7 +89,8 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
       }
 
       if (filters.search) {
-        query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,current_project.ilike.%${filters.search}%`)
+        const sanitizedSearch = sanitizeSearchTerm(filters.search)
+        query = query.or(`name.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%,current_project.ilike.%${sanitizedSearch}%`)
       }
 
       const { data: studentsData, error: studentsError, count } = await query
@@ -86,31 +100,36 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
       let finalStudentsData = studentsData || []
 
       if (filters.skillIds && filters.skillIds.length > 0) {
-        const { data: studentSkillsData, error: skillFilterError } = await supabase
-          .from('student_skills')
-          .select('student_id')
-          .in('skill_id', filters.skillIds)
+        const validSkillIds = filters.skillIds.filter(validateUUID)
+        if (validSkillIds.length > 0) {
+          const { data: studentSkillsData, error: skillFilterError } = await supabase
+            .from('student_skills')
+            .select('student_id')
+            .in('skill_id', validSkillIds)
 
-        if (skillFilterError) throw skillFilterError
+          if (skillFilterError) throw skillFilterError
 
-        const studentIdsWithSkills = studentSkillsData?.map(item => item.student_id) || []
-        finalStudentsData = studentsData?.filter(student => 
-          studentIdsWithSkills.includes(student.id)
-        ) || []
+          const studentIdsWithSkills = studentSkillsData?.map(item => item.student_id) || []
+          finalStudentsData = studentsData?.filter(student => 
+            studentIdsWithSkills.includes(student.id)
+          ) || []
+        }
       }
 
       if (filters.likedByUserId) {
-        const { data: likedStudentsData, error: likedFilterError } = await supabase
-          .from('student_likes')
-          .select('liked_student_id')
-          .eq('liker_id', filters.likedByUserId)
+        if (validateUUID(filters.likedByUserId)) {
+          const { data: likedStudentsData, error: likedFilterError } = await supabase
+            .from('student_likes')
+            .select('liked_student_id')
+            .eq('liker_id', filters.likedByUserId)
 
-        if (likedFilterError) throw likedFilterError
+          if (likedFilterError) throw likedFilterError
 
-        const likedStudentIds = likedStudentsData?.map(item => item.liked_student_id) || []
-        finalStudentsData = finalStudentsData.filter(student => 
-          likedStudentIds.includes(student.id)
-        )
+          const likedStudentIds = likedStudentsData?.map(item => item.liked_student_id) || []
+          finalStudentsData = finalStudentsData.filter(student => 
+            likedStudentIds.includes(student.id)
+          )
+        }
       }
 
       const studentIds = finalStudentsData.map(student => student.id)

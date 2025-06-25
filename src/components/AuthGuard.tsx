@@ -2,9 +2,18 @@
 
 import { useAuth } from '@/app/auth/AuthProvider'
 import { TreePine } from 'lucide-react'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { loading, user } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth/login')
+    }
+  }, [loading, user, router])
 
   if (loading) {
     return (
@@ -20,9 +29,6 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!user) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login'
-    }
     return null
   }
 

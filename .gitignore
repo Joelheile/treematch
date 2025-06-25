@@ -12,6 +12,7 @@ package-lock.json # LOCKFILE
 .env.local
 .env.production
 .env.development
+.env.test
 
 # Vercel
 .vercel
@@ -35,3 +36,12 @@ lerna-debug.log*
 *.sln
 *.sw?
 .cursor/*
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+secrets.json

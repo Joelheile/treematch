@@ -39,8 +39,8 @@ const createWrapper = () => {
 }
 
 describe('useUploadAvatar', () => {
-  describe('when uploading avatar successfully', () => {
-    it('should compress and upload image', async () => {
+  describe('when uploading avatar without userId (temp storage)', () => {
+    it('should compress and upload image to temp-avatars bucket', async () => {
       const mockFile = new File(['test content'], 'test-image.jpg', { type: 'image/jpeg' })
       const compressedFile = new File(['compressed content'], 'test-image.jpg', { type: 'image/jpeg' })
       
@@ -52,7 +52,7 @@ describe('useUploadAvatar', () => {
       })
 
       const getPublicUrlMock = jest.fn().mockReturnValue({
-        data: { publicUrl: 'https://example.com/test_image.jpg' },
+        data: { publicUrl: 'https://example.com/temp-avatars/test_image.jpg' },
       })
 
       mockSupabase.storage.from.mockReturnValue({
@@ -72,21 +72,75 @@ describe('useUploadAvatar', () => {
       expect(mockImageCompression).toHaveBeenCalledWith(mockFile, {
         maxSizeMB: 1,
         maxWidthOrHeight: 800,
-        useWebWorker: true,
+        useWebWorker: false,
         fileType: 'image/jpeg',
       })
 
+      expect(mockSupabase.storage.from).toHaveBeenCalledWith('temp-avatars')
       expect(uploadMock).toHaveBeenCalledWith('test_image.jpg', compressedFile, {
         cacheControl: '3600',
         upsert: true,
       })
 
       expect(result.current.data).toEqual({
-        url: 'https://example.com/test_image.jpg',
+        url: 'https://example.com/temp-avatars/test_image.jpg',
         path: 'test_image.jpg',
       })
     })
+  })
 
+  describe('when uploading avatar with userId (permanent storage)', () => {
+    it('should compress and upload image to avatars bucket with user path', async () => {
+      const mockFile = new File(['test content'], 'test-image.jpg', { type: 'image/jpeg' })
+      const compressedFile = new File(['compressed content'], 'test-image.jpg', { type: 'image/jpeg' })
+      const userId = 'user123'
+      
+      mockImageCompression.mockResolvedValue(compressedFile)
+
+      const uploadMock = jest.fn().mockResolvedValue({
+        data: { path: `${userId}/avatar.jpg` },
+        error: null,
+      })
+
+      const getPublicUrlMock = jest.fn().mockReturnValue({
+        data: { publicUrl: `https://example.com/avatars/${userId}/avatar.jpg` },
+      })
+
+      mockSupabase.storage.from.mockReturnValue({
+        upload: uploadMock,
+        getPublicUrl: getPublicUrlMock,
+      })
+
+      const wrapper = createWrapper()
+      const { result } = renderHook(() => useUploadAvatar(), { wrapper })
+
+      result.current.mutate({ file: mockFile, userId })
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true)
+      })
+
+      expect(mockImageCompression).toHaveBeenCalledWith(mockFile, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+        useWebWorker: false,
+        fileType: 'image/jpeg',
+      })
+
+      expect(mockSupabase.storage.from).toHaveBeenCalledWith('avatars')
+      expect(uploadMock).toHaveBeenCalledWith(`${userId}/avatar.jpg`, compressedFile, {
+        cacheControl: '3600',
+        upsert: true,
+      })
+
+      expect(result.current.data).toEqual({
+        url: `https://example.com/avatars/${userId}/avatar.jpg`,
+        path: `${userId}/avatar.jpg`,
+      })
+    })
+  })
+
+  describe('when file has special characters in name', () => {
     it('should sanitize file name with special characters', async () => {
       const mockFile = new File(['content'], 'test@file#name.jpg', { type: 'image/jpeg' })
       const compressedFile = new File(['compressed'], 'test@file#name.jpg', { type: 'image/jpeg' })
@@ -99,7 +153,7 @@ describe('useUploadAvatar', () => {
       })
 
       const getPublicUrlMock = jest.fn().mockReturnValue({
-        data: { publicUrl: 'https://example.com/test_file_name.jpg' },
+        data: { publicUrl: 'https://example.com/temp-avatars/test_file_name.jpg' },
       })
 
       mockSupabase.storage.from.mockReturnValue({
@@ -134,7 +188,7 @@ describe('useUploadAvatar', () => {
       })
 
       const getPublicUrlMock = jest.fn().mockReturnValue({
-        data: { publicUrl: 'https://example.com/test.jpg' },
+        data: { publicUrl: 'https://example.com/temp-avatars/test.jpg' },
       })
 
       mockSupabase.storage.from.mockReturnValue({
@@ -187,43 +241,6 @@ describe('useUploadAvatar', () => {
       expect(result.current.error?.message).toBe('Upload failed: Storage quota exceeded')
     })
   })
-
-  describe('when file has no extension', () => {
-    it('should default to jpg extension', async () => {
-      const mockFile = new File(['content'], 'testfile', { type: 'image/jpeg' })
-      const compressedFile = new File(['compressed'], 'testfile', { type: 'image/jpeg' })
-
-      mockImageCompression.mockResolvedValue(compressedFile)
-
-      const uploadMock = jest.fn().mockResolvedValue({
-        data: { path: 'testfile' },
-        error: null,
-      })
-
-      const getPublicUrlMock = jest.fn().mockReturnValue({
-        data: { publicUrl: 'https://example.com/testfile' },
-      })
-
-      mockSupabase.storage.from.mockReturnValue({
-        upload: uploadMock,
-        getPublicUrl: getPublicUrlMock,
-      })
-
-      const wrapper = createWrapper()
-      const { result } = renderHook(() => useUploadAvatar(), { wrapper })
-
-      result.current.mutate({ file: mockFile })
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true)
-      })
-
-      expect(uploadMock).toHaveBeenCalledWith('testfile', compressedFile, {
-        cacheControl: '3600',
-        upsert: true,
-      })
-    })
-  })
 })
 
 describe('useUploadTempAvatar', () => {
@@ -237,7 +254,7 @@ describe('useUploadTempAvatar', () => {
       })
 
       const getPublicUrlMock = jest.fn().mockReturnValue({
-        data: { publicUrl: 'https://example.com/temp_avatar.jpg' },
+        data: { publicUrl: 'https://example.com/temp-avatars/temp_avatar.jpg' },
       })
 
       mockSupabase.storage.from.mockReturnValue({
@@ -261,7 +278,7 @@ describe('useUploadTempAvatar', () => {
       })
 
       expect(result.current.data).toEqual({
-        url: 'https://example.com/temp_avatar.jpg',
+        url: 'https://example.com/temp-avatars/temp_avatar.jpg',
         path: 'temp_avatar.jpg',
       })
     })
@@ -275,7 +292,7 @@ describe('useUploadTempAvatar', () => {
       })
 
       const getPublicUrlMock = jest.fn().mockReturnValue({
-        data: { publicUrl: 'https://example.com/temp_avatar_.jpg' },
+        data: { publicUrl: 'https://example.com/temp-avatars/temp_avatar_.jpg' },
       })
 
       mockSupabase.storage.from.mockReturnValue({

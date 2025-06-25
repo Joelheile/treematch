@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import { FormData } from "../types";
+import { useEffect } from "react";
 
 interface ProfilePhotoStepProps {
   formData: FormData;
@@ -22,6 +23,20 @@ export default function ProfilePhotoStep({
   student,
   handleImageUpload,
 }: ProfilePhotoStepProps) {
+  useEffect(() => {
+    console.log('ProfilePhotoStep - formData.profileImage:', formData.profileImage);
+    console.log('ProfilePhotoStep - isUploadingImage:', isUploadingImage);
+  }, [formData.profileImage, isUploadingImage]);
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error('Image failed to load:', e);
+    console.error('Image src was:', formData.profileImage);
+  };
+
+  const handleImageLoad = () => {
+    console.log('Image loaded successfully:', formData.profileImage);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -40,6 +55,8 @@ export default function ProfilePhotoStep({
               src={formData.profileImage}
               alt="Profile"
               className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-red-100 mx-auto"
+              onError={handleImageError}
+              onLoad={handleImageLoad}
             />
             <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <Button
