@@ -235,36 +235,18 @@ export function LandingPage() {
               className="bg-white text-stanford-cardinal hover:bg-gray-50 font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
               size="lg"
             >
-              Start Connecting
+              Let's go
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
-          <p className="text-white/80 text-sm sm:text-base mt-4 sm:mt-6 px-2">
-            Free for all Stanford Summer Session students
-          </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-white/70 pt-6 sm:pt-8 mt-8 sm:mt-12 border-t border-white/20 px-2">
+          <div className="flex items-center justify-center text-sm text-white/70 pt-6 mt-8 border-t border-white/20">
             <div className="flex items-center space-x-2">
               <TreePine className="w-4 h-4" />
               <span className="font-medium">TreeMatch</span>
             </div>
-            <p className="text-center">
-              Already have an account?{" "}
-              <button
-                onClick={() => router.push("/auth/login")}
-                className="text-white underline hover:no-underline font-medium"
-              >
-                Sign in here
-              </button>
-            </p>
           </div>
-
-          <p className="text-white/50 text-xs sm:text-sm mt-4 sm:mt-6 text-center px-2 leading-relaxed">
-            No trees were harmed in the making of this network. Side effects may
-            include: lifelong friendships, unexpected adventures, and the best
-            summer of your life.
-          </p>
         </div>
       </section>
     </div>
