@@ -24,6 +24,7 @@ import Image from "next/image";
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { useEffect, useState } from "react";
+import { ICON_OPTIONS } from './onboarding/types'
 
 interface StudentDetailPopupProps {
   student: StudentWithSkills | null;
@@ -141,14 +142,11 @@ export const StudentDetailPopup = ({
                 <h2 className="text-2xl font-bold text-gray-900">
                   {student.name || "Unknown"}
                 </h2>
-                {student.is_first_mover_batch && (
-                  <Image
-                    src="/Trophy Icon 48.png"
-                    alt="Trophy"
-                    width={16}
-                    height={16}
-                    style={{ minWidth: 16, minHeight: 16 }}
-                  />
+                {student.icon && (
+                  (() => {
+                    const found = ICON_OPTIONS.find(opt => opt.value === student.icon)
+                    return found ? <span style={{ fontSize: 16 }}>{found.emoji}</span> : <span style={{ fontSize: 16 }}>{student.icon}</span>
+                  })()
                 )}
               </div>
 

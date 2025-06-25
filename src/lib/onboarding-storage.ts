@@ -13,6 +13,7 @@ export interface OnboardingData {
   twitterHandle: string
   githubUsername: string
   websiteUrl: string
+  icon: string
   completedAt?: string
   tempAvatarPath?: string
 }

@@ -50,6 +50,7 @@ export default function OnboardingLogic() {
     twitterHandle: "",
     githubUsername: "",
     websiteUrl: "",
+    icon: ""
   });
 
   const [countryInput, setCountryInput] = useState("");
@@ -84,6 +85,7 @@ export default function OnboardingLogic() {
         twitterHandle: student.twitter || "",
         githubUsername: student.github || "",
         websiteUrl: student.website || "",
+        icon: student.icon || ""
       });
 
       if (student.country) {
@@ -125,6 +127,7 @@ export default function OnboardingLogic() {
           twitterHandle: savedData.twitterHandle || "",
           githubUsername: savedData.githubUsername || "",
           websiteUrl: savedData.websiteUrl || "",
+          icon: savedData.icon || ""
         });
       }
     }
@@ -255,6 +258,7 @@ export default function OnboardingLogic() {
           twitterHandle: formData.twitterHandle,
           githubUsername: formData.githubUsername,
           websiteUrl: formData.websiteUrl,
+          icon: formData.icon
         };
 
         OnboardingStorage.save(currentFormAsLocalStorage);
@@ -279,6 +283,7 @@ export default function OnboardingLogic() {
         githubUsername: formData.githubUsername,
         websiteUrl: formData.websiteUrl,
         tempAvatarPath,
+        icon: formData.icon
       };
       OnboardingStorage.save(onboardingData);
       toast.success(

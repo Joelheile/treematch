@@ -107,7 +107,7 @@ export type Database = {
           goals: string | null
           id: string
           instagram: string | null
-          is_first_mover_batch: boolean | null
+          icon: string | null
           isOnboarded: boolean | null
           linkedin: string | null
           name: string | null
@@ -129,7 +129,7 @@ export type Database = {
           goals?: string | null
           id?: string
           instagram?: string | null
-          is_first_mover_batch?: boolean | null
+          icon?: string | null
           isOnboarded?: boolean | null
           linkedin?: string | null
           name?: string | null
@@ -151,7 +151,7 @@ export type Database = {
           goals?: string | null
           id?: string
           instagram?: string | null
-          is_first_mover_batch?: boolean | null
+          icon?: string | null
           isOnboarded?: boolean | null
           linkedin?: string | null
           name?: string | null
