@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from './client'
-import { Student, StudentWithSkills } from '@/types/Student'
+import { StudentRow, StudentWithSkills } from '@/types/Student'
+
+export type { StudentWithSkills } from '@/types/Student'
 
 export interface StudentFilters {
   country?: string
@@ -16,7 +18,7 @@ export interface StudentSearchOptions {
   limit?: number
   offset?: number
   filters?: StudentFilters
-  orderBy?: keyof Student
+  orderBy?: keyof StudentRow
   orderDirection?: 'asc' | 'desc'
 }
 
