@@ -15,7 +15,6 @@ import {
   OnboardingStorage,
   type OnboardingData,
 } from "@/lib/onboarding-storage";
-import { TreePine } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -50,7 +49,7 @@ export default function OnboardingLogic() {
     twitterHandle: "",
     githubUsername: "",
     websiteUrl: "",
-    icon: ""
+    icon: "",
   });
 
   const [countryInput, setCountryInput] = useState("");
@@ -85,7 +84,7 @@ export default function OnboardingLogic() {
         twitterHandle: student.twitter || "",
         githubUsername: student.github || "",
         websiteUrl: student.website || "",
-        icon: student.icon || ""
+        icon: student.icon || "",
       });
 
       if (student.country) {
@@ -116,7 +115,7 @@ export default function OnboardingLogic() {
           twitterHandle: savedData.twitterHandle || "",
           githubUsername: savedData.githubUsername || "",
           websiteUrl: savedData.websiteUrl || "",
-          icon: savedData.icon || ""
+          icon: savedData.icon || "",
         });
       }
     }
@@ -247,7 +246,7 @@ export default function OnboardingLogic() {
           twitterHandle: formData.twitterHandle,
           githubUsername: formData.githubUsername,
           websiteUrl: formData.websiteUrl,
-          icon: formData.icon
+          icon: formData.icon,
         };
 
         OnboardingStorage.save(currentFormAsLocalStorage);
@@ -272,7 +271,7 @@ export default function OnboardingLogic() {
         githubUsername: formData.githubUsername,
         websiteUrl: formData.websiteUrl,
         tempAvatarPath,
-        icon: formData.icon
+        icon: formData.icon,
       };
       OnboardingStorage.save(onboardingData);
       toast.success(
@@ -362,8 +361,14 @@ export default function OnboardingLogic() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
-            <TreePine className="w-6 h-6 text-white" />
+          <div className="mx-auto w-12 h-12 flex items-center justify-center animate-pulse">
+            <Image
+              src="/icon.png"
+              alt="TreeMatch"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
           </div>
           <p className="text-sm text-gray-500">
             {user ? "Loading your profile..." : "Loading..."}
