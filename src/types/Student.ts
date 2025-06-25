@@ -26,11 +26,15 @@ export interface Student {
   created_at: string | null
   updated_at: string | null
   is_first_mover_batch: boolean | null
+  instagram: string | null
+  twitter: string | null
 }
 
 export interface StudentWithSkills extends Omit<Student, 'skills'> {
   skills: SkillRow[]
   is_first_mover_batch: boolean | null
+  instagram: string | null
+  twitter: string | null
 }
 
 export interface Skill {
@@ -45,7 +49,9 @@ export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = 
   return {
     ...dbStudent,
     skills: skills,
-    is_first_mover_batch: dbStudent.is_first_mover_batch
+    is_first_mover_batch: dbStudent.is_first_mover_batch,
+    instagram: dbStudent.instagram,
+    twitter: dbStudent.twitter
   }
 }
 
@@ -64,7 +70,9 @@ export const formatStudentForDB = (student: Partial<StudentRow>): StudentInsert 
     linkedin: student.linkedin || null,
     github: student.github || null,
     website: student.website || null,
-    is_first_mover_batch: student.is_first_mover_batch || false
+    is_first_mover_batch: student.is_first_mover_batch || false,
+    instagram: student.instagram || null,
+    twitter: student.twitter || null
   }
 }
 
@@ -98,7 +106,9 @@ export const createEmptyStudent = (): StudentInsert => ({
   linkedin: null,
   github: null,
   website: null,
-  is_first_mover_batch: false
+  is_first_mover_batch: false,
+  instagram: null,
+  twitter: null
 })
 
 export const createStudentWithDefaults = (
