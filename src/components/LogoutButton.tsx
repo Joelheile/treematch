@@ -3,13 +3,17 @@
 import { useAuth } from "@/app/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export const LogoutButton = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
 
   if (!user) return null;
+  
+  // Hide logout button during onboarding
+  if (pathname?.startsWith('/onboarding')) return null;
 
   const handleLogoutClick = () => {
     router.push("/logout");
