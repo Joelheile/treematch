@@ -1,6 +1,7 @@
 export interface OnboardingData {
-  name: string
-  country: string
+  name: string;
+  email: string;
+  country: string;
   university: string
   phoneNumber: string
   profileImage: string

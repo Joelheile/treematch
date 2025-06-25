@@ -27,7 +27,7 @@ export default function OnboardingLogic() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const { user } = useAuth();
+  const { user, signInWithMagicLink } = useAuth();
   const { student, isLoading: studentLoading } = useCurrentStudent();
   const { data: availableSkills = [], isLoading: skillsLoading } = useSkills();
   const updateStudentSkills = useUpdateStudentSkills();
@@ -37,6 +37,7 @@ export default function OnboardingLogic() {
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
+    email: "",
     country: "",
     university: "",
     phoneNumber: "",
@@ -72,6 +73,7 @@ export default function OnboardingLogic() {
 
       setFormData({
         name: student.name || "",
+        email: student.email || "",
         country: student.country || "",
         university: student.university || "",
         phoneNumber: student.phone_number || "",
@@ -103,6 +105,7 @@ export default function OnboardingLogic() {
       if (savedData) {
         setFormData({
           name: savedData.name || "",
+          email: savedData.email || "",
           country: savedData.country || "",
           university: savedData.university || "",
           phoneNumber: savedData.phoneNumber || "",
@@ -234,6 +237,7 @@ export default function OnboardingLogic() {
         // Also save current form data to localStorage for fields not in database
         const currentFormAsLocalStorage: OnboardingData = {
           name: formData.name,
+          email: formData.email,
           country: formData.country,
           university: formData.university,
           phoneNumber: formData.phoneNumber,
@@ -258,6 +262,7 @@ export default function OnboardingLogic() {
       }
       const onboardingData: OnboardingData = {
         name: formData.name,
+        email: formData.email,
         country: formData.country,
         university: formData.university,
         phoneNumber: formData.phoneNumber,
@@ -275,10 +280,10 @@ export default function OnboardingLogic() {
         icon: formData.icon,
       };
       OnboardingStorage.save(onboardingData);
+      await signInWithMagicLink(formData.email);
       toast.success(
-        "Profile information saved! Now let's create your account."
+        "Check your email for a magic link to complete your signup!"
       );
-      router.push("/auth/signup");
     } catch (error) {
       toast.error("Failed to save profile. Please try again.");
     } finally {
@@ -292,6 +297,7 @@ export default function OnboardingLogic() {
     updateStudent,
     updateStudentSkills,
     router,
+    signInWithMagicLink,
   ]);
 
   const handleNext = useCallback(() => {
@@ -313,6 +319,7 @@ export default function OnboardingLogic() {
       case 1:
         return (
           formData.name.trim() !== "" &&
+          formData.email.trim() !== "" &&
           formData.country.trim() !== "" &&
           formData.university.trim() !== "" &&
           formData.phoneNumber.trim() !== ""
