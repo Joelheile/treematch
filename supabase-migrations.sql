@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS students (
   website TEXT,
   isOnboarded BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  is_first_mover_batch BOOLEAN DEFAULT false
 );
 
 -- Create skills table
