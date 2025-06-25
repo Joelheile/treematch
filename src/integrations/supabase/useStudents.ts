@@ -1,8 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from './client-ssr'
-import { StudentRow, StudentWithSkills } from '@/types/Student'
+import { Tables } from './types'
 
-export type { StudentWithSkills } from '@/types/Student'
+export interface StudentWithSkills extends Tables<'students'> {
+  skills: Tables<'skills'>[]
+}
+
+
 
 export interface StudentFilters {
   country?: string

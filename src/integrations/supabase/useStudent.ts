@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from './client-ssr'
-import { StudentWithSkills } from '@/types/Student'
-
-export type { StudentWithSkills } from '@/types/Student'
+import { StudentWithSkills } from './useStudents'
 
 export const useStudent = (id: string) => {
   return useQuery({
