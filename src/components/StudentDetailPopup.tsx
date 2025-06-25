@@ -67,8 +67,11 @@ export const StudentDetailPopup = ({
             </div>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 {student.name || "Unknown"}
+                {student.is_first_mover_batch && (
+                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">First Mover</Badge>
+                )}
               </h2>
 
               {student.country && (
@@ -165,9 +168,14 @@ export const StudentDetailPopup = ({
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
                   Looking For
                 </h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {student.goals}
-                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant="outline"
+                    className="text-sm border-gray-300 text-gray-700 hover:border-gray-400 px-3 py-1"
+                  >
+                    {student.goals}
+                  </Badge>
+                </div>
               </CardContent>
             </Card>
           )}

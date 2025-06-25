@@ -117,6 +117,7 @@ export type Database = {
           university: string | null
           updated_at: string | null
           website: string | null
+          is_first_mover_batch: boolean | null
         }
         Insert: {
           coolest_thing?: string | null
@@ -139,6 +140,7 @@ export type Database = {
           university?: string | null
           updated_at?: string | null
           website?: string | null
+          is_first_mover_batch?: boolean | null
         }
         Update: {
           coolest_thing?: string | null
@@ -161,6 +163,7 @@ export type Database = {
           university?: string | null
           updated_at?: string | null
           website?: string | null
+          is_first_mover_batch?: boolean | null
         }
         Relationships: []
       }

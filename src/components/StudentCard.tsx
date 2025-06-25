@@ -90,6 +90,11 @@ export const StudentCard = ({ student }: StudentCardProps) => {
         </button>
 
         <CardHeader className="text-center pb-3 px-4 sm:px-6">
+          <div className="flex justify-center gap-2 mb-2">
+            {student.is_first_mover_batch && (
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">First Mover</Badge>
+            )}
+          </div>
           {student.profile_image ? (
             <img
               src={student.profile_image}
