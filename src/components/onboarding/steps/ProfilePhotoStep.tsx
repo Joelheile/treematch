@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import { FormData } from "../types";
-import { useEffect } from "react";
 
 interface ProfilePhotoStepProps {
   formData: FormData;
@@ -23,18 +22,14 @@ export default function ProfilePhotoStep({
   student,
   handleImageUpload,
 }: ProfilePhotoStepProps) {
-  useEffect(() => {
-    console.log('ProfilePhotoStep - formData.profileImage:', formData.profileImage);
-    console.log('ProfilePhotoStep - isUploadingImage:', isUploadingImage);
-  }, [formData.profileImage, isUploadingImage]);
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error('Image failed to load:', e);
-    console.error('Image src was:', formData.profileImage);
+  const handleImageError = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>
+  ) => {
+    // Image failed to load - could add user feedback here if needed
   };
 
   const handleImageLoad = () => {
-    console.log('Image loaded successfully:', formData.profileImage);
+    // Image loaded successfully
   };
 
   return (
@@ -45,8 +40,8 @@ export default function ProfilePhotoStep({
         </h2>
         <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base px-2 leading-relaxed">
           Upload a ✨friendly ✨ photo so others can recognize you around
-          campus. We have over 500 students and there's no way to match
-          anybody without a photo haha.
+          campus. We have over 500 students and there's no way to match anybody
+          without a photo haha.
         </p>
 
         {formData.profileImage ? (
@@ -68,10 +63,7 @@ export default function ProfilePhotoStep({
               >
                 Remove Photo
               </Button>
-              <Label
-                htmlFor="image-upload-change"
-                className="cursor-pointer"
-              >
+              <Label htmlFor="image-upload-change" className="cursor-pointer">
                 <Button
                   variant="outline"
                   asChild
@@ -125,4 +117,4 @@ export default function ProfilePhotoStep({
       </div>
     </div>
   );
-} 
+}

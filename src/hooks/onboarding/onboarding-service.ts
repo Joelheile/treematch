@@ -1,5 +1,5 @@
+import { TablesInsert } from '@/integrations/supabase/types'
 import { OnboardingData } from '@/lib/onboarding-storage'
-import { StudentInsert } from '@/types/Student'
 import { createClient } from '../../integrations/supabase/client-ssr'
 import { moveAvatarAfterLogin } from '../../integrations/supabase/moveAvatarAfterLogin'
 
@@ -34,7 +34,7 @@ export class OnboardingService {
   convertOnboardingDataToStudent(
     onboardingData: OnboardingData, 
     userEmail: string
-  ): StudentInsert {
+  ): TablesInsert<'students'> {
     return {
       name: onboardingData.name,
       email: userEmail,
@@ -83,15 +83,12 @@ export class OnboardingService {
   }
 
   async getStudentByEmail(email: string) {
-    console.log('getStudentByEmail called with:', email)
     const supabase = createClient()
     const { data: studentData, error: studentError } = await supabase
       .from('students')
       .select('*')
       .eq('email', email)
       .single()
-
-    console.log('getStudentByEmail result:', { studentData, studentError })
     if (studentError) {
       if (studentError.code === 'PGRST116') {
         return { data: null, error: null }
@@ -102,16 +99,13 @@ export class OnboardingService {
     return { data: studentData, error: null }
   }
 
-  async createStudent(student: StudentInsert, skillIds: string[] = []) {
-    console.log('createStudent called with:', { student, skillIds })
+  async createStudent(student: TablesInsert<'students'>, skillIds: string[] = []) {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('students')
       .insert(student)
       .select()
       .single()
-
-    console.log('createStudent result:', { data, error })
     if (error) throw error
 
     if (skillIds.length > 0) {
@@ -121,8 +115,7 @@ export class OnboardingService {
     return { data, error: null }
   }
 
-  async updateStudent(id: string, updates: Partial<StudentInsert>, skillIds?: string[]) {
-    console.log('updateStudent called with:', { id, updates, skillIds })
+  async updateStudent(id: string, updates: Partial<TablesInsert<'students'>>, skillIds?: string[]) {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('students')
@@ -130,10 +123,6 @@ export class OnboardingService {
       .eq('id', id)
       .select()
       .single()
-    if (error) {
-      console.error('updateStudent error:', { updates, error })
-    }
-    console.log('updateStudent result:', { data, error })
     if (error) throw error
 
     if (skillIds !== undefined) {
@@ -149,49 +138,37 @@ export class OnboardingService {
   ) {
     try {
       let profileImage = onboardingData.profileImage || null
-      console.log('saveOnboardingDataToDatabase called with:', { onboardingData, userEmail })
       
       if (onboardingData.tempAvatarPath && onboardingData.tempAvatarPath !== "") {
         try {
           const supabaseAuth = createClient()
           const user = await supabaseAuth.auth.getUser()
-          console.log('User from supabaseAuth.auth.getUser:', user)
           if (user.data?.user?.id) {
             const movedAvatarUrl = await moveAvatarAfterLogin(onboardingData.tempAvatarPath, user.data.user.id)
-            console.log('movedAvatarUrl:', movedAvatarUrl)
             if (movedAvatarUrl) {
               profileImage = movedAvatarUrl
             }
           }
         } catch (avatarError) {
-          console.warn('Avatar moving failed, using existing image:', avatarError)
+          // Avatar moving failed, using existing image
         }
       }
       
       const existingStudentResponse = await this.getStudentByEmail(userEmail)
-      console.log('existingStudentResponse:', existingStudentResponse)
       
       const studentData = this.convertOnboardingDataToStudent({ ...onboardingData, profileImage }, userEmail)
       const skillIds = onboardingData.skillIds
       
-      console.log('studentData for insert/update:', studentData)
-      console.log('skillIds:', skillIds)
-      
       if (existingStudentResponse.data) {
         const { id } = existingStudentResponse.data
         const { id: _, ...updateData } = studentData
-        console.log('Calling updateStudent with:', { id, updateData, skillIds })
         const result = await this.updateStudent(id, updateData, skillIds)
-        console.log('updateStudent result:', result)
         return result
       } else {
-        console.log('Calling createStudent with:', { studentData, skillIds })
         const result = await this.createStudent(studentData, skillIds)
-        console.log('createStudent result:', result)
         return result
       }
     } catch (error) {
-      console.error('Error saving onboarding data to database:', error)
       return {
         data: null,
         error: `Failed to save profile: ${error instanceof Error ? error.message : 'Unknown error'}`

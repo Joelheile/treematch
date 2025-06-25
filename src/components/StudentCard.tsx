@@ -3,9 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
+import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
 import countriesData from "@/lib/countries.json";
-import type { StudentWithSkills } from "@/types/Student";
-import { ExternalLink, Github, Heart, Instagram, Linkedin, MapPin, Twitter } from "lucide-react";
+import {
+  ExternalLink,
+  Github,
+  Heart,
+  Instagram,
+  Linkedin,
+  MapPin,
+  Twitter,
+} from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { StudentDetailPopup } from "./StudentDetailPopup";
@@ -18,7 +26,12 @@ interface StudentCardProps {
 export const StudentCard = ({ student }: StudentCardProps) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { isLiked, toggleLike, isToggling } = useStudentLikes();
-  const hasLinks = student.linkedin || student.github || student.website || student.instagram || student.twitter;
+  const hasLinks =
+    student.linkedin ||
+    student.github ||
+    student.website ||
+    student.instagram ||
+    student.twitter;
 
   // Helper function to format social media URLs
   const formatSocialUrl = (platform: string, username: string) => {
@@ -176,7 +189,9 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           )}
 
           {/* Spacer */}
-          {(student.current_project || student.coolest_thing || (student as any).goals) && (
+          {(student.current_project ||
+            student.coolest_thing ||
+            (student as any).goals) && (
             <div className="border-t border-gray-100 my-3"></div>
           )}
 
@@ -249,7 +264,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                     asChild
                   >
                     <a
-                      href={formatSocialUrl('instagram', student.instagram)}
+                      href={formatSocialUrl("instagram", student.instagram)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

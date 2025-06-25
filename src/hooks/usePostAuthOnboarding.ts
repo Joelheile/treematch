@@ -23,12 +23,9 @@ export const usePostAuthOnboarding = () => {
       }
 
       if (OnboardingStorage.isExpired()) {
-        console.log('Onboarding data expired, clearing localStorage')
         OnboardingStorage.clear()
         return
       }
-
-      console.log('Processing onboarding data for user:', user.email)
       setIsProcessing(true)
       
       try {
@@ -39,10 +36,8 @@ export const usePostAuthOnboarding = () => {
 
         if (result.error) {
           toast.error(`Failed to save your profile: ${result.error}`)
-          console.error('Error saving onboarding data:', result.error)
         } else {
           toast.success('Welcome! Your profile has been created successfully. 🎉')
-          console.log('Onboarding data saved successfully')
           
           OnboardingStorage.clear()
           
@@ -53,7 +48,6 @@ export const usePostAuthOnboarding = () => {
         
         setHasProcessed(true)
       } catch (error) {
-        console.error('Unexpected error processing onboarding data:', error)
         toast.error('An unexpected error occurred while setting up your profile.')
       } finally {
         setIsProcessing(false)

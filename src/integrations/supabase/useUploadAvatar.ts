@@ -52,7 +52,6 @@ const compressImage = async (file: File): Promise<File> => {
   try {
     return await imageCompression(file, options)
   } catch (error) {
-    console.warn('Image compression failed, using original file:', error)
     return file
   }
 }
@@ -61,13 +60,10 @@ const checkStorageBucket = async (bucketName: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase.storage.getBucket(bucketName)
     if (error) {
-      console.error(`Bucket ${bucketName} check failed:`, error)
       return false
     }
-    console.log(`Bucket ${bucketName} exists:`, data)
     return true
   } catch (error) {
-    console.error(`Error checking bucket ${bucketName}:`, error)
     return false
   }
 }
@@ -77,7 +73,6 @@ const testImageUrl = async (url: string): Promise<boolean> => {
     const response = await fetch(url, { method: 'HEAD' })
     return response.ok
   } catch (error) {
-    console.error('Image URL test failed:', error)
     return false
   }
 }
@@ -85,7 +80,6 @@ const testImageUrl = async (url: string): Promise<boolean> => {
 export const useUploadAvatar = () => {
   return useMutation<UploadAvatarResult, Error, UploadAvatarOptions>({
     mutationFn: async ({ file, userId }: UploadAvatarOptions) => {
-      console.log('Starting upload with file:', file.name, 'userId:', userId);
       validateFile(file)
       
       const compressedFile = await compressImage(file)
@@ -103,8 +97,6 @@ export const useUploadAvatar = () => {
         bucket = 'temp-avatars'
       }
       
-      console.log('Uploading to bucket:', bucket, 'with path:', finalName);
-      
       // Temporarily disable bucket check until buckets are created
       // const bucketExists = await checkStorageBucket(bucket)
       // if (!bucketExists) {
@@ -119,17 +111,12 @@ export const useUploadAvatar = () => {
         })
         
       if (error) {
-        console.error('Upload error:', error);
         throw new Error(`Upload failed: ${error.message}`)
       }
-      
-      console.log('Upload successful, data:', data);
       
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
         .getPublicUrl(finalName)
-        
-      console.log('Generated public URL:', publicUrl);
       
       if (!publicUrl) {
         throw new Error('Failed to generate public URL for uploaded image')
