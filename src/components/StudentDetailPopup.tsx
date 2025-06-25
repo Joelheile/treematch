@@ -19,6 +19,7 @@ import {
   Phone,
   Target,
 } from "lucide-react";
+import Image from "next/image";
 
 interface StudentDetailPopupProps {
   student: StudentWithSkills | null;
@@ -70,7 +71,7 @@ export const StudentDetailPopup = ({
               <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 {student.name || "Unknown"}
                 {student.is_first_mover_batch && (
-                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">First Mover</Badge>
+                  <Image src="/Trophy Icon 48.png" alt="Trophy" width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
                 )}
               </h2>
 
