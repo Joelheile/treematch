@@ -1,14 +1,8 @@
 "use client";
 
 import { Progress } from "@/components/ui/progress";
-import { 
-  TreePine, 
-  Target, 
-  Briefcase, 
-  Check, 
-  Users, 
-  User 
-} from "lucide-react";
+import { Briefcase, Check, Target, User, Users } from "lucide-react";
+import Image from "next/image";
 import { Step } from "./types";
 
 interface OnboardingSidebarProps {
@@ -18,14 +12,14 @@ interface OnboardingSidebarProps {
   isMobile?: boolean;
 }
 
-export default function OnboardingSidebar({ 
-  currentStep, 
-  steps, 
+export default function OnboardingSidebar({
+  currentStep,
+  steps,
   progressPercentage,
-  isMobile = false 
+  isMobile = false,
 }: OnboardingSidebarProps) {
   const stepsWithIcons = steps.map((step) => {
-    const icons = [TreePine, Target, Briefcase, Check, Users, User];
+    const icons = [Target, Target, Briefcase, Check, Users, User];
     return {
       ...step,
       icon: icons[step.number - 1],
@@ -38,9 +32,13 @@ export default function OnboardingSidebar({
       <div className="lg:hidden bg-white border-b border-gray-200 p-3 sm:p-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="bg-red-600 p-1.5 sm:p-2 rounded-lg">
-              <TreePine className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
+            <Image
+              src="/icon.png"
+              alt="TreeMatch"
+              width={24}
+              height={24}
+              className="w-6 h-6 sm:w-7 sm:h-7"
+            />
             <div className="text-lg sm:text-xl font-bold text-gray-900">
               Treematch
             </div>
@@ -72,9 +70,13 @@ export default function OnboardingSidebar({
     <div className="hidden lg:flex w-80 xl:w-96 bg-white shadow-lg border-r border-gray-200 overflow-y-auto">
       <div className="p-6 w-full">
         <div className="flex items-center space-x-3 mb-8">
-          <div className="bg-red-600 p-2 rounded-lg">
-            <TreePine className="w-6 h-6 text-white" />
-          </div>
+          <Image
+            src="/icon.png"
+            alt="TreeMatch"
+            width={32}
+            height={32}
+            className="w-8 h-8"
+          />
           <div className="text-2xl font-bold text-gray-900">Treematch</div>
         </div>
 
@@ -101,11 +103,7 @@ export default function OnboardingSidebar({
                       : "bg-gray-200 text-gray-500"
                   }`}
                 >
-                  {step.completed ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    step.number
-                  )}
+                  {step.completed ? <Check className="w-4 h-4" /> : step.number}
                 </div>
                 <div className="min-w-0">
                   <div className="font-medium text-sm">{step.title}</div>
@@ -120,4 +118,4 @@ export default function OnboardingSidebar({
       </div>
     </div>
   );
-} 
+}

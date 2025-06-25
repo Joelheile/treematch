@@ -2,10 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-import { TreePine } from "lucide-react";
-import { FormData, Country, ICON_OPTIONS } from "../types";
+import { Country, FormData, ICON_OPTIONS } from "../types";
 import { countryToFlag } from "../utils";
 
 interface BasicInfoStepProps {
@@ -44,13 +44,17 @@ export default function BasicInfoStep({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="bg-red-600 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-          <TreePine className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+          <Image
+            src="/icon.png"
+            alt="TreeMatch"
+            width={64}
+            height={64}
+            className="w-12 h-12 sm:w-16 sm:h-16"
+          />
         </div>
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 px-2">
-          {user && student
-            ? "Update Your Profile"
-            : "Welcome to Treematch!"}
+          {user && student ? "Update Your Profile" : "Welcome to Treematch!"}
         </h1>
         <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed mb-3 sm:mb-4 px-2">
           {user && student
@@ -164,25 +168,22 @@ export default function BasicInfoStep({
                 autoComplete="off"
               />
 
-              {showCountrySuggestions &&
-                countrySuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 sm:max-h-60 overflow-auto">
-                    {countrySuggestions.map((country) => (
-                      <div
-                        key={country.code}
-                        className="px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-2 text-sm sm:text-base"
-                        onClick={() => handleCountrySelect(country)}
-                      >
-                        <span className="text-base sm:text-lg">
-                          {countryToFlag(country.code)}
-                        </span>
-                        <span className="text-gray-900">
-                          {country.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {showCountrySuggestions && countrySuggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 sm:max-h-60 overflow-auto">
+                  {countrySuggestions.map((country) => (
+                    <div
+                      key={country.code}
+                      className="px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-2 text-sm sm:text-base"
+                      onClick={() => handleCountrySelect(country)}
+                    >
+                      <span className="text-base sm:text-lg">
+                        {countryToFlag(country.code)}
+                      </span>
+                      <span className="text-gray-900">{country.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {selectedCountry && (
@@ -194,7 +195,36 @@ export default function BasicInfoStep({
             )}
           </div>
         </div>
+
+        <div className="mb-4">
+          <div className="flex justify-center gap-4">
+            {ICON_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() =>
+                  setFormData((prev: any) => ({ ...prev, icon: option.value }))
+                }
+                style={{
+                  fontSize: 24,
+                  border:
+                    formData.icon === option.value
+                      ? "2px solid #b91c1c"
+                      : "1px solid #ccc",
+                  borderRadius: 8,
+                  padding: 8,
+                  background: "white",
+                }}
+              >
+                {option.emoji}
+              </button>
+            ))}
+          </div>
+          <div className="text-center text-xs text-gray-500 mt-2">
+            Choose your icon
+          </div>
+        </div>
       </div>
     </div>
   );
-} 
+}
