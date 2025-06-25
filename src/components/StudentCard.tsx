@@ -183,7 +183,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             </div>
           )}
 
-          {/* Skills above social links */}
+          {/* Skills at bottom */}
           {student.skills && student.skills.length > 0 && (
             <div>
               <div className="flex flex-wrap gap-1">
@@ -205,7 +205,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             </div>
           )}
 
-          {/* Social Links */}
+          {/* Social Links at bottom */}
           {hasLinks && (
             <div className="pt-2">
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
