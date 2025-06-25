@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Github, Instagram, Linkedin, Twitter } from "lucide-react";
+import { ExternalLink, Github, Instagram, Linkedin, Twitter } from "lucide-react";
 import { FormData } from "../types";
 
 interface SocialsStepProps {
@@ -21,8 +21,8 @@ export default function SocialsStep({
           Connect with You
         </h2>
         <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base px-2 leading-relaxed">
-          Share your social media links so others can connect with you
-          outside of Treematch.
+          Share your social media profiles so others can connect with you
+          outside of TreeMatch. <strong>Just enter your username</strong> (without @ symbol) - we'll create the proper links automatically.
         </p>
       </div>
 
@@ -34,6 +34,7 @@ export default function SocialsStep({
           >
             <Linkedin className="w-4 h-4 text-blue-600" />
             LinkedIn
+            <span className="text-xs text-gray-500 font-normal ml-1">(username only)</span>
           </Label>
           <Input
             id="linkedinUrl"
@@ -44,7 +45,7 @@ export default function SocialsStep({
                 linkedinUrl: e.target.value,
               }))
             }
-            placeholder="https://www.linkedin.com/in/yourusername"
+            placeholder="yourusername"
             className="h-11 sm:h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-base"
           />
         </div>
@@ -56,6 +57,7 @@ export default function SocialsStep({
           >
             <Instagram className="w-4 h-4 text-pink-600" />
             Instagram
+            <span className="text-xs text-gray-500 font-normal ml-1">(username only)</span>
           </Label>
           <Input
             id="instagramHandle"
@@ -66,7 +68,7 @@ export default function SocialsStep({
                 instagramHandle: e.target.value,
               }))
             }
-            placeholder="@username"
+            placeholder="username"
             className="h-11 sm:h-12 border-gray-300 focus:border-pink-500 focus:ring-pink-500 text-base"
           />
         </div>
@@ -78,6 +80,7 @@ export default function SocialsStep({
           >
             <Twitter className="w-4 h-4 text-blue-400" />
             Twitter / X
+            <span className="text-xs text-gray-500 font-normal ml-1">(username only)</span>
           </Label>
           <Input
             id="twitterHandle"
@@ -88,7 +91,7 @@ export default function SocialsStep({
                 twitterHandle: e.target.value,
               }))
             }
-            placeholder="@username"
+            placeholder="username"
             className="h-11 sm:h-12 border-gray-300 focus:border-blue-400 focus:ring-blue-400 text-base"
           />
         </div>
@@ -100,6 +103,7 @@ export default function SocialsStep({
           >
             <Github className="w-4 h-4 text-gray-800" />
             GitHub
+            <span className="text-xs text-gray-500 font-normal ml-1">(username only)</span>
           </Label>
           <Input
             id="githubUsername"
@@ -110,8 +114,31 @@ export default function SocialsStep({
                 githubUsername: e.target.value,
               }))
             }
-            placeholder="@username"
+            placeholder="username"
             className="h-11 sm:h-12 border-gray-300 focus:border-gray-500 focus:ring-gray-500 text-base"
+          />
+        </div>
+
+        <div>
+          <Label
+            htmlFor="websiteUrl"
+            className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-1"
+          >
+            <ExternalLink className="w-4 h-4 text-gray-600" />
+            Website
+            <span className="text-xs text-gray-500 font-normal ml-1">(full URL)</span>
+          </Label>
+          <Input
+            id="websiteUrl"
+            value={formData.websiteUrl}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                websiteUrl: e.target.value,
+              }))
+            }
+            placeholder="https://yourwebsite.com"
+            className="h-11 sm:h-12 border-gray-300 focus:border-gray-600 focus:ring-gray-600 text-base"
           />
         </div>
       </div>

@@ -45,6 +45,7 @@ export default function OnboardingLogic() {
     instagramHandle: "",
     twitterHandle: "",
     githubUsername: "",
+    websiteUrl: "",
   });
 
   const [countryInput, setCountryInput] = useState("");
@@ -77,6 +78,7 @@ export default function OnboardingLogic() {
         instagramHandle: "",
         twitterHandle: "",
         githubUsername: student.github || "",
+        websiteUrl: student.website || "",
       });
 
       if (student.country) {
@@ -106,6 +108,7 @@ export default function OnboardingLogic() {
           instagramHandle: savedData.instagramHandle || "",
           twitterHandle: savedData.twitterHandle || "",
           githubUsername: savedData.githubUsername || "",
+          websiteUrl: savedData.websiteUrl || "",
         });
       }
     }
@@ -212,7 +215,7 @@ export default function OnboardingLogic() {
             courses: formData.courseIds,
             linkedin: formData.linkedinUrl || null,
             github: formData.githubUsername || null,
-            website: formData.twitterHandle || null,
+            website: formData.websiteUrl || null,
             isOnboarded: true,
           },
         });
@@ -239,6 +242,7 @@ export default function OnboardingLogic() {
         instagramHandle: formData.instagramHandle,
         twitterHandle: formData.twitterHandle,
         githubUsername: formData.githubUsername,
+        websiteUrl: formData.websiteUrl,
         tempAvatarPath,
       };
       OnboardingStorage.save(onboardingData);

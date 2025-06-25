@@ -6,6 +6,7 @@ import type { StudentWithSkills } from "@/types/Student";
 import countriesData from "@/lib/countries.json";
 import {
   Briefcase,
+  Edit,
   ExternalLink,
   Github,
   Heart,
@@ -24,6 +25,25 @@ export const StudentCard = ({ student }: StudentCardProps) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { isLiked, toggleLike, isToggling } = useStudentLikes();
   const hasLinks = student.linkedin || student.github || student.website;
+
+  // Helper function to format social media URLs
+  const formatSocialUrl = (platform: string, username: string) => {
+    if (!username) return '';
+    
+    // Remove any existing URL prefixes
+    const cleanUsername = username.replace(/^https?:\/\/(www\.)?(linkedin\.com\/in\/|github\.com\/|instagram\.com\/)?/, '').replace(/\/$/, '');
+    
+    switch (platform) {
+      case 'linkedin':
+        return `https://linkedin.com/in/${cleanUsername}`;
+      case 'github':
+        return `https://github.com/${cleanUsername}`;
+      case 'instagram':
+        return `https://instagram.com/${cleanUsername}`;
+      default:
+        return cleanUsername.startsWith('http') ? cleanUsername : `https://${cleanUsername}`;
+    }
+  };
 
   // Function to convert country code to flag emoji
   const getCountryFlag = (countryName: string) => {
@@ -69,15 +89,15 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           <Heart className={`w-4 h-4 ${isLiked(student.id) ? "fill-current" : ""}`} />
         </button>
 
-        <CardHeader className="text-center pb-3">
+        <CardHeader className="text-center pb-3 px-4 sm:px-6">
           {student.profile_image ? (
             <img
               src={student.profile_image}
               alt={student.name || "Student"}
-              className="w-20 h-20 rounded-full mx-auto object-cover border-3 border-red-100"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto object-cover border-3 border-red-100"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full mx-auto bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-xl font-bold">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-lg sm:text-xl font-bold">
               {student.name
                 ? student.name
                     .split(" ")
@@ -98,7 +118,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                   )}
                 </span>
               )}
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                 {student.name || "Unknown"}
               </h3>
             </div>
@@ -109,7 +129,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
           {/* Current Project */}
           {student.current_project && (
             <div className="text-left">
@@ -135,7 +155,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             <div>
               <h4 className="text-sm font-semibold text-gray-700 mb-2">Skills</h4>
               <div className="flex flex-wrap gap-1">
-                {student.skills.slice(0, 3).map((skill) => (
+                {student.skills.slice(0, window.innerWidth < 640 ? 2 : 3).map((skill) => (
                   <Badge
                     key={skill.id}
                     variant="secondary"
@@ -144,9 +164,9 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                     {skill.name}
                   </Badge>
                 ))}
-                {student.skills.length > 3 && (
+                {student.skills.length > (window.innerWidth < 640 ? 2 : 3) && (
                   <span className="text-xs text-gray-500 self-center">
-                    ...
+                    +{student.skills.length - (window.innerWidth < 640 ? 2 : 3)} more
                   </span>
                 )}
               </div>
@@ -185,22 +205,22 @@ export const StudentCard = ({ student }: StudentCardProps) => {
 
           {/* Social Links */}
           {hasLinks && (
-            <div className="pt-2 border-t border-gray-100">
-              <div className="flex flex-wrap gap-2">
+            <div className="pt-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {student.linkedin && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2"
+                    className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs"
                     asChild
                   >
                     <a
-                      href={student.linkedin}
+                      href={formatSocialUrl('linkedin', student.linkedin)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Linkedin className="w-3 h-3 mr-1" />
-                      LinkedIn
+                      <Linkedin className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">LinkedIn</span>
                     </a>
                   </Button>
                 )}
@@ -208,16 +228,16 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2"
+                    className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs"
                     asChild
                   >
                     <a
-                      href={student.github}
+                      href={formatSocialUrl('github', student.github)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Github className="w-3 h-3 mr-1" />
-                      GitHub
+                      <Github className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">GitHub</span>
                     </a>
                   </Button>
                 )}
@@ -225,16 +245,16 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2"
+                    className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs"
                     asChild
                   >
                     <a
-                      href={student.website}
+                      href={student.website.startsWith('http') ? student.website : `https://${student.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <ExternalLink className="w-3 h-3 mr-1" />
-                      Website
+                      <ExternalLink className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Website</span>
                     </a>
                   </Button>
                 )}

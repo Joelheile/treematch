@@ -108,7 +108,7 @@ export function LandingPage() {
 
           <div className="px-2">
             <Button
-              onClick={() => router.push("/onboarding")}
+              onClick={() => router.push("/edit")}
               className="bg-stanford-cardinal hover:bg-red-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
               size="lg"
             >
@@ -232,7 +232,7 @@ export function LandingPage() {
 
           <div className="px-2">
             <Button
-              onClick={() => router.push("/onboarding")}
+              onClick={() => router.push("/edit")}
               className="bg-white text-stanford-cardinal hover:bg-gray-50 font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
               size="lg"
             >
