@@ -10,6 +10,7 @@ export interface StudentFilters {
   hasWebsite?: boolean
   search?: string
   isOnboarded?: boolean
+  likedByUserId?: string
 }
 
 export interface StudentSearchOptions {
@@ -94,6 +95,20 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         finalStudentsData = studentsData?.filter(student => 
           studentIdsWithSkills.includes(student.id)
         ) || []
+      }
+
+      if (filters.likedByUserId) {
+        const { data: likedStudentsData, error: likedFilterError } = await supabase
+          .from('student_likes')
+          .select('liked_student_id')
+          .eq('liker_id', filters.likedByUserId)
+
+        if (likedFilterError) throw likedFilterError
+
+        const likedStudentIds = likedStudentsData?.map(item => item.liked_student_id) || []
+        finalStudentsData = finalStudentsData.filter(student => 
+          likedStudentIds.includes(student.id)
+        )
       }
 
       const studentIds = finalStudentsData.map(student => student.id)

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSkills } from "@/integrations/supabase/useSkills";
+import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentFilters } from "@/integrations/supabase/useStudents";
 import { useStudents } from "@/integrations/supabase/useStudents";
 import countries from "@/lib/countries.json";
@@ -25,6 +26,7 @@ import {
   Check,
   ChevronDown,
   Github,
+  Heart,
   Linkedin,
   Loader2,
   MapPin,
@@ -46,6 +48,7 @@ const useStudentAnalytics = () => ({
 const QUICK_FILTERS = [
   { id: "hasLinkedIn", label: "Has LinkedIn", icon: Linkedin },
   { id: "hasGithub", label: "Has GitHub", icon: Github },
+  { id: "liked", label: "Liked", icon: Heart },
 ];
 
 export const StudentOverview = () => {
@@ -56,6 +59,7 @@ export const StudentOverview = () => {
     undefined
   );
   const [hasGithub, setHasGithub] = useState<boolean | undefined>(undefined);
+  const [showLiked, setShowLiked] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
@@ -67,6 +71,7 @@ export const StudentOverview = () => {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { data: skills = [] } = useSkills(user?.id);
+  const { likedStudentIds } = useStudentLikes();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Function to convert country code to flag emoji
@@ -95,8 +100,9 @@ export const StudentOverview = () => {
     if (selectedSkills.length > 0) result.skillIds = selectedSkills;
     if (hasLinkedIn !== undefined) result.hasLinkedIn = hasLinkedIn;
     if (hasGithub !== undefined) result.hasGithub = hasGithub;
+    if (showLiked && user?.id) result.likedByUserId = user.id;
     return result;
-  }, [searchTerm, selectedCountry, selectedSkills, hasLinkedIn, hasGithub]);
+  }, [searchTerm, selectedCountry, selectedSkills, hasLinkedIn, hasGithub, showLiked, user?.id]);
 
   // Fetch students with filters
   const {
@@ -144,6 +150,9 @@ export const StudentOverview = () => {
       case "hasGithub":
         setHasGithub((prev) => (prev === true ? undefined : true));
         break;
+      case "liked":
+        setShowLiked((prev) => !prev);
+        break;
     }
   };
 
@@ -153,6 +162,7 @@ export const StudentOverview = () => {
     setSelectedSkills([]);
     setHasLinkedIn(undefined);
     setHasGithub(undefined);
+    setShowLiked(false);
   };
 
   const hasActiveFilters =
@@ -160,7 +170,8 @@ export const StudentOverview = () => {
     selectedCountry ||
     selectedSkills.length > 0 ||
     hasLinkedIn !== undefined ||
-    hasGithub !== undefined;
+    hasGithub !== undefined ||
+    showLiked;
 
   const activeFilterCount =
     [
@@ -169,6 +180,7 @@ export const StudentOverview = () => {
       selectedSkills.length > 0,
       hasLinkedIn !== undefined,
       hasGithub !== undefined,
+      showLiked,
     ].filter(Boolean).length +
     selectedSkills.length -
     (selectedSkills.length > 0 ? 1 : 0);
@@ -324,7 +336,8 @@ export const StudentOverview = () => {
       {QUICK_FILTERS.map((filter) => {
         const isActive =
           (filter.id === "hasLinkedIn" && hasLinkedIn) ||
-          (filter.id === "hasGithub" && hasGithub);
+          (filter.id === "hasGithub" && hasGithub) ||
+          (filter.id === "liked" && showLiked);
         const Icon = filter.icon;
 
         return (
@@ -466,6 +479,16 @@ export const StudentOverview = () => {
               <span className="text-sm font-medium">Has GitHub</span>
               <button onClick={() => setHasGithub(undefined)} className="ml-1">
                 <X className="w-3 h-3 hover:text-gray-900" />
+              </button>
+            </div>
+          )}
+
+          {showLiked && (
+            <div className="flex items-center gap-1 bg-red-50 text-red-700 px-3 py-1 rounded-full border border-red-200">
+              <Heart className="w-3 h-3" />
+              <span className="text-sm font-medium">Liked</span>
+              <button onClick={() => setShowLiked(false)} className="ml-1">
+                <X className="w-3 h-3 hover:text-red-900" />
               </button>
             </div>
           )}
