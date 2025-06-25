@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useStudents } from "@/integrations/supabase/useStudents";
 import { ArrowRight, Clock, Timer, TreePine } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -50,8 +51,8 @@ export function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-stanford-cardinal rounded flex items-center justify-center">
-              <TreePine className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded flex items-center justify-center">
+              <Image src="/icon.png" alt="TreeMatch" width={32} height={32} className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
             <span className="text-lg sm:text-xl font-bold text-stanford-cardinal">
               TreeMatch
@@ -62,7 +63,7 @@ export function LandingPage() {
             onClick={() => router.push("/auth/login")}
             className="text-stanford-cardinal hover:bg-gray-50 h-9 px-3 sm:px-4 text-sm sm:text-base"
           >
-            Sign In
+            Already have an account?
           </Button>
         </div>
       </header>
@@ -92,7 +93,7 @@ export function LandingPage() {
                 <div className="absolute top-0 left-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
               </div>
               <span className="text-center sm:text-left">
-                {studentCount} from 500+ Summer Session students
+                Explore {studentCount} fascinating profiles
               </span>
             </div>
             {timeLeft.isActive && (
@@ -200,7 +201,7 @@ export function LandingPage() {
       <section className="px-3 sm:px-4 py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-            {studentCount} from 500+ Summer Session Students
+            Explore {studentCount} fascinating profiles
           </h2>
           <p className="text-gray-600 leading-relaxed text-sm sm:text-base px-2">
             Join the growing community of Stanford Summer Session students
@@ -235,36 +236,18 @@ export function LandingPage() {
               className="bg-white text-stanford-cardinal hover:bg-gray-50 font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg h-12 sm:h-14 w-full sm:w-auto"
               size="lg"
             >
-              Start Connecting
+              Let's go
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
-          <p className="text-white/80 text-sm sm:text-base mt-4 sm:mt-6 px-2">
-            Free for all Stanford Summer Session students
-          </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-white/70 pt-6 sm:pt-8 mt-8 sm:mt-12 border-t border-white/20 px-2">
+          <div className="flex items-center justify-center text-sm text-white/70 pt-6 mt-8 border-t border-white/20">
             <div className="flex items-center space-x-2">
-              <TreePine className="w-4 h-4" />
+              <Image src="/icon.png" alt="TreeMatch" width={16} height={16} className="w-4 h-4" />
               <span className="font-medium">TreeMatch</span>
             </div>
-            <p className="text-center">
-              Already have an account?{" "}
-              <button
-                onClick={() => router.push("/auth/login")}
-                className="text-white underline hover:no-underline font-medium"
-              >
-                Sign in here
-              </button>
-            </p>
           </div>
-
-          <p className="text-white/50 text-xs sm:text-sm mt-4 sm:mt-6 text-center px-2 leading-relaxed">
-            No trees were harmed in the making of this network. Side effects may
-            include: lifelong friendships, unexpected adventures, and the best
-            summer of your life.
-          </p>
         </div>
       </section>
     </div>
