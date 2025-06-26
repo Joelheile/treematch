@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useStudents } from "@/integrations/supabase/useStudents";
-import { ArrowRight, Clock, Timer, TreePine } from "lucide-react";
+import { ArrowRight, Clock, Coffee, Timer, TreePine } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -242,11 +242,21 @@ export function LandingPage() {
           </div>
 
 
-          <div className="flex items-center justify-center text-sm text-white/70 pt-6 mt-8 border-t border-white/20">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-sm text-white/70 pt-6 mt-8 border-t border-white/20">
             <div className="flex items-center space-x-2">
               <Image src="/icon.png" alt="TreeMatch" width={16} height={16} className="w-4 h-4" />
               <span className="font-medium">TreeMatch</span>
             </div>
+            
+            <a 
+              href="https://coff.ee/treematch" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-center space-x-2 px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 rounded-full transition-colors duration-200"
+            >
+              <Coffee className="w-4 h-4 text-amber-300 group-hover:text-amber-200" />
+              <span className="text-white group-hover:text-white/90">Buy me a coffee</span>
+            </a>
           </div>
         </div>
       </section>
