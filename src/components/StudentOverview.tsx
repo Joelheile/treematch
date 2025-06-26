@@ -25,6 +25,7 @@ import {
   BookOpen,
   Check,
   ChevronDown,
+  Coffee,
   Edit,
   ExternalLink,
   Github,
@@ -749,13 +750,25 @@ export const StudentOverview = () => {
                 </p>
               </div>
             </div>
-            <Link href="/edit">
-              <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
-                <Edit className="w-4 h-4" />
-                <span className="hidden sm:inline">Edit Profile</span>
-                <span className="sm:hidden">Edit</span>
-              </Button>
-            </Link>
+            <div className="flex items-center space-x-3">
+              <a 
+                href="https://coff.ee/treematch" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200"
+              >
+                <Coffee className="w-4 h-4" />
+                <span className="hidden sm:inline">Buy us a coffee</span>
+                <span className="sm:hidden">Coffee</span>
+              </a>
+              <Link href="/edit">
+                <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
+                  <Edit className="w-4 h-4" />
+                  <span className="hidden sm:inline">Edit Profile</span>
+                  <span className="sm:hidden">Edit</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

@@ -3,15 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowRight, Users, Search, Heart, ExternalLink } from "lucide-react";
+import { ArrowRight, Users, Search, Heart, ExternalLink, Coffee } from "lucide-react";
 
 export function LandingPage() {
   const router = useRouter();
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Login button only */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* Login button and coffee button */}
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        <a 
+          href="https://coff.ee/treematch" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-full text-sm font-medium transition-colors duration-200"
+        >
+          <Coffee className="w-4 h-4" />
+          <span>Buy us a coffee</span>
+        </a>
         <Button
           variant="ghost"
           onClick={() => router.push("/auth/login")}
