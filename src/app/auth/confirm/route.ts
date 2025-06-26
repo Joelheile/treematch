@@ -1,6 +1,6 @@
-import { type EmailOtpType } from '@supabase/supabase-js'
-import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/integrations/supabase/server'
+import { createClient } from '@/integrations/supabase/server';
+import { type EmailOtpType } from '@supabase/supabase-js';
+import { type NextRequest, NextResponse } from 'next/server';
 
 // Simple in-memory cache to track failed verification attempts
 // In production, consider using Redis or a proper cache solution
@@ -16,7 +16,7 @@ function isRateLimited(tokenHash: string): boolean {
   
   if (!record) return false
   
-  // Reset if outside rate limit window
+  // Reset if outside rate limit windoww
   if (now - record.lastAttempt > RATE_LIMIT_WINDOW) {
     failedVerifications.delete(tokenHash)
     return false
