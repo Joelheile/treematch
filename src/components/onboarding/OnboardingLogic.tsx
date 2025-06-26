@@ -49,7 +49,6 @@ export default function OnboardingLogic() {
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    email: "",
     country: "",
     university: "",
     phoneNumber: "",
@@ -85,7 +84,6 @@ export default function OnboardingLogic() {
 
       setFormData({
         name: student.name || "",
-        email: student.email || "",
         country: student.country || "",
         university: student.university || "",
         phoneNumber: student.phone_number || "",
@@ -117,7 +115,6 @@ export default function OnboardingLogic() {
       if (savedData) {
         setFormData({
           name: savedData.name || "",
-          email: savedData.email || "",
           country: savedData.country || "",
           university: savedData.university || "",
           phoneNumber: savedData.phoneNumber || "",
@@ -271,7 +268,6 @@ export default function OnboardingLogic() {
         // Also save current form data to localStorage for fields not in database
         const currentFormAsLocalStorage: OnboardingData = {
           name: formData.name,
-          email: formData.email,
           country: formData.country,
           university: formData.university,
           phoneNumber: formData.phoneNumber,
@@ -296,7 +292,6 @@ export default function OnboardingLogic() {
       }
       const onboardingData: OnboardingData = {
         name: formData.name,
-        email: formData.email,
         country: formData.country,
         university: formData.university,
         phoneNumber: formData.phoneNumber,
@@ -314,7 +309,9 @@ export default function OnboardingLogic() {
         icon: formData.icon,
       };
       OnboardingStorage.save(onboardingData);
-      await signInWithMagicLink(formData.email);
+      if (user?.email) {
+        await signInWithMagicLink(user.email);
+      }
       toast.success(
         "Check your email for a magic link to complete your signup!"
       );
@@ -353,7 +350,6 @@ export default function OnboardingLogic() {
       case 1:
         return (
           formData.name.trim() !== "" &&
-          formData.email.trim() !== "" &&
           formData.country.trim() !== "" &&
           formData.university.trim() !== "" &&
           formData.phoneNumber.trim() !== ""
