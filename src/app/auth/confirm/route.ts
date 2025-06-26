@@ -96,23 +96,27 @@ export async function GET(request: NextRequest) {
           // The PostAuthOnboardingProcessor will handle the localStorage data
           if (!student) {
             try {
-              // Create a minimal student record
-              const { error: insertError } = await supabase
+              // Upsert a minimal student record (handles duplicates gracefully)
+              const { error: upsertError } = await supabase
                 .from('students')
-                .insert({
+                .upsert({
                   id: user.id,
                   email: user.email,
                   name: '', // Will be updated from localStorage by PostAuthOnboardingProcessor
                   isOnboarded: false,
-                  created_at: new Date().toISOString(),
                   updated_at: new Date().toISOString()
+                }, {
+                  onConflict: 'email', // Handle conflicts on email column
+                  ignoreDuplicates: false // Update existing records
                 })
               
-              if (insertError) {
-                console.error('Failed to create student record:', insertError)
+              if (upsertError) {
+                console.error('Failed to upsert student record:', upsertError)
+              } else {
+                console.log('Student record upserted successfully')
               }
             } catch (error) {
-              console.error('Exception creating student record:', error)
+              console.error('Exception upserting student record:', error)
             }
             
             // Redirect to home - PostAuthOnboardingProcessor will process localStorage data
