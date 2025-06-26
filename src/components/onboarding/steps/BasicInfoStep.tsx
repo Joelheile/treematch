@@ -74,7 +74,7 @@ export default function BasicInfoStep({
       <div className="text-center">
         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
           <Image
-            src="/icon.png"
+            src="/logo.png"
             alt="TreeMatch"
             width={64}
             height={64}

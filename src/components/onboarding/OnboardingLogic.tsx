@@ -541,7 +541,7 @@ export default function OnboardingLogic() {
         <div className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 flex items-center justify-center animate-pulse">
             <Image
-              src="/icon.png"
+              src="/logo.png"
               alt="TreeMatch"
               width={32}
               height={32}
