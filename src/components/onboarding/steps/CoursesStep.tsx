@@ -237,6 +237,7 @@ export default function CoursesStep({
               onKeyPress={handleKeyPress}
               className="w-full text-lg py-4 pr-14"
               autoFocus
+              autoComplete="off"
             />
             {courseInput.trim() && suggestions.length > 0 && (
               <div className="absolute z-10 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -279,14 +280,14 @@ export default function CoursesStep({
                       key={course}
                       type="button"
                       variant="outline"
-                      className="border-gray-300 bg-white hover:bg-red-50 text-gray-800 px-3 py-1 rounded-md text-sm shadow-sm transition flex items-center"
+                      className="border-gray-300 bg-white hover:bg-red-50 text-gray-800 px-3 py-1 rounded-md text-sm shadow-sm transition flex items-center max-w-full overflow-hidden sm:max-w-none"
                       onClick={() => removeCourse(course)}
                     >
-                      <span className="font-bold">{courseObj ? courseObj.catalog_number : course}</span>
-                      <span className="font-semibold">
+                      <span className="font-bold flex-shrink-0 mr-1">{courseObj ? courseObj.catalog_number : course}</span>
+                      <span className="font-semibold truncate block max-w-[10rem] sm:max-w-none">
                         {courseObj ? courseObj.name : course}
                       </span>
-                      <X className="w-3 h-3 ml-1" />
+                      <X className="w-3 h-3 ml-1 flex-shrink-0" />
                     </Button>
                   );
                 })}

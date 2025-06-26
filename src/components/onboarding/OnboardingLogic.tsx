@@ -101,12 +101,16 @@ export default function OnboardingLogic() {
         return JSON.stringify(prev) !== JSON.stringify(newFormData) ? newFormData : prev;
       });
       if (student.country) {
+        console.log('Loading country from student:', student.country);
         setCountryInput(student.country);
         const matchingCountry = countriesData.find(
           (country) => country.name.toLowerCase() === student.country?.toLowerCase()
         );
+        console.log('Found matching country:', matchingCountry);
         if (matchingCountry) {
           setSelectedCountry(matchingCountry);
+        } else {
+          console.log('No matching country found for:', student.country);
         }
       }
     }
