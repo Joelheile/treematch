@@ -8,7 +8,7 @@ import "react-international-phone/style.css";
 import { Country, FormData } from "../types";
 import { countryToFlag } from "../utils";
 import { Info } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { validatePhoneNumber } from "@/lib/phone-validation";
 
@@ -48,7 +48,32 @@ export default function BasicInfoStep({
   const isMobile = useIsMobile();
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
   const [phoneValidationError, setPhoneValidationError] = useState<string>("");
+  const [hasPhoneBeenEdited, setHasPhoneBeenEdited] = useState(false);
   const privacyContent = "Your phone number will only be shown to people you've mutually liked.";
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!hasPhoneBeenEdited) return;
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = setTimeout(() => {
+      if (formData.phoneNumber.trim()) {
+        const validation = validatePhoneNumber(formData.phoneNumber);
+        setPhoneValidationError(validation.error || "");
+      } else {
+        setPhoneValidationError("");
+      }
+    }, 500);
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [formData.phoneNumber, hasPhoneBeenEdited]);
 
   return (
     <div className="space-y-6">
@@ -190,20 +215,24 @@ export default function BasicInfoStep({
                 phoneNumber: phone,
               }));
               
-              if (phone.trim()) {
-                const validation = validatePhoneNumber(phone);
-                setPhoneValidationError(validation.error || "");
-              } else {
-                setPhoneValidationError("");
+              if (!hasPhoneBeenEdited) {
+                setHasPhoneBeenEdited(true);
               }
+              
             }}
             inputClassName={`h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full ${
-              phoneValidationError ? "border-red-300 focus:border-red-500" : ""
+              phoneValidationError && hasPhoneBeenEdited ? "border-red-300 focus:border-red-500" : ""
             }`}
             className="w-full"
             placeholder="Enter your phone number"
+            onBlur={() => {
+              if (hasPhoneBeenEdited && formData.phoneNumber.trim()) {
+                const validation = validatePhoneNumber(formData.phoneNumber);
+                setPhoneValidationError(validation.error || "");
+              }
+            }}
           />
-          {phoneValidationError && (
+          {phoneValidationError && hasPhoneBeenEdited && (
             <p className="text-red-500 text-sm mt-1">{phoneValidationError}</p>
           )}
         </div>
