@@ -91,21 +91,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [supabase.auth]);
 
-
   const signInWithMagicLink = async (email: string) => {
     if (!email) {
       throw new Error("Email is required");
     }
 
-    const { error } = await supabase.auth.signInWithOtp({
+    console.log("Sending magic link to:", email);
+    console.log("Redirect URL:", `${window.location.origin}/auth/confirm`);
+
+    const { data, error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     });
-    if (error) throw error;
-  };
 
+    if (error) {
+      console.error("Magic link error details:", error);
+      throw error;
+    }
+
+    console.log("Magic link sent successfully:", data);
+  };
 
   const signOut = async () => {
     try {

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OnboardingStorage } from "@/lib/onboarding-storage";
@@ -9,8 +8,8 @@ import { CheckCircle, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuth } from "../AuthProvider";
 import { toast } from "sonner";
+import { useAuth } from "../AuthProvider";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -44,7 +43,9 @@ export default function SignupPage() {
       setSuccess(true);
       toast.success("Check your email for a magic link to sign up!");
     } catch (err: any) {
+      console.error("Magic link error:", err);
       setError(err.message);
+      toast.error(err.message || "Failed to send magic link");
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,8 @@ export default function SignupPage() {
             </div>
             <h2 className="text-2xl font-semibold">Check your email</h2>
             <p className="text-muted-foreground">
-              We've sent you a magic link at <strong>{email}</strong>. Click the link to complete your signup.
+              We've sent you a magic link at <strong>{email}</strong>. Click the
+              link to complete your signup.
             </p>
             {hasOnboardingData && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
