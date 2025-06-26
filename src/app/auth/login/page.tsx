@@ -5,22 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { OnboardingStorage } from "@/lib/onboarding-storage";
 import { AlertCircle, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "../AuthProvider";
 
 const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email) && email.endsWith("@stanford.edu")
-}
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.endsWith("@stanford.edu");
+};
 
 const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>]/g, '').substring(0, 255)
-}
+  return input.trim().replace(/[<>]/g, "").substring(0, 255);
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -36,7 +35,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const sanitizedEmail = sanitizeInput(email)
+    const sanitizedEmail = sanitizeInput(email);
 
     if (!validateEmail(sanitizedEmail)) {
       toast.error("Please use a valid Stanford email address (@stanford.edu)");
@@ -49,7 +48,9 @@ export default function LoginPage() {
       setEmailSent(true);
       toast.success("Check your email for a magic link to sign in!");
     } catch (err: any) {
+      console.error("Magic link error:", err);
       setError(err.message || "An error occurred while sending the magic link");
+      toast.error(err.message || "Failed to send magic link");
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,8 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold">Check your email</h3>
                   <p className="text-sm text-muted-foreground">
-                    We've sent a magic link to <strong>{email}</strong>. Click the link in your email to sign in.
+                    We've sent a magic link to <strong>{email}</strong>. Click
+                    the link in your email to sign in.
                   </p>
                 </div>
                 <Button
