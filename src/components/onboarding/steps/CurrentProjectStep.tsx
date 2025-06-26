@@ -34,7 +34,7 @@ export default function CurrentProjectStep({ formData, setFormData }: CurrentPro
       setDescriptionIndex((prev) => (prev + 1) % descriptions.length)
     }, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [descriptions.length])
 
   return (
     <div className={`max-w-2xl mx-auto space-y-7 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
