@@ -187,6 +187,12 @@ export default function BasicInfoStep({
                 onBlur={() =>
                   setTimeout(() => setShowCountrySuggestions(false), 200)
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && showCountrySuggestions && countrySuggestions.length > 0) {
+                    e.preventDefault();
+                    handleCountrySelect(countrySuggestions[0]);
+                  }
+                }}
                 placeholder="Start typing your country..."
                 className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
                 autoComplete="off"
