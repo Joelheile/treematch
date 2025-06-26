@@ -40,11 +40,22 @@ export const usePostAuthOnboarding = () => {
 
     (async function handlePostAuthFlow() {
       try {
+        console.log('🔄 PostAuthOnboarding: Starting process for', user.email);
+        
         // First, always check the current database profile
         const { data: student } = await onboardingService.getStudentByEmail(user.email);
+        console.log('📋 PostAuthOnboarding: Current student profile:', {
+          exists: !!student,
+          isOnboarded: student?.isOnboarded,
+          hasName: !!student?.name,
+          hasCountry: !!student?.country,
+          hasUniversity: !!student?.university,
+          hasPhone: !!student?.phone_number
+        });
         
         // If user has a complete profile in the database, clear any stale localStorage
         if (student && student.isOnboarded && student.name && student.country && student.university && student.phone_number) {
+          console.log('✅ PostAuthOnboarding: Profile is complete, clearing localStorage');
           // Clear any stale localStorage data since DB profile is complete
           if (OnboardingStorage.exists()) {
             OnboardingStorage.clear();
@@ -55,11 +66,26 @@ export const usePostAuthOnboarding = () => {
         
         // If profile is incomplete, check if we have localStorage data to process
         const onboardingData = OnboardingStorage.load();
-        if (onboardingData && !OnboardingStorage.isExpired()) {
+        const hasLocalData = !!onboardingData && !OnboardingStorage.isExpired();
+        console.log('💾 PostAuthOnboarding: LocalStorage data:', {
+          exists: !!onboardingData,
+          expired: OnboardingStorage.isExpired(),
+          hasValidData: hasLocalData,
+          dataKeys: onboardingData ? Object.keys(onboardingData) : []
+        });
+        
+        if (hasLocalData) {
+          console.log('💽 PostAuthOnboarding: Saving localStorage data to database...');
           const result = await onboardingService.saveOnboardingDataToDatabase(
             onboardingData,
             user.email
           );
+          
+          console.log('💾 PostAuthOnboarding: Save result:', {
+            success: !result.error,
+            error: result.error
+          });
+          
           if (result.error) {
             toast.error(`Failed to save your profile: ${result.error}`);
           } else {
@@ -71,10 +97,12 @@ export const usePostAuthOnboarding = () => {
           }
           setHasProcessed(true);
         } else {
+          console.log('❌ PostAuthOnboarding: No localStorage data, user needs to complete onboarding');
           // No localStorage data and incomplete profile - user needs to complete onboarding
           setHasProcessed(false);
         }
       } catch (error) {
+        console.error('💥 PostAuthOnboarding: Error processing:', error);
         // On error, allow user to try onboarding
         setHasProcessed(false);
       } finally {
