@@ -15,7 +15,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
+      - name: Check if committer is admin
+        id: check_admin
+        run: |
+          echo "Checking if ${{ github.actor }} is a repository admin..."
+          
+          # Get user's permission level
+          response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission")
+          
+          permission=$(echo "$response" | grep -o '"permission":"[^"]*' | cut -d'"' -f4)
+          echo "User permission level: $permission"
+          
+          if [ "$permission" = "admin" ]; then
+            echo "is_admin=true" >> $GITHUB_OUTPUT
+            echo "🛑 Skipping deployment - commit made by repository admin"
+          else
+            echo "is_admin=false" >> $GITHUB_OUTPUT
+            echo "✅ Proceeding with deployment - commit made by non-admin user"
+          fi
+        
       - name: Trigger Vercel Deploy
+        if: steps.check_admin.outputs.is_admin == 'false'
         run: |
           echo "Triggering Vercel deployment..."
           response=$(curl -s -w "\n%{http_code}" -X POST \
@@ -36,6 +58,13 @@ jobs:
           fi
         
       - name: Deployment Status
+        if: steps.check_admin.outputs.is_admin == 'false'
         run: |
           echo "Deployment webhook has been triggered."
-          echo "Check your Vercel dashboard for deployment status." 
+          echo "Check your Vercel dashboard for deployment status."
+          
+      - name: Admin Commit Notice
+        if: steps.check_admin.outputs.is_admin == 'true'
+        run: |
+          echo "ℹ️  Deployment skipped because commit was made by a repository admin."
+          echo "This helps prevent unnecessary deployments during maintenance or admin tasks." 
