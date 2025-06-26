@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
 } from "react";
 
 interface AuthContextType {
@@ -39,6 +40,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
   const supabase = createClient();
+  const loadingSetRef = useRef(false);
+
+  console.log('[AuthProvider] render', { user, session, loading, isNewUser });
 
   const checkIfNewUser = useCallback(
     async (userId: string) => {
@@ -48,84 +52,86 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .select("id, name")
           .eq("id", userId)
           .single();
-
-        // User is new if they don't have a student profile or no name
         setIsNewUser(!student || !student.name);
+        console.log('[AuthProvider] setIsNewUser', !student || !student.name, { student });
       } catch (error) {
         console.error("Error checking if new user:", error);
-        setIsNewUser(true); // Assume new user on error
+        setIsNewUser(true);
+        console.log('[AuthProvider] setIsNewUser (error)', true);
       }
     },
     [supabase]
   );
 
   useEffect(() => {
-    const getSession = async () => {
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error("Error getting session:", error);
-          if (
-            error.message?.includes("session_not_found") ||
-            error.code === "session_not_found"
-          ) {
-            clearAllAuthData();
-            return;
-          }
-          throw error;
-        }
-
-        setSession(session);
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error("Error getting session:", error);
-        clearAllAuthData();
-      } finally {
+    console.log('[AuthProvider] useEffect start', { user, session, loading, isNewUser });
+    const setLoadingOnce = () => {
+      if (!loadingSetRef.current) {
         setLoading(false);
+        loadingSetRef.current = true;
+        console.log('[AuthProvider] setLoading(false) (once)', { user, session, loading, isNewUser });
       }
     };
 
-    getSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const initAuth = async () => {
+      setLoading(true);
+      loadingSetRef.current = false;
+      console.log('[AuthProvider] Calling supabase.auth.getSession()');
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[AuthProvider] getSession result:', session);
       setSession(session);
       setUser(session?.user ?? null);
+      setLoadingOnce();
+      console.log('[AuthProvider] setLoadingOnce from getSession, session:', session, 'user:', session?.user ?? null);
+      console.log('[AuthProvider] state after getSession', { user: session?.user ?? null, session, loading, isNewUser });
+    };
 
-      // Check if this is a new user after successful sign in
-      if (event === "SIGNED_IN" && session?.user) {
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[AuthProvider] onAuthStateChange event:', event, 'session:', session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
+        setLoadingOnce();
+        console.log('[AuthProvider] setLoadingOnce from onAuthStateChange, session:', session, 'user:', session?.user);
         await checkIfNewUser(session.user.id);
       }
-
-      setLoading(false);
+      console.log('[AuthProvider] state after onAuthStateChange', { user: session?.user ?? null, session, loading, isNewUser });
     });
 
     const validateSessionPeriodically = async () => {
       try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
+          console.log('[AuthProvider] validateSessionPeriodically: clearing auth data due to error or no session', error, session);
           clearAllAuthData();
         }
       } catch (error) {
+        console.log('[AuthProvider] validateSessionPeriodically: exception, clearing auth data', error);
         clearAllAuthData();
       }
     };
 
     const interval = setInterval(validateSessionPeriodically, 5 * 60 * 1000);
 
+    // Timeout fallback: set loading to false after 5 seconds if still loading
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        console.log('[AuthProvider] Timeout fallback: setLoading(false) after 5s');
+      }
+    }, 5000);
+
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
+      clearTimeout(timeout);
+      console.log('[AuthProvider] useEffect cleanup');
     };
   }, [supabase.auth, checkIfNewUser]);
+
+  console.log('[AuthProvider] returning context', { user, session, loading, isNewUser });
 
   const signInWithMagicLink = async (
     email: string,

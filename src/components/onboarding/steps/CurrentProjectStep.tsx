@@ -6,12 +6,12 @@ import { Sparkles } from "lucide-react"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
-interface CurrentProjectStepProps {
+interface CoolestThingStepProps {
   formData: FormData
   setFormData: (data: FormData | ((prev: FormData) => FormData)) => void
 }
 
-export default function CurrentProjectStep({ formData, setFormData }: CurrentProjectStepProps) {
+export default function CoolestThingStep({ formData, setFormData }: CoolestThingStepProps) {
   const [focusState, setFocusState] = useState(false)
   const [animateIn, setAnimateIn] = useState(false)
   const [descriptionIndex, setDescriptionIndex] = useState(0)
@@ -40,7 +40,7 @@ export default function CurrentProjectStep({ formData, setFormData }: CurrentPro
     <div className={`max-w-2xl mx-auto space-y-7 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
       {/* Header */}
       <h2 className="text-3xl font-semibold text-gray-900">
-        What's your thing?
+        What are you most proud of?
       </h2>
 
       {/* Input Area */}
@@ -51,17 +51,17 @@ export default function CurrentProjectStep({ formData, setFormData }: CurrentPro
       >
         <div className="rounded-lg p-1">
           <Textarea
-            id="currentProject"
-            value={formData.currentProject}
+            id="coolestThing"
+            value={formData.coolestThing}
             onChange={(e) =>
               setFormData((prev) => ({
                 ...prev,
-                currentProject: e.target.value,
+                coolestThing: e.target.value,
               }))
             }
             onFocus={() => setFocusState(true)}
             onBlur={() => setFocusState(false)}
-            placeholder="Share what you're passionate about..."
+            placeholder="Share what you're most proud of..."
             className="min-h-[160px] text-base border border-gray-200 bg-white rounded-lg p-4 resize-none focus:ring-1 focus:ring-stanford-cardinal focus:border-stanford-cardinal transition-all duration-200 w-full"
           />
         </div>
@@ -71,8 +71,8 @@ export default function CurrentProjectStep({ formData, setFormData }: CurrentPro
             <Sparkles className="h-3 w-3 mr-1.5 text-stanford-cardinal" />
             <span>Find others with similar interests</span>
           </div>
-          <div className={`text-xs ${formData.currentProject.length > 400 ? 'text-stanford-cardinal' : 'text-gray-500'}`}>
-            {formData.currentProject.length}/500
+          <div className={`text-xs ${formData.coolestThing.length > 400 ? 'text-stanford-cardinal' : 'text-gray-500'}`}>
+            {formData.coolestThing.length}/500
           </div>
         </div>
       </motion.div>

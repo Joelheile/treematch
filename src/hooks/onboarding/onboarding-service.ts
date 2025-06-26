@@ -43,7 +43,7 @@ export class OnboardingService {
       courses: onboardingData.courses,
       profile_image: onboardingData.profileImage || null,
       goals: onboardingData.summerGoals,
-      current_project: onboardingData.currentProject,
+      coolest_thing: onboardingData.coolestThing,
       phone_number: onboardingData.phoneNumber || null,
       linkedin: this.extractUsername("linkedin", onboardingData.linkedinUrl),
       github: this.extractUsername("github", onboardingData.githubUsername),

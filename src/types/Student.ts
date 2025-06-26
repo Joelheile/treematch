@@ -13,7 +13,6 @@ export interface Student {
   country: string | null
   university: string | null
   profile_image: string | null
-  current_project: string | null
   coolest_thing: string | null
   skills: string[] | null
   courses: string[] | null
@@ -56,7 +55,6 @@ export const formatStudentForDB = (student: Partial<StudentRow>): StudentInsert 
     university: student.university || null,
     profile_image: student.profile_image || null,
     courses: student.courses || null,
-    current_project: student.current_project || null,
     coolest_thing: student.coolest_thing || null,
     goals: student.goals || null,
     phone_number: student.phone_number || null,
@@ -92,7 +90,6 @@ export const createEmptyStudent = (): StudentInsert => ({
   university: null,
   profile_image: null,
   courses: [],
-  current_project: null,
   coolest_thing: null,
   goals: null,
   phone_number: null,

@@ -7,7 +7,7 @@ export interface FormData {
   skillIds: string[];
   courses: string[];
   summerGoals: string;
-  currentProject: string;
+  coolestThing: string;
   linkedinUrl: string;
   instagramHandle: string;
   twitterHandle: string;

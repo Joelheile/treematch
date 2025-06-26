@@ -134,7 +134,7 @@ describe('useStudents', () => {
 
     await waitFor(() => {
       expect(orSpy).toHaveBeenCalledWith(
-        'name.ilike.%john%,email.ilike.%john%,current_project.ilike.%john%'
+        'name.ilike.%john%,email.ilike.%john%,coolest_thing.ilike.%john%'
       )
     })
   })

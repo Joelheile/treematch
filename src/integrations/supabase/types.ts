@@ -104,7 +104,6 @@ export type Database = {
           country: string | null
           courses: string[] | null
           created_at: string | null
-          current_project: string | null
           email: string | null
           github: string | null
           goals: string | null
@@ -126,7 +125,6 @@ export type Database = {
           country?: string | null
           courses?: string[] | null
           created_at?: string | null
-          current_project?: string | null
           email?: string | null
           github?: string | null
           goals?: string | null
@@ -148,7 +146,6 @@ export type Database = {
           country?: string | null
           courses?: string[] | null
           created_at?: string | null
-          current_project?: string | null
           email?: string | null
           github?: string | null
           goals?: string | null

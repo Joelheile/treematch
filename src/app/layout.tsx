@@ -5,6 +5,8 @@ import React from "react";
 import { ClientToasters } from "./client-toasters";
 import "./globals.css";
 import { Providers } from "./providers";
+import { PostAuthOnboardingProcessor } from "@/components/PostAuthOnboardingProcessor";
+
 export const metadata: Metadata = {
   title: "TreeMatch",
   description: "Stanford Student Matching Platform",
@@ -20,6 +22,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <ClientToasters />
+          <PostAuthOnboardingProcessor />
           {children}
           <LogoutButton />
           <SpeedInsights />

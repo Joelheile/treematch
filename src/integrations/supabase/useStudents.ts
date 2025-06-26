@@ -95,7 +95,7 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
 
       if (filters.search) {
         const sanitizedSearch = sanitizeSearchTerm(filters.search)
-        query = query.or(`name.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%,current_project.ilike.%${sanitizedSearch}%`)
+        query = query.or(`name.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%,coolest_thing.ilike.%${sanitizedSearch}%`)
       }
 
       // Add skill filtering to main query if needed

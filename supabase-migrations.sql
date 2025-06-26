@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS students (
   country TEXT,
   profile_image TEXT,
   summer_goals TEXT[],
-  current_project TEXT,
   coolest_thing TEXT,
   phone_number TEXT,
   linkedin TEXT,
@@ -252,3 +251,6 @@ WITH CHECK (auth.uid() = liker_id);
 CREATE POLICY "Users can delete their own likes"
 ON student_likes FOR DELETE
 USING (auth.uid() = liker_id);
+
+-- Remove current_project column from students table
+ALTER TABLE students DROP COLUMN IF EXISTS current_project;
