@@ -237,6 +237,7 @@ export default function CoursesStep({
               onKeyPress={handleKeyPress}
               className="w-full text-lg py-4 pr-14"
               autoFocus
+              autocomplete="off"
             />
             {courseInput.trim() && suggestions.length > 0 && (
               <div className="absolute z-10 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
