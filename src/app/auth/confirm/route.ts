@@ -81,8 +81,38 @@ export async function GET(request: NextRequest) {
             .eq('id', user.id)
             .single()
           
-          // If no student profile exists or name is empty, redirect to /edit
-          if (!student || !student.name) {
+          // If no student profile exists, create a minimal record and redirect to home
+          // The PostAuthOnboardingProcessor will handle the localStorage data
+          if (!student) {
+            try {
+              // Create a minimal student record
+              const { error: insertError } = await supabase
+                .from('students')
+                .insert({
+                  id: user.id,
+                  email: user.email,
+                  name: '', // Will be updated from localStorage by PostAuthOnboardingProcessor
+                  isOnboarded: false,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                })
+              
+              if (insertError) {
+                console.error('Failed to create student record:', insertError)
+                // Still redirect to home, PostAuthOnboardingProcessor will handle it
+              } else {
+                console.log('Created new student record for user:', user.id)
+              }
+            } catch (error) {
+              console.error('Exception creating student record:', error)
+            }
+            
+            // Redirect to home - PostAuthOnboardingProcessor will process localStorage data
+            return NextResponse.redirect(new URL('/', request.url))
+          }
+          
+          // If student exists but name is empty, still need onboarding
+          if (!student.name) {
             return NextResponse.redirect(new URL('/edit', request.url))
           }
         }
