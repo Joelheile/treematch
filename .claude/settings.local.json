@@ -21,7 +21,8 @@
       "mcp__supabase__search_docs",
       "mcp__supabase__get_logs",
       "mcp__supabase__list_organizations",
-      "mcp__supabase__get_organization"
+      "mcp__supabase__get_organization",
+      "Bash(npm run lint:*)"
     ],
     "deny": []
   }
