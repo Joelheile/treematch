@@ -100,19 +100,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (sessionError) {
           console.error('AuthProvider: Session error:', sessionError);
-          
-          // Handle specific API key errors
-          if (sessionError.message?.includes('No API key found') || 
-              sessionError.message?.includes('apikey')) {
-            console.warn('AuthProvider: API key issue, retrying in 1 second...');
-            setLoading(true);
-            setTimeout(() => {
-              console.log('AuthProvider: Retrying authentication...');
-              initAuth();
-            }, 1000);
-            return;
-          }
-          
           setLoading(false);
           return;
         }
