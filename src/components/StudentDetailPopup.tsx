@@ -220,7 +220,7 @@ export const StudentDetailPopup = ({
           {student.current_project && (
             <div className="text-left mb-4">
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                Project:
+                Excited About:
               </h4>
               <p className="text-sm text-gray-600">{student.current_project}</p>
             </div>
@@ -252,7 +252,7 @@ export const StudentDetailPopup = ({
           {student.goals && (
             <div className="mb-4">
               <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                Summer Goals:
+                Why Stanford & Goals:
               </h4>
               <p className="text-sm text-gray-600">{student.goals}</p>
             </div>
