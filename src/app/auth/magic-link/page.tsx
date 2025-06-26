@@ -8,18 +8,21 @@ import { useState } from 'react'
 
 export default function MagicLinkPage() {
   const searchParams = useSearchParams()
-  const confirmationUrl = searchParams.get('confirmation_url')
+  const tokenHash = searchParams.get('token_hash')
+  const type = searchParams.get('type')
   const [isVerifying, setIsVerifying] = useState(false)
 
   const handleConfirmSignIn = () => {
-    if (confirmationUrl) {
+    if (tokenHash && type) {
       setIsVerifying(true)
-      // Redirect to the actual confirmation URL
+      // Redirect to our confirmation route
+      const confirmationUrl = `/auth/confirm?token_hash=${tokenHash}&type=${type}`
+      console.log('Redirecting to:', confirmationUrl)
       window.location.href = confirmationUrl
     }
   }
 
-  if (!confirmationUrl) {
+  if (!tokenHash || !type) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
         <Card className="w-full max-w-md">
