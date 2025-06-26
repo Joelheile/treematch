@@ -4,26 +4,38 @@ import { useAuth } from "@/app/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function LogoutPage() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  console.log('[LogoutPage] Component render', { user: !!user, loading });
+
+  useEffect(() => {
+    console.log('[LogoutPage] Auth state changed', { user: !!user });
+  }, [user]);
+
   const handleLogout = async () => {
+    console.log('[LogoutPage] Starting logout process');
     setLoading(true);
     try {
       await signOut();
+      console.log('[LogoutPage] SignOut completed, redirecting...');
+      // Use window.location.href for a full page redirect to ensure clean logout
+      window.location.href = "/auth/login";
     } catch (error: any) {
       console.error("Error signing out:", error);
+      // Still redirect even if there's an error
+      window.location.href = "/auth/login";
     } finally {
-      router.push("/auth/login");
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
+    console.log('[LogoutPage] Cancel clicked, going back');
     router.back();
   };
 

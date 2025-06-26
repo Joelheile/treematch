@@ -137,23 +137,14 @@ export default function LoginPage() {
             </form>
           )}
 
-          <div className="text-center space-y-3">
+          <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Sign up
-              </Link>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              New here?{" "}
+              New to TreeMatch?{" "}
               <Link
                 href="/edit"
                 className="font-medium text-primary hover:text-primary/80 transition-colors"
               >
-                Start with our quick setup
+                Create your profile
               </Link>
             </p>
           </div>

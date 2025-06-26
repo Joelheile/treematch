@@ -35,10 +35,21 @@ export default function OnboardingLogic() {
   const availableSkills = useMemo(() => allSkills.filter((skill) => skill.is_global), [allSkills]);
   const suggestedSkills = useMemo(() => allSkills.filter((skill) => !skill.is_global), [allSkills]);
   const updateStudentSkills = useUpdateStudentSkills();
-  const { data: studentSkills = [] } = useStudentSkills(student?.id);
+  const { data: studentSkills = [], isLoading: studentSkillsLoading } = useStudentSkills(student?.id);
   const updateStudent = useUpdateStudent();
   const uploadAvatar = useUploadAvatar();
   const addSkill = useAddSkill();
+
+  console.log('[OnboardingLogic] Component render', { 
+    user: !!user, 
+    userId: user?.id,
+    student: !!student, 
+    studentId: student?.id,
+    studentLoading,
+    studentSkillsLoading,
+    studentSkills: studentSkills.length,
+    isNewUser
+  });
 
   const [suggestedSkill, setSuggestedSkill] = useState("");
   const [formData, setFormData] = useState<FormData>({
@@ -67,15 +78,29 @@ export default function OnboardingLogic() {
 
   // 1. On mount, if user is authenticated, check DB profile completeness
   useEffect(() => {
-    if (user && student && !studentLoading) {
-      // If profile is complete, redirect to main app
-      if (student.isOnboarded && student.name && student.country && student.university && student.phone_number) {
-        router.push("/");
-        return;
-      }
-      // If profile is incomplete, prefill formData from DB
+    console.log('[OnboardingLogic] Effect 1 - Loading user data', { 
+      user: !!user, 
+      student: !!student, 
+      studentLoading, 
+      studentSkillsLoading,
+      studentSkills: studentSkills.length 
+    });
+    
+    if (user && student && !studentLoading && !studentSkillsLoading) {
+      console.log('[OnboardingLogic] User and student data available', { 
+        student: {
+          name: student.name,
+          country: student.country,
+          university: student.university,
+          phone_number: student.phone_number,
+          isOnboarded: student.isOnboarded
+        },
+        studentSkills: studentSkills.length
+      });
+
+      // Always prefill formData from DB for edit page (don't redirect)
       const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
-      setFormData({
+      const newFormData = {
         name: student.name || "",
         country: student.country || "",
         university: student.university || "",
@@ -92,14 +117,21 @@ export default function OnboardingLogic() {
         websiteUrl: student.website || "",
         icon: student.icon || "",
         email: user.email || "",
-      });
+      };
+      
+      console.log('[OnboardingLogic] Setting form data from DB', newFormData);
+      setFormData(newFormData);
+      
       if (student.country) {
         setCountryInput(student.country);
         const matchingCountry = countriesData.find((country) => country.name.toLowerCase() === student.country?.toLowerCase());
-        if (matchingCountry) setSelectedCountry(matchingCountry);
+        if (matchingCountry) {
+          console.log('[OnboardingLogic] Setting selected country', matchingCountry);
+          setSelectedCountry(matchingCountry);
+        }
       }
     }
-  }, [user, student, studentLoading, studentSkills, router]);
+  }, [user, student, studentLoading, studentSkills, studentSkillsLoading]);
 
   // 2. On mount, if not authenticated, prefill from localStorage if available
   useEffect(() => {
@@ -185,15 +217,111 @@ export default function OnboardingLogic() {
         { number: 8, title: "Email", subtitle: "Complete Your Profile" },
       ];
 
-  // 6. Navigation logic
+  // 6. Complete profile handler
+  const handleCompleteProfile = useCallback(async () => {
+    if (!user || !student) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Move avatar from temp to permanent location if needed
+      let finalAvatarUrl = formData.profileImage;
+      if (tempAvatarPath && formData.profileImage) {
+        try {
+          const result = await moveAvatarAfterLogin(tempAvatarPath, user.id);
+          if (result) {
+            finalAvatarUrl = result;
+          }
+        } catch (error) {
+          console.error("Error moving avatar:", error);
+        }
+      }
+
+      // Update student profile
+      await updateStudent.mutateAsync({
+        id: user.id,
+        updates: {
+          name: formData.name,
+          country: formData.country,
+          university: formData.university,
+          phone_number: formData.phoneNumber,
+          profile_image: finalAvatarUrl,
+          courses: formData.courses,
+          goals: formData.summerGoals,
+          coolest_thing: formData.coolestThing,
+          linkedin: formData.linkedinUrl,
+          instagram: formData.instagramHandle,
+          twitter: formData.twitterHandle,
+          github: formData.githubUsername,
+          website: formData.websiteUrl,
+          icon: formData.icon,
+          isOnboarded: true,
+        },
+      });
+
+      // Update student skills
+      if (formData.skillIds.length > 0) {
+        await updateStudentSkills.mutateAsync({
+          studentId: user.id,
+          skillIds: formData.skillIds,
+        });
+      }
+
+      // Add suggested skills if any
+      if (suggestedSkill.trim()) {
+        try {
+          const newSkill = await addSkill.mutateAsync({
+            name: suggestedSkill.trim(),
+            is_global: false,
+          });
+          if (newSkill) {
+            await updateStudentSkills.mutateAsync({
+              studentId: user.id,
+              skillIds: [...formData.skillIds, newSkill.id],
+            });
+          }
+        } catch (error) {
+          console.error("Error adding suggested skill:", error);
+        }
+      }
+
+      // Clear onboarding data from localStorage
+      OnboardingStorage.clear();
+
+      // Show success message
+      toast.success("Profile completed successfully!");
+
+      // Redirect to main app
+      router.push("/");
+    } catch (error) {
+      console.error("Error completing profile:", error);
+      toast.error("Failed to complete profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+    user,
+    student,
+    formData,
+    tempAvatarPath,
+    suggestedSkill,
+    updateStudent,
+    updateStudentSkills,
+    addSkill,
+    router,
+  ]);
+
+  // 7. Navigation logic
   const handleNext = useCallback(() => {
     const maxStep = user ? 7 : 8;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
+    } else if (user && currentStep === 7) {
+      // Complete profile for authenticated users
+      handleCompleteProfile();
     } else if (!user && currentStep === 8) {
       handleSendMagicLink();
     }
-  }, [currentStep, user, handleSendMagicLink]);
+  }, [currentStep, user, handleCompleteProfile, handleSendMagicLink]);
 
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
@@ -255,6 +383,18 @@ export default function OnboardingLogic() {
   }, [uploadAvatar]);
 
   // 8. Render onboarding UI
+  // Show loading state while fetching user data
+  if (user && (studentLoading || studentSkillsLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <OnboardingUI
       currentStep={currentStep}

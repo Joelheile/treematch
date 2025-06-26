@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
   const supabase = createClient();
-  const loadingSetRef = useRef(false);
+  const initializedRef = useRef(false);
 
   console.log('[AuthProvider] render', { user, session, loading, isNewUser });
 
@@ -64,40 +64,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   useEffect(() => {
-    console.log('[AuthProvider] useEffect start', { user, session, loading, isNewUser });
-    const setLoadingOnce = () => {
-      if (!loadingSetRef.current) {
-        setLoading(false);
-        loadingSetRef.current = true;
-        console.log('[AuthProvider] setLoading(false) (once)', { user, session, loading, isNewUser });
-      }
-    };
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    console.log('[AuthProvider] useEffect start - initializing auth');
 
     const initAuth = async () => {
-      setLoading(true);
-      loadingSetRef.current = false;
-      console.log('[AuthProvider] Calling supabase.auth.getSession()');
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('[AuthProvider] getSession result:', session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoadingOnce();
-      console.log('[AuthProvider] setLoadingOnce from getSession, session:', session, 'user:', session?.user ?? null);
-      console.log('[AuthProvider] state after getSession', { user: session?.user ?? null, session, loading, isNewUser });
+      try {
+        console.log('[AuthProvider] Calling supabase.auth.getSession()');
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('[AuthProvider] getSession result:', session);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await checkIfNewUser(session.user.id);
+        }
+        
+        setLoading(false);
+        console.log('[AuthProvider] Initial auth complete', { user: session?.user ?? null, session });
+      } catch (error) {
+        console.error('[AuthProvider] Error during initial auth:', error);
+        setLoading(false);
+      }
     };
 
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[AuthProvider] onAuthStateChange event:', event, 'session:', session);
+      
       setSession(session);
       setUser(session?.user ?? null);
-      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
-        setLoadingOnce();
-        console.log('[AuthProvider] setLoadingOnce from onAuthStateChange, session:', session, 'user:', session?.user);
+      
+      if (event === "SIGNED_IN" && session?.user) {
         await checkIfNewUser(session.user.id);
+      } else if (event === "SIGNED_OUT") {
+        setIsNewUser(false);
       }
-      console.log('[AuthProvider] state after onAuthStateChange', { user: session?.user ?? null, session, loading, isNewUser });
     });
 
     const validateSessionPeriodically = async () => {
@@ -115,18 +120,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const interval = setInterval(validateSessionPeriodically, 5 * 60 * 1000);
 
-    // Timeout fallback: set loading to false after 5 seconds if still loading
-    const timeout = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-        console.log('[AuthProvider] Timeout fallback: setLoading(false) after 5s');
-      }
-    }, 5000);
-
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
-      clearTimeout(timeout);
       console.log('[AuthProvider] useEffect cleanup');
     };
   }, [supabase.auth, checkIfNewUser]);
