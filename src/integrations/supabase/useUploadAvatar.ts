@@ -90,23 +90,25 @@ export const useUploadAvatar = () => {
       let bucket: string
       
       if (userId) {
+        // Always use avatars bucket for authenticated users with consistent naming
         finalName = `${userId}/avatar.jpg`
         bucket = 'avatars'
+        
+        // First, try to delete any existing avatar to ensure clean upload
+        try {
+          await supabase.storage.from(bucket).remove([finalName])
+        } catch (error) {
+          // Ignore errors - file might not exist
+        }
       } else {
         finalName = `${timestamp}_${safeName}`
         bucket = 'temp-avatars'
       }
       
-      // Temporarily disable bucket check until buckets are created
-      // const bucketExists = await checkStorageBucket(bucket)
-      // if (!bucketExists) {
-      //   throw new Error(`Storage bucket '${bucket}' does not exist or is not accessible`)
-      // }
-      
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(finalName, compressedFile, {
-          cacheControl: '3600',
+          cacheControl: '0',  // Disable caching to prevent browser cache issues
           upsert: true
         })
         
@@ -121,9 +123,12 @@ export const useUploadAvatar = () => {
       if (!publicUrl) {
         throw new Error('Failed to generate public URL for uploaded image')
       }
+      
+      // Add cache-busting timestamp to the URL for immediate display
+      const cacheBustedUrl = `${publicUrl}?v=${timestamp}`
         
       return {
-        url: publicUrl,
+        url: cacheBustedUrl,
         path: finalName
       }
     }
@@ -155,4 +160,46 @@ export const useUploadTempAvatar = () => {
       return { url: publicUrl, path: finalName }
     }
   })
-} 
+}
+
+// Utility function to move an image from temp-avatars to avatars bucket
+export const moveImageToAvatarsBucket = async (userId: string, tempImageUrl: string): Promise<string | null> => {
+  try {
+    // Extract the filename from the temp URL
+    const tempPath = tempImageUrl.split('/temp-avatars/')[1]?.split('?')[0];
+    if (!tempPath) return null;
+    
+    // Download the image from temp bucket
+    const { data: imageData, error: downloadError } = await supabase.storage
+      .from('temp-avatars')
+      .download(tempPath);
+    
+    if (downloadError || !imageData) return null;
+    
+    const avatarPath = `${userId}/avatar.jpg`;
+    
+    // Upload to avatars bucket
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(avatarPath, imageData, { upsert: true });
+    
+    if (uploadError) return null;
+    
+    // Get the new public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(avatarPath);
+    
+    // Optionally clean up the temp file
+    try {
+      await supabase.storage.from('temp-avatars').remove([tempPath]);
+    } catch (error) {
+      // Ignore cleanup errors
+    }
+    
+    return publicUrl;
+  } catch (error) {
+    console.error('Error moving image to avatars bucket:', error);
+    return null;
+  }
+}; 

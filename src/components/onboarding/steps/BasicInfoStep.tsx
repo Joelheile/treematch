@@ -10,6 +10,7 @@ import { countryToFlag } from "../utils";
 import { Info } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { validatePhoneNumber } from "@/lib/phone-validation";
 
 interface BasicInfoStepProps {
   formData: FormData;
@@ -46,6 +47,7 @@ export default function BasicInfoStep({
 }: BasicInfoStepProps) {
   const isMobile = useIsMobile();
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
+  const [phoneValidationError, setPhoneValidationError] = useState<string>("");
   const privacyContent = "Your phone number will only be shown to people you've mutually liked.";
 
   return (
@@ -182,16 +184,28 @@ export default function BasicInfoStep({
           
           <PhoneInput
             value={formData.phoneNumber}
-            onChange={(phone) =>
+            onChange={(phone) => {
               setFormData((prev) => ({
                 ...prev,
                 phoneNumber: phone,
-              }))
-            }
-            inputClassName="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
+              }));
+              
+              if (phone.trim()) {
+                const validation = validatePhoneNumber(phone);
+                setPhoneValidationError(validation.error || "");
+              } else {
+                setPhoneValidationError("");
+              }
+            }}
+            inputClassName={`h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full ${
+              phoneValidationError ? "border-red-300 focus:border-red-500" : ""
+            }`}
             className="w-full"
             placeholder="Enter your phone number"
           />
+          {phoneValidationError && (
+            <p className="text-red-500 text-sm mt-1">{phoneValidationError}</p>
+          )}
         </div>
 
         <div className="relative">

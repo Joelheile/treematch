@@ -10,7 +10,7 @@ import {
   useUpdateStudentSkills,
 } from "@/integrations/supabase/useStudentSkills";
 import { useUpdateStudent } from "@/integrations/supabase/useUpdateStudent";
-import { useUploadAvatar } from "@/integrations/supabase/useUploadAvatar";
+import { useUploadAvatar, moveImageToAvatarsBucket } from "@/integrations/supabase/useUploadAvatar";
 import countriesData from "@/lib/countries.json";
 import {
   OnboardingStorage,
@@ -20,13 +20,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import OnboardingUI from "./OnboardingUI";
 import { FormData } from "./types";
+import { isValidPhone } from "@/lib/phone-validation";
 
 export default function OnboardingLogic() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { user, signInWithMagicLink, isNewUser } = useAuth();
   const { student, isLoading: studentLoading } = useCurrentStudent();
@@ -39,17 +42,6 @@ export default function OnboardingLogic() {
   const updateStudent = useUpdateStudent();
   const uploadAvatar = useUploadAvatar();
   const addSkill = useAddSkill();
-
-  console.log('[OnboardingLogic] Component render', { 
-    user: !!user, 
-    userId: user?.id,
-    student: !!student, 
-    studentId: student?.id,
-    studentLoading,
-    studentSkillsLoading,
-    studentSkills: studentSkills.length,
-    isNewUser
-  });
 
   const [suggestedSkill, setSuggestedSkill] = useState("");
   const [formData, setFormData] = useState<FormData>({
@@ -76,64 +68,131 @@ export default function OnboardingLogic() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [tempAvatarPath, setTempAvatarPath] = useState<string>("");
 
-  // 1. On mount, if user is authenticated, check DB profile completeness
-  useEffect(() => {
-    console.log('[OnboardingLogic] Effect 1 - Loading user data', { 
-      user: !!user, 
-      student: !!student, 
-      studentLoading, 
-      studentSkillsLoading,
-      studentSkills: studentSkills.length 
-    });
+  // Function to fix profile image URLs that point to temp-avatars
+  const fixProfileImageUrl = useCallback(async (student: any) => {
+    if (!student?.profile_image || !user?.id) return student.profile_image;
     
-    if (user && student && !studentLoading && !studentSkillsLoading) {
-      console.log('[OnboardingLogic] User and student data available', { 
-        student: {
-          name: student.name,
-          country: student.country,
-          university: student.university,
-          phone_number: student.phone_number,
-          isOnboarded: student.isOnboarded
-        },
-        studentSkills: studentSkills.length
-      });
+    // Check if the image is in temp-avatars bucket but user has complete profile
+    if (student.profile_image.includes('/temp-avatars/') && student.isOnboarded) {
+      try {
+        // Set a timeout to prevent blocking the UI
+        const timeoutPromise = new Promise<null>((_, reject) => {
+          setTimeout(() => reject(new Error('Operation timeout')), 3000);
+        });
+        
+        // Actually move the image file from temp-avatars to avatars bucket
+        const movePromise = moveImageToAvatarsBucket(user.id, student.profile_image);
+        
+        const movedImageUrl = await Promise.race([movePromise, timeoutPromise]);
+        
+        if (movedImageUrl) {
+          // Update the database with the correct URL (fire and forget)
+          updateStudent.mutateAsync({
+            id: user.id,
+            updates: {
+              profile_image: movedImageUrl,
+            },
+          }).catch(error => {
+            console.error('Failed to update profile image in database:', error);
+          });
+          
+          // Update cache immediately
+          queryClient.setQueryData(['student-by-user-id', user.id], (oldData: any) => {
+            if (oldData?.data) {
+              return {
+                ...oldData,
+                data: {
+                  ...oldData.data,
+                  profile_image: movedImageUrl
+                }
+              };
+            }
+            return oldData;
+          });
+          
+          // Return cache-busted URL for immediate display
+          return `${movedImageUrl}?v=${Date.now()}`;
+        }
+      } catch (error) {
+        console.error('Error fixing profile image URL:', error);
+        // Return original URL with cache-busting on error
+        return `${student.profile_image}?v=${Date.now()}`;
+      }
+    }
+    
+    // Add cache-busting to existing URLs if they don't have it
+    if (!student.profile_image.includes('?v=')) {
+      return `${student.profile_image}?v=${Date.now()}`;
+    }
+    
+    return student.profile_image;
+  }, [user, updateStudent, queryClient]);
 
-      // Always prefill formData from DB for edit page (don't redirect)
-      const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
-      const newFormData = {
-        name: student.name || "",
-        country: student.country || "",
-        university: student.university || "",
-        phoneNumber: student.phone_number || "",
-        profileImage: student.profile_image || "",
-        skillIds: currentSkillIds,
-        courses: student.courses || [],
-        summerGoals: student.goals || "",
-        coolestThing: student.coolest_thing || "",
-        linkedinUrl: student.linkedin || "",
-        instagramHandle: student.instagram || "",
-        twitterHandle: student.twitter || "",
-        githubUsername: student.github || "",
-        websiteUrl: student.website || "",
-        icon: student.icon || "",
-        email: user.email || "",
+  useEffect(() => {
+    if (user && student && !studentLoading && !studentSkillsLoading) {
+      const processStudentData = async () => {
+        const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
+        
+        // Start with the current profile image
+        let profileImageToUse = student.profile_image || "";
+        
+        const newFormData = {
+          name: student.name || "",
+          country: student.country || "",
+          university: student.university || "",
+          phoneNumber: student.phone_number || "",
+          profileImage: profileImageToUse,
+          skillIds: currentSkillIds,
+          courses: student.courses || [],
+          summerGoals: student.goals || "",
+          coolestThing: student.coolest_thing || "",
+          linkedinUrl: student.linkedin || "",
+          instagramHandle: student.instagram || "",
+          twitterHandle: student.twitter || "",
+          githubUsername: student.github || "",
+          websiteUrl: student.website || "",
+          icon: student.icon || "",
+          email: user.email || "",
+        };
+        
+        setFormData(newFormData);
+        
+        if (student.country) {
+          setCountryInput(student.country);
+          const matchingCountry = countriesData.find((country) => country.name.toLowerCase() === student.country?.toLowerCase());
+          if (matchingCountry) {
+            setSelectedCountry(matchingCountry);
+          }
+        }
+
+        // Clear localStorage if user has a complete profile in the database
+        if (student.isOnboarded && student.name && student.country && student.university && student.phone_number) {
+          if (OnboardingStorage.exists()) {
+            OnboardingStorage.clear();
+          }
+          setTempAvatarPath("");
+        }
+        
+        // Fix profile image URL in background (non-blocking)
+        if (student.profile_image?.includes('/temp-avatars/') && student.isOnboarded) {
+          fixProfileImageUrl(student).then((fixedUrl) => {
+            if (fixedUrl && fixedUrl !== student.profile_image) {
+              setFormData(prev => ({ ...prev, profileImage: fixedUrl }));
+            }
+          }).catch((error) => {
+            console.error('Error fixing profile image URL:', error);
+          });
+        } else if (student.profile_image && !student.profile_image.includes('?v=')) {
+          // Add cache-busting to existing URLs
+          const cacheBustedUrl = `${student.profile_image}?v=${Date.now()}`;
+          setFormData(prev => ({ ...prev, profileImage: cacheBustedUrl }));
+        }
       };
       
-      console.log('[OnboardingLogic] Setting form data from DB', newFormData);
-      setFormData(newFormData);
-      
-      if (student.country) {
-        setCountryInput(student.country);
-        const matchingCountry = countriesData.find((country) => country.name.toLowerCase() === student.country?.toLowerCase());
-        if (matchingCountry) {
-          console.log('[OnboardingLogic] Setting selected country', matchingCountry);
-          setSelectedCountry(matchingCountry);
-        }
-      }
+      processStudentData();
     }
   }, [user, student, studentLoading, studentSkills, studentSkillsLoading]);
 
-  // 2. On mount, if not authenticated, prefill from localStorage if available
   useEffect(() => {
     if (!user && !student && !studentLoading) {
       const savedData = OnboardingStorage.load();
@@ -165,18 +224,19 @@ export default function OnboardingLogic() {
     }
   }, [user, student, studentLoading]);
 
-  // 3. Always save formData to localStorage on change (with timestamp)
   useEffect(() => {
-    if (formData.name || formData.country || formData.university || formData.phoneNumber) {
-      const onboardingData: OnboardingData = {
-        ...formData,
-        tempAvatarPath,
-      };
-      OnboardingStorage.save(onboardingData);
+    // Only save to localStorage if user is not authenticated or doesn't have complete profile
+    if (!user || !student?.isOnboarded || !student?.name || !student?.country || !student?.university || !student?.phone_number) {
+      if (formData.name || formData.country || formData.university || formData.phoneNumber) {
+        const onboardingData: OnboardingData = {
+          ...formData,
+          tempAvatarPath,
+        };
+        OnboardingStorage.save(onboardingData);
+      }
     }
-  }, [formData, tempAvatarPath]);
+  }, [formData, tempAvatarPath, user, student]);
 
-  // 4. Handle magic link send
   const handleSendMagicLink = useCallback(async () => {
     setIsSubmitting(true);
     try {
@@ -187,7 +247,7 @@ export default function OnboardingLogic() {
       OnboardingStorage.save(onboardingData);
       await signInWithMagicLink(formData.email, true);
       toast.success("Check your email for a magic link to complete your signup!");
-      setCurrentStep(1); // Optionally reset to first step
+      setCurrentStep(1);
     } catch (error) {
       toast.error("Failed to send magic link. Please try again.");
     } finally {
@@ -195,7 +255,6 @@ export default function OnboardingLogic() {
     }
   }, [formData, tempAvatarPath, signInWithMagicLink]);
 
-  // 5. Onboarding steps
   const steps = user
     ? [
         { number: 1, title: "Welcome", subtitle: "Basic Information" },
@@ -217,13 +276,11 @@ export default function OnboardingLogic() {
         { number: 8, title: "Email", subtitle: "Complete Your Profile" },
       ];
 
-  // 6. Complete profile handler
   const handleCompleteProfile = useCallback(async () => {
     if (!user || !student) return;
     
     setIsSubmitting(true);
     try {
-      // Move avatar from temp to permanent location if needed
       let finalAvatarUrl = formData.profileImage;
       if (tempAvatarPath && formData.profileImage) {
         try {
@@ -236,7 +293,6 @@ export default function OnboardingLogic() {
         }
       }
 
-      // Update student profile
       await updateStudent.mutateAsync({
         id: user.id,
         updates: {
@@ -258,7 +314,6 @@ export default function OnboardingLogic() {
         },
       });
 
-      // Update student skills
       if (formData.skillIds.length > 0) {
         await updateStudentSkills.mutateAsync({
           studentId: user.id,
@@ -266,7 +321,6 @@ export default function OnboardingLogic() {
         });
       }
 
-      // Add suggested skills if any
       if (suggestedSkill.trim()) {
         try {
           const newSkill = await addSkill.mutateAsync({
@@ -284,13 +338,8 @@ export default function OnboardingLogic() {
         }
       }
 
-      // Clear onboarding data from localStorage
       OnboardingStorage.clear();
-
-      // Show success message
       toast.success("Profile completed successfully!");
-
-      // Redirect to main app
       router.push("/");
     } catch (error) {
       console.error("Error completing profile:", error);
@@ -310,13 +359,11 @@ export default function OnboardingLogic() {
     router,
   ]);
 
-  // 7. Navigation logic
   const handleNext = useCallback(() => {
     const maxStep = user ? 7 : 8;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     } else if (user && currentStep === 7) {
-      // Complete profile for authenticated users
       handleCompleteProfile();
     } else if (!user && currentStep === 8) {
       handleSendMagicLink();
@@ -327,7 +374,6 @@ export default function OnboardingLogic() {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // 7. Step validation logic (unchanged)
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
@@ -335,7 +381,7 @@ export default function OnboardingLogic() {
           formData.name.trim() !== "" &&
           formData.country.trim() !== "" &&
           formData.university.trim() !== "" &&
-          formData.phoneNumber.trim() !== ""
+          isValidPhone(formData.phoneNumber)
         );
       case 2:
         return formData.skillIds.length > 0;
@@ -371,19 +417,55 @@ export default function OnboardingLogic() {
     if (!file) return;
     setIsUploadingImage(true);
     try {
-      const result = await uploadAvatar.mutateAsync({ file });
-      setFormData((prev) => ({ ...prev, profileImage: result.url }));
-      setTempAvatarPath(result.path);
-      toast.success("Profile photo uploaded!");
+      // Check if user has a complete profile - if so, upload directly to permanent storage
+      const hasCompleteProfile = user && student?.isOnboarded && student?.name && student?.country && student?.university && student?.phone_number;
+      
+      if (hasCompleteProfile) {
+        // Upload directly to permanent storage and update database immediately
+        const result = await uploadAvatar.mutateAsync({ file, userId: user.id });
+        
+        // Extract clean URL without cache-busting for database storage
+        const cleanUrl = result.url.split('?')[0];
+        
+        // Update the database immediately with clean URL
+        await updateStudent.mutateAsync({
+          id: user.id,
+          updates: {
+            profile_image: cleanUrl,
+          },
+        });
+        
+        // Directly update the cached student data with clean URL
+        queryClient.setQueryData(['student-by-user-id', user.id], (oldData: any) => {
+          if (oldData?.data) {
+            return {
+              ...oldData,
+              data: {
+                ...oldData.data,
+                profile_image: cleanUrl
+              }
+            };
+          }
+          return oldData;
+        });
+        
+        // Update local form data with cache-busted URL for immediate display
+        setFormData((prev) => ({ ...prev, profileImage: result.url }));
+        toast.success("Profile photo updated!");
+      } else {
+        // Use temporary storage for incomplete profiles
+        const result = await uploadAvatar.mutateAsync({ file });
+        setFormData((prev) => ({ ...prev, profileImage: result.url }));
+        setTempAvatarPath(result.path);
+        toast.success("Profile photo uploaded!");
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to upload image");
     } finally {
       setIsUploadingImage(false);
     }
-  }, [uploadAvatar]);
+  }, [uploadAvatar, user, student, updateStudent, queryClient]);
 
-  // 8. Render onboarding UI
-  // Show loading state while fetching user data
   if (user && (studentLoading || studentSkillsLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">

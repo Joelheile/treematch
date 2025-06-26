@@ -82,7 +82,6 @@ export default function OnboardingUI({
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        console.log('DEBUG: Rendering BasicInfoStep', formData);
         return (
           <BasicInfoStep
             formData={formData}
@@ -103,7 +102,6 @@ export default function OnboardingUI({
         );
 
       case 2:
-        console.log('DEBUG: Rendering SkillsStep', formData);
         return (
           <SkillsStep
             formData={formData}
@@ -118,7 +116,6 @@ export default function OnboardingUI({
         );
 
       case 3:
-        console.log('DEBUG: Rendering CoursesStep', formData);
         return (
           <CoursesStep
             formData={formData}
@@ -130,21 +127,17 @@ export default function OnboardingUI({
         );
 
       case 4:
-        console.log('DEBUG: Rendering CoolestThingStep', formData);
         return (
           <CoolestThingStep formData={formData} setFormData={setFormData} />
         );
 
       case 5:
-        console.log('DEBUG: Rendering GoalsStep', formData);
         return <GoalsStep formData={formData} setFormData={setFormData} />;
 
       case 6:
-        console.log('DEBUG: Rendering SocialsStep', formData);
         return <SocialsStep formData={formData} setFormData={setFormData} />;
 
       case 7:
-        console.log('DEBUG: Rendering ProfilePhotoStep', formData);
         return (
           <ProfilePhotoStep
             formData={formData}
@@ -157,7 +150,6 @@ export default function OnboardingUI({
         );
 
       case 8:
-        console.log('DEBUG: Rendering EmailStep', formData);
         return !user ? (
           <EmailStep
             email={formData.email}
