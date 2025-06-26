@@ -48,7 +48,6 @@ export default function LoginPage() {
       setEmailSent(true);
       toast.success("Check your email for a magic link to sign in!");
     } catch (err: any) {
-      console.error("Magic link error:", err);
       setError(err.message || "An error occurred while sending the magic link");
       toast.error(err.message || "Failed to send magic link");
     } finally {

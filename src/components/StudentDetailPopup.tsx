@@ -222,7 +222,7 @@ export const StudentDetailPopup = ({
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
                 Most Proud Of:
               </h4>
-              <p className="text-sm text-gray-600">{student.coolest_thing}</p>
+              <p className="text-sm text-gray-600 whitespace-pre-wrap">{student.coolest_thing}</p>
             </div>
           )}
           {/* Spacer */}
@@ -235,7 +235,7 @@ export const StudentDetailPopup = ({
               <h4 className="text-sm font-semibold text-gray-700 mb-2">
                 Why Stanford & Goals:
               </h4>
-              <p className="text-sm text-gray-600">{student.goals}</p>
+              <p className="text-sm text-gray-600 whitespace-pre-wrap">{student.goals}</p>
             </div>
           )}
 

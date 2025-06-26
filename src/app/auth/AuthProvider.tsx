@@ -42,8 +42,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const supabase = createClient();
   const initializedRef = useRef(false);
 
-  console.log('[AuthProvider] render', { user, session, loading, isNewUser });
-
   const checkIfNewUser = useCallback(
     async (userId: string) => {
       try {
@@ -53,27 +51,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .eq("id", userId)
           .single();
         setIsNewUser(!student || !student.name);
-        console.log('[AuthProvider] setIsNewUser', !student || !student.name, { student });
       } catch (error) {
         console.error("Error checking if new user:", error);
         setIsNewUser(true);
-        console.log('[AuthProvider] setIsNewUser (error)', true);
       }
     },
     [supabase]
   );
 
+  const clearAllAuthData = useCallback(() => {
+    setSession(null);
+    setUser(null);
+    setIsNewUser(false);
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+
+        const cookies = document.cookie.split(";");
+        cookies.forEach((cookie) => {
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie =
+            name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        });
+      } catch (error) {
+        console.error("Error clearing auth data:", error);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    console.log('[AuthProvider] useEffect start - initializing auth');
-
     const initAuth = async () => {
       try {
-        console.log('[AuthProvider] Calling supabase.auth.getSession()');
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('[AuthProvider] getSession result:', session);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -83,9 +98,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         setLoading(false);
-        console.log('[AuthProvider] Initial auth complete', { user: session?.user ?? null, session });
       } catch (error) {
-        console.error('[AuthProvider] Error during initial auth:', error);
+        console.error("Error during initial auth:", error);
         setLoading(false);
       }
     };
@@ -93,8 +107,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[AuthProvider] onAuthStateChange event:', event, 'session:', session);
-      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -109,11 +121,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
-          console.log('[AuthProvider] validateSessionPeriodically: clearing auth data due to error or no session', error, session);
           clearAllAuthData();
         }
       } catch (error) {
-        console.log('[AuthProvider] validateSessionPeriodically: exception, clearing auth data', error);
         clearAllAuthData();
       }
     };
@@ -123,11 +133,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
-      console.log('[AuthProvider] useEffect cleanup');
     };
-  }, [supabase.auth, checkIfNewUser]);
-
-  console.log('[AuthProvider] returning context', { user, session, loading, isNewUser });
+  }, [supabase.auth, checkIfNewUser, clearAllAuthData]);
 
   const signInWithMagicLink = async (
     email: string,
@@ -137,11 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error("Email is required");
     }
 
-    console.log("Sending magic link to:", email);
-    console.log("Redirect URL:", `${window.location.origin}/auth/confirm`);
-    console.log("Should create user:", shouldCreateUser);
-
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
         shouldCreateUser,
@@ -150,11 +153,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (error) {
-      console.error("Magic link error details:", error);
       throw error;
     }
-
-    console.log("Magic link sent successfully:", data);
   };
 
   const signOut = async () => {
@@ -189,29 +189,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       throw error;
-    }
-  };
-
-  const clearAllAuthData = () => {
-    setSession(null);
-    setUser(null);
-    setIsNewUser(false);
-
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-
-        const cookies = document.cookie.split(";");
-        cookies.forEach((cookie) => {
-          const eqPos = cookie.indexOf("=");
-          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-          document.cookie =
-            name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-        });
-      } catch (error) {
-        console.error("Error clearing auth data:", error);
-      }
     }
   };
 

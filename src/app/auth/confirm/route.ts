@@ -40,7 +40,8 @@ function recordFailedVerification(tokenHash: string): void {
   
   // Cleanup old entries periodically
   if (failedVerifications.size > 1000) {
-    for (const [key, value] of failedVerifications.entries()) {
+    const entries = Array.from(failedVerifications.entries())
+    for (const [key, value] of entries) {
       if (now - value.lastAttempt > RATE_LIMIT_WINDOW) {
         failedVerifications.delete(key)
       }
@@ -99,9 +100,6 @@ export async function GET(request: NextRequest) {
               
               if (insertError) {
                 console.error('Failed to create student record:', insertError)
-                // Still redirect to home, PostAuthOnboardingProcessor will handle it
-              } else {
-                console.log('Created new student record for user:', user.id)
               }
             } catch (error) {
               console.error('Exception creating student record:', error)

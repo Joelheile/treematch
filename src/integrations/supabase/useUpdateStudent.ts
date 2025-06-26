@@ -46,8 +46,10 @@ export const useUpdateStudent = () => {
       return data
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['student', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['student-by-user-id', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['students'] })
+      
+      queryClient.invalidateQueries({ queryKey: ['student', variables.id] })
     },
   })
 } 

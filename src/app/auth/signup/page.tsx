@@ -43,7 +43,6 @@ export default function SignupPage() {
       setSuccess(true);
       toast.success("Check your email for a magic link to sign up!");
     } catch (err: any) {
-      console.error("Magic link error:", err);
       setError(err.message);
       toast.error(err.message || "Failed to send magic link");
     } finally {
