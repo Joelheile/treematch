@@ -8,9 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
   signInWithMagicLink: (email: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
 }
@@ -93,17 +91,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [supabase.auth]);
 
-  const signIn = async (email: string, password: string) => {
-    if (!email || !password) {
-      throw new Error("Email and password are required");
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-    if (error) throw error;
-  };
 
   const signInWithMagicLink = async (email: string) => {
     if (!email) {
@@ -119,21 +106,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) throw error;
   };
 
-  const signUp = async (email: string, password: string) => {
-    if (!email || !password) {
-      throw new Error("Email and password are required");
-    }
-
-    if (password.length < 6) {
-      throw new Error("Password must be at least 6 characters long");
-    }
-
-    const { error } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-    if (error) throw error;
-  };
 
   const signOut = async () => {
     try {
@@ -208,9 +180,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         session,
         loading,
-        signIn,
         signInWithMagicLink,
-        signUp,
         signOut,
         signInWithGoogle,
       }}

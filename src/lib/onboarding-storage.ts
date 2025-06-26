@@ -14,6 +14,7 @@ export interface OnboardingData {
   githubUsername: string
   websiteUrl: string
   icon: string
+  email?: string
   completedAt?: string
   tempAvatarPath?: string
 }

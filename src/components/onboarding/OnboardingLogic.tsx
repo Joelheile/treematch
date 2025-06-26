@@ -63,6 +63,7 @@ export default function OnboardingLogic() {
     githubUsername: "",
     websiteUrl: "",
     icon: "",
+    email: "",
   });
 
   const [countryInput, setCountryInput] = useState("");
@@ -98,6 +99,7 @@ export default function OnboardingLogic() {
         githubUsername: student.github || "",
         websiteUrl: student.website || "",
         icon: student.icon || "",
+        email: user?.email || "",
       });
 
       if (student.country) {
@@ -129,12 +131,13 @@ export default function OnboardingLogic() {
           githubUsername: savedData.githubUsername || "",
           websiteUrl: savedData.websiteUrl || "",
           icon: savedData.icon || "",
+          email: (savedData as any).email || "",
         });
       }
     }
   }, [student, availableSkills, studentLoading, studentSkills]);
 
-  const steps = [
+  const steps = user ? [
     { number: 1, title: "Welcome", subtitle: "Basic Information" },
     { number: 2, title: "Skills", subtitle: "Your Expertise" },
     { number: 3, title: "Courses", subtitle: "Your Academic Background" },
@@ -142,6 +145,15 @@ export default function OnboardingLogic() {
     { number: 5, title: "Goals", subtitle: "Your Aspirations" },
     { number: 6, title: "Connect", subtitle: "Social Links" },
     { number: 7, title: "Photo", subtitle: "Profile Picture" },
+  ] : [
+    { number: 1, title: "Welcome", subtitle: "Basic Information" },
+    { number: 2, title: "Skills", subtitle: "Your Expertise" },
+    { number: 3, title: "Courses", subtitle: "Your Academic Background" },
+    { number: 4, title: "Projects", subtitle: "What You're Working On" },
+    { number: 5, title: "Goals", subtitle: "Your Aspirations" },
+    { number: 6, title: "Connect", subtitle: "Social Links" },
+    { number: 7, title: "Photo", subtitle: "Profile Picture" },
+    { number: 8, title: "Email", subtitle: "Complete Your Profile" },
   ];
 
   const countrySuggestions = countriesData
@@ -284,6 +296,7 @@ export default function OnboardingLogic() {
           githubUsername: formData.githubUsername,
           websiteUrl: formData.websiteUrl,
           icon: formData.icon,
+          email: formData.email,
         };
 
         OnboardingStorage.save(currentFormAsLocalStorage);
@@ -334,12 +347,49 @@ export default function OnboardingLogic() {
   ]);
 
   const handleNext = useCallback(() => {
-    if (currentStep < 7) {
+    const maxStep = user ? 7 : 8;
+    if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
-    } else {
+    } else if (user && currentStep === 7) {
       handleCompleteProfile();
     }
-  }, [currentStep, handleCompleteProfile]);
+  }, [currentStep, user, handleCompleteProfile]);
+
+  const handleEmailMagicLink = useCallback(async () => {
+    if (!formData.email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    
+    const onboardingData: OnboardingData = {
+      name: formData.name,
+      country: formData.country,
+      university: formData.university,
+      phoneNumber: formData.phoneNumber,
+      profileImage: formData.profileImage,
+      skillIds: formData.skillIds,
+      courses: formData.courses,
+      summerGoals: formData.summerGoals,
+      currentProject: formData.currentProject,
+      linkedinUrl: formData.linkedinUrl,
+      instagramHandle: formData.instagramHandle,
+      twitterHandle: formData.twitterHandle,
+      githubUsername: formData.githubUsername,
+      websiteUrl: formData.websiteUrl,
+      tempAvatarPath,
+      icon: formData.icon,
+      email: formData.email,
+    };
+    
+    OnboardingStorage.save(onboardingData);
+    
+    try {
+      await signInWithMagicLink(formData.email);
+      toast.success("Check your email for a magic link to complete your signup!");
+    } catch (error) {
+      toast.error("Failed to send magic link. Please try again.");
+    }
+  }, [formData, tempAvatarPath, signInWithMagicLink]);
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -368,6 +418,8 @@ export default function OnboardingLogic() {
         return true;
       case 7:
         return formData.profileImage.trim() !== "" && !isUploadingImage;
+      case 8:
+        return !user && formData.email.trim() !== "" && formData.email.endsWith("@stanford.edu");
       default:
         return false;
     }
@@ -448,6 +500,7 @@ export default function OnboardingLogic() {
       setSuggestedSkill={setSuggestedSkill}
       handleNext={handleNext}
       handleBack={handleBack}
+      handleEmailMagicLink={handleEmailMagicLink}
       setShowCountrySuggestions={setShowCountrySuggestions}
     />
   );

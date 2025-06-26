@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OnboardingStorage } from "@/lib/onboarding-storage";
-import { CheckCircle, Lock, Mail, TreePine } from "lucide-react";
+import { CheckCircle, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,14 +14,12 @@ import { toast } from "sonner";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
   const router = useRouter();
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signInWithMagicLink, signInWithGoogle } = useAuth();
 
   useEffect(() => {
     setHasOnboardingData(
@@ -29,7 +27,7 @@ export default function SignupPage() {
     );
   }, []);
 
-  const handleEmailSignup = async (e: React.FormEvent) => {
+  const handleMagicLinkSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -41,21 +39,10 @@ export default function SignupPage() {
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      setLoading(false);
-      return;
-    }
-
     try {
-      await signUp(email, password);
+      await signInWithMagicLink(email);
       setSuccess(true);
+      toast.success("Check your email for a magic link to sign up!");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -73,7 +60,7 @@ export default function SignupPage() {
             </div>
             <h2 className="text-2xl font-semibold">Check your email</h2>
             <p className="text-muted-foreground">
-              We've sent you a confirmation link at <strong>{email}</strong>
+              We've sent you a magic link at <strong>{email}</strong>. Click the link to complete your signup.
             </p>
             {hasOnboardingData && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
@@ -126,7 +113,7 @@ export default function SignupPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailSignup} className="space-y-4">
+          <form onSubmit={handleMagicLinkSignup} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
                 Email address
@@ -145,51 +132,12 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Create a password (8+ characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-12"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="confirmPassword"
-                className="text-sm font-medium"
-              >
-                Confirm Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10 h-12"
-                  required
-                />
-              </div>
-            </div>
-
             <Button
               type="submit"
               className="w-full h-12 text-sm font-medium"
               disabled={loading}
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Sending magic link..." : "Send magic link"}
             </Button>
           </form>
 

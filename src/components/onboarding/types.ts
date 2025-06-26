@@ -14,6 +14,7 @@ export interface FormData {
   githubUsername: string;
   websiteUrl: string;
   icon: string;
+  email: string;
 }
 
 export interface Skill {

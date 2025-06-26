@@ -4,4 +4,5 @@ export { default as CoursesStep } from './CoursesStep';
 export { default as CurrentProjectStep } from './CurrentProjectStep';
 export { default as GoalsStep } from './GoalsStep';
 export { default as SocialsStep } from './SocialsStep';
-export { default as ProfilePhotoStep } from './ProfilePhotoStep'; 
+export { default as ProfilePhotoStep } from './ProfilePhotoStep';
+export { EmailStep } from './EmailStep'; 

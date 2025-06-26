@@ -12,6 +12,7 @@ interface OnboardingNavigationProps {
   student: any;
   handleNext: () => void;
   handleBack: () => void;
+  handleEmailMagicLink?: () => void;
 }
 
 export default function OnboardingNavigation({
@@ -23,6 +24,7 @@ export default function OnboardingNavigation({
   student,
   handleNext,
   handleBack,
+  handleEmailMagicLink,
 }: OnboardingNavigationProps) {
   return (
     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-3 sm:p-4 z-10">
@@ -42,7 +44,13 @@ export default function OnboardingNavigation({
         )}
 
         <Button
-          onClick={handleNext}
+          onClick={() => {
+            if (currentStep === totalSteps && !user && handleEmailMagicLink) {
+              handleEmailMagicLink();
+            } else {
+              handleNext();
+            }
+          }}
           disabled={!isStepValid}
           className={`px-4 sm:px-8 font-semibold h-11 flex-1 sm:flex-none text-sm sm:text-base ${
             currentStep === totalSteps
@@ -55,7 +63,7 @@ export default function OnboardingNavigation({
             : currentStep === totalSteps
             ? user && student
               ? "Update Profile"
-              : "Complete Profile"
+              : "Send Magic Link"
             : "Continue"}
         </Button>
       </div>

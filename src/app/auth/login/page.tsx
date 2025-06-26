@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { OnboardingStorage } from "@/lib/onboarding-storage";
-import { AlertCircle, Lock, Mail, TreePine } from "lucide-react";
+import { AlertCircle, Mail, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -24,20 +24,19 @@ const sanitizeInput = (input: string): string => {
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signInWithMagicLink, signInWithGoogle } = useAuth();
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleMagicLinkLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     const sanitizedEmail = sanitizeInput(email)
-    const sanitizedPassword = password.trim()
 
     if (!validateEmail(sanitizedEmail)) {
       toast.error("Please use a valid Stanford email address (@stanford.edu)");
@@ -45,24 +44,12 @@ export default function LoginPage() {
       return;
     }
 
-    if (sanitizedPassword.length < 6) {
-      toast.error("Password must be at least 6 characters long");
-      setLoading(false);
-      return;
-    }
-
     try {
-      await signIn(sanitizedEmail, sanitizedPassword);
-      const hasOnboardingData =
-        OnboardingStorage.exists() && !OnboardingStorage.isExpired();
-
-      if (hasOnboardingData) {
-        toast.success("Welcome back! Setting up your profile...");
-      }
-
-      router.push("/");
+      await signInWithMagicLink(sanitizedEmail);
+      setEmailSent(true);
+      toast.success("Check your email for a magic link to sign in!");
     } catch (err: any) {
-      setError(err.message || "An error occurred during sign in");
+      setError(err.message || "An error occurred while sending the magic link");
     } finally {
       setLoading(false);
     }
@@ -93,53 +80,60 @@ export default function LoginPage() {
             </Alert>
           )}
 
-          <form onSubmit={handleEmailLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your.email@stanford.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12"
-                  required
-                  maxLength={255}
-                />
+          {emailSent ? (
+            <Card>
+              <CardContent className="p-6 text-center space-y-4">
+                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Check your email</h3>
+                  <p className="text-sm text-muted-foreground">
+                    We've sent a magic link to <strong>{email}</strong>. Click the link in your email to sign in.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEmailSent(false);
+                    setEmail("");
+                  }}
+                  className="w-full"
+                >
+                  Use a different email
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <form onSubmit={handleMagicLinkLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email address
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your.email@stanford.edu"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-12"
+                    required
+                    maxLength={255}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-12"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-12 text-sm font-medium"
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                className="w-full h-12 text-sm font-medium"
+                disabled={loading}
+              >
+                {loading ? "Sending magic link..." : "Send magic link"}
+              </Button>
+            </form>
+          )}
 
           <div className="text-center space-y-3">
             <p className="text-sm text-muted-foreground">
@@ -160,12 +154,6 @@ export default function LoginPage() {
                 Start with our quick setup
               </Link>
             </p>
-            <Link
-              href="/auth/reset-password"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors block"
-            >
-              Forgot your password?
-            </Link>
           </div>
         </div>
       </div>
