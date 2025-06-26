@@ -2,14 +2,23 @@
 
 import { createClient } from "@/integrations/supabase/client-ssr";
 import { Session, User } from "@supabase/supabase-js";
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isNewUser: boolean;
-  signInWithMagicLink: (email: string) => Promise<void>;
+  signInWithMagicLink: (
+    email: string,
+    shouldCreateUser?: boolean
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
 }
@@ -31,21 +40,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isNewUser, setIsNewUser] = useState(false);
   const supabase = createClient();
 
-  const checkIfNewUser = useCallback(async (userId: string) => {
-    try {
-      const { data: student } = await supabase
-        .from('students')
-        .select('id, name')
-        .eq('id', userId)
-        .single();
-      
-      // User is new if they don't have a student profile or no name
-      setIsNewUser(!student || !student.name);
-    } catch (error) {
-      console.error('Error checking if new user:', error);
-      setIsNewUser(true); // Assume new user on error
-    }
-  }, [supabase]);
+  const checkIfNewUser = useCallback(
+    async (userId: string) => {
+      try {
+        const { data: student } = await supabase
+          .from("students")
+          .select("id, name")
+          .eq("id", userId)
+          .single();
+
+        // User is new if they don't have a student profile or no name
+        setIsNewUser(!student || !student.name);
+      } catch (error) {
+        console.error("Error checking if new user:", error);
+        setIsNewUser(true); // Assume new user on error
+      }
+    },
+    [supabase]
+  );
 
   useEffect(() => {
     const getSession = async () => {
@@ -84,12 +96,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       // Check if this is a new user after successful sign in
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (event === "SIGNED_IN" && session?.user) {
         await checkIfNewUser(session.user.id);
       }
-      
+
       setLoading(false);
     });
 
@@ -115,18 +127,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [supabase.auth, checkIfNewUser]);
 
-  const signInWithMagicLink = async (email: string) => {
+  const signInWithMagicLink = async (
+    email: string,
+    shouldCreateUser: boolean = true
+  ) => {
     if (!email) {
       throw new Error("Email is required");
     }
 
     console.log("Sending magic link to:", email);
     console.log("Redirect URL:", `${window.location.origin}/auth/confirm`);
+    console.log("Should create user:", shouldCreateUser);
 
     const { data, error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-
       options: {
+        shouldCreateUser,
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     });
