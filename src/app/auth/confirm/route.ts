@@ -17,6 +17,23 @@ export async function GET(request: NextRequest) {
     })
     
     if (!error) {
+      // Check if this is a new user and redirect to /edit if they don't have a profile
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        // Check if user has a student profile
+        const { data: student } = await supabase
+          .from('students')
+          .select('id, name')
+          .eq('id', user.id)
+          .single()
+        
+        // If no student profile exists or name is empty, redirect to /edit
+        if (!student || !student.name) {
+          return NextResponse.redirect(new URL('/edit', request.url))
+        }
+      }
+      
       // Redirect to app after successful verification
       return NextResponse.redirect(new URL(next, request.url))
     }

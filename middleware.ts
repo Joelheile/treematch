@@ -30,6 +30,7 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
   const isOnboardingPage = request.nextUrl.pathname.startsWith('/onboarding')
+  const isEditPage = request.nextUrl.pathname === '/edit'
   const isPublicPage = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/meet')
 
   if (!user && !isAuthPage && !isPublicPage) {
@@ -42,6 +43,29 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)
+  }
+
+  // Check if authenticated user has a complete profile
+  if (user && !isAuthPage && !isEditPage && !isPublicPage) {
+    try {
+      const { data: student } = await supabase
+        .from('students')
+        .select('id, name')
+        .eq('id', user.id)
+        .single()
+      
+      // If no student profile exists or name is empty, redirect to /edit
+      if (!student || !student.name) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/edit'
+        return NextResponse.redirect(url)
+      }
+    } catch (error) {
+      // If there's an error checking the profile, redirect to /edit to be safe
+      const url = request.nextUrl.clone()
+      url.pathname = '/edit'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
