@@ -180,7 +180,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           {student.current_project && (
             <div className="text-left">
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                Project:
+                Excited About:
               </h4>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {student.current_project}
@@ -216,7 +216,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           {(student as any).goals && (
             <div>
               <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                Summer Goals:
+                Why Stanford & Goals:
               </h4>
               <p className="text-sm text-gray-600 line-clamp-3">
                 {(student as any).goals}
