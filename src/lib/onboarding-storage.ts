@@ -1,6 +1,5 @@
 export interface OnboardingData {
   name: string;
-  email: string;
   country: string;
   university: string
   phoneNumber: string
