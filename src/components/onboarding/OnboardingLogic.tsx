@@ -245,7 +245,7 @@ export default function OnboardingLogic() {
         tempAvatarPath,
       };
       OnboardingStorage.save(onboardingData);
-      await signInWithMagicLink(formData.email, true);
+      await signInWithMagicLink(formData.email);
       toast.success("Check your email for a magic link to complete your signup!");
       setCurrentStep(1);
     } catch (error) {

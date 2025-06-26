@@ -44,7 +44,7 @@ export default function LoginPage() {
     }
 
     try {
-      await signInWithMagicLink(sanitizedEmail, false);
+      await signInWithMagicLink(sanitizedEmail);
       setEmailSent(true);
       toast.success("Check your email for a magic link to sign in!");
     } catch (err: any) {
