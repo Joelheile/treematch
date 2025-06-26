@@ -411,15 +411,6 @@ export default function OnboardingLogic() {
     signInWithMagicLink,
   ]);
 
-  const handleNext = useCallback(() => {
-    const maxStep = user ? 7 : 8;
-    if (currentStep < maxStep) {
-      setCurrentStep(currentStep + 1);
-    } else if (user && currentStep === 7) {
-      handleCompleteProfile();
-    }
-  }, [currentStep, user, handleCompleteProfile]);
-
   const handleEmailMagicLink = useCallback(async () => {
     if (!formData.email) {
       toast.error("Please enter your email address");

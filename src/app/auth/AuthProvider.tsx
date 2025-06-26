@@ -2,12 +2,13 @@
 
 import { createClient } from "@/integrations/supabase/client-ssr";
 import { Session, User } from "@supabase/supabase-js";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isNewUser: boolean;
   signInWithMagicLink: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -27,7 +28,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
   const supabase = createClient();
+
+  const checkIfNewUser = useCallback(async (userId: string) => {
+    try {
+      const { data: student } = await supabase
+        .from('students')
+        .select('id, name')
+        .eq('id', userId)
+        .single();
+      
+      // User is new if they don't have a student profile or no name
+      setIsNewUser(!student || !student.name);
+    } catch (error) {
+      console.error('Error checking if new user:', error);
+      setIsNewUser(true); // Assume new user on error
+    }
+  }, [supabase]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -66,6 +84,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Check if this is a new user after successful sign in
+      if (event === 'SIGNED_IN' && session?.user) {
+        await checkIfNewUser(session.user.id);
+      }
+      
       setLoading(false);
     });
 
@@ -89,7 +113,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, [supabase.auth]);
+  }, [supabase.auth, checkIfNewUser]);
 
   const signInWithMagicLink = async (email: string) => {
     if (!email) {
@@ -101,6 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data, error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
+
       options: {
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
@@ -152,6 +177,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const clearAllAuthData = () => {
     setSession(null);
     setUser(null);
+    setIsNewUser(false);
 
     if (typeof window !== "undefined") {
       try {
@@ -187,6 +213,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         session,
         loading,
+        isNewUser,
         signInWithMagicLink,
         signOut,
         signInWithGoogle,
