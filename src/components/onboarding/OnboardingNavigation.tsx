@@ -12,7 +12,7 @@ interface OnboardingNavigationProps {
   student: any;
   handleNext: () => void;
   handleBack: () => void;
-  handleEmailMagicLink?: () => void;
+  handleCreateAccount?: () => void;
 }
 
 export default function OnboardingNavigation({
@@ -24,7 +24,7 @@ export default function OnboardingNavigation({
   student,
   handleNext,
   handleBack,
-  handleEmailMagicLink,
+  handleCreateAccount,
 }: OnboardingNavigationProps) {
   return (
     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-3 sm:p-4 z-10">
@@ -45,8 +45,8 @@ export default function OnboardingNavigation({
 
         <Button
           onClick={() => {
-            if (currentStep === totalSteps && !user && handleEmailMagicLink) {
-              handleEmailMagicLink();
+            if (currentStep === totalSteps && !user && handleCreateAccount) {
+              handleCreateAccount();
             } else {
               handleNext();
             }
@@ -63,7 +63,7 @@ export default function OnboardingNavigation({
             : currentStep === totalSteps
             ? user && student
               ? "Update Profile"
-              : "Send Magic Link"
+              : "Create Account"
             : "Continue"}
         </Button>
       </div>

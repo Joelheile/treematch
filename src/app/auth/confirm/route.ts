@@ -40,7 +40,8 @@ function recordFailedVerification(tokenHash: string): void {
   
   // Cleanup old entries periodically
   if (failedVerifications.size > 1000) {
-    for (const [key, value] of failedVerifications.entries()) {
+    const entries = Array.from(failedVerifications.entries());
+    for (const [key, value] of entries) {
       if (now - value.lastAttempt > RATE_LIMIT_WINDOW) {
         failedVerifications.delete(key)
       }

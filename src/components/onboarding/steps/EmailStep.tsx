@@ -22,7 +22,7 @@ export function EmailStep({ email, setEmail }: EmailStepProps) {
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Almost there!</h2>
         <p className="text-gray-600">
-          Enter your Stanford email to complete your profile
+          Enter your Stanford email to create your account
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export function EmailStep({ email, setEmail }: EmailStepProps) {
             />
           </div>
           <p className="text-xs text-gray-500">
-            We'll send you a magic link to complete your signup
+            You'll create your password on the next page
           </p>
         </div>
       </div>

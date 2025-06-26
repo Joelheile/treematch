@@ -11,7 +11,6 @@ import {
   SkillsStep,
   SocialsStep,
 } from "./steps";
-import { EmailStep } from "./steps/EmailStep";
 import { Country, FormData, Skill, Step } from "./types";
 
 interface OnboardingUIProps {
@@ -43,7 +42,7 @@ interface OnboardingUIProps {
   setSuggestedSkill: (value: string) => void;
   handleNext: () => void;
   handleBack: () => void;
-  handleEmailMagicLink: () => void;
+  handleCreateAccount: () => void;
   setShowCountrySuggestions: (show: boolean) => void;
 }
 
@@ -76,7 +75,7 @@ export default function OnboardingUI({
   setSuggestedSkill,
   handleNext,
   handleBack,
-  handleEmailMagicLink,
+  handleCreateAccount,
   setShowCountrySuggestions,
 }: OnboardingUIProps) {
   const renderStepContent = () => {
@@ -149,14 +148,6 @@ export default function OnboardingUI({
           />
         );
 
-      case 8:
-        return !user ? (
-          <EmailStep
-            email={formData.email}
-            setEmail={(email) => setFormData(prev => ({ ...prev, email }))}
-          />
-        ) : null;
-
       default:
         return null;
     }
@@ -195,7 +186,7 @@ export default function OnboardingUI({
           student={student}
           handleNext={handleNext}
           handleBack={handleBack}
-          handleEmailMagicLink={handleEmailMagicLink}
+          handleCreateAccount={handleCreateAccount}
         />
       </div>
     </div>

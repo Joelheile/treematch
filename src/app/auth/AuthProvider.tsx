@@ -15,10 +15,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isNewUser: boolean;
-  signInWithMagicLink: (
-    email: string,
-    shouldCreateUser?: boolean
-  ) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
 }
@@ -81,6 +79,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Set loading to false immediately if we have a valid session
+        if (session?.user) {
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Error getting session:", error);
         clearAllAuthData();
@@ -94,15 +97,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email || 'no user');
+      
       setSession(session);
       setUser(session?.user ?? null);
 
-      // Check if this is a new user after successful sign in
+      // Set loading to false immediately for user state changes
+      setLoading(false);
+
+      // Check if this is a new user after successful sign in (async operation)
       if (event === "SIGNED_IN" && session?.user) {
-        await checkIfNewUser(session.user.id);
+        checkIfNewUser(session.user.id); // Don't await this to avoid blocking
       }
 
-      setLoading(false);
+      // Clear user state on sign out
+      if (event === "SIGNED_OUT") {
+        console.log('User signed out, clearing state');
+        setSession(null);
+        setUser(null);
+        setIsNewUser(false);
+      }
     });
 
     const validateSessionPeriodically = async () => {
@@ -119,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    const interval = setInterval(validateSessionPeriodically, 5 * 60 * 1000);
+    const interval = setInterval(validateSessionPeriodically, 2 * 60 * 1000);
 
     return () => {
       subscription.unsubscribe();
@@ -127,35 +141,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [supabase.auth, checkIfNewUser]);
 
-  const signInWithMagicLink = async (
-    email: string,
-    shouldCreateUser: boolean = true
-  ) => {
-    if (!email) {
-      throw new Error("Email is required");
+  const signUp = async (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error("Email and password are required");
     }
 
-    console.log("Sending magic link to:", email);
-    console.log("Redirect URL:", `${window.location.origin}/auth/confirm`);
-    console.log("Should create user:", shouldCreateUser);
+    if (!email.endsWith("@stanford.edu")) {
+      throw new Error("Please use your Stanford email address (@stanford.edu)");
+    }
 
-    const { data, error } = await supabase.auth.signInWithOtp({
+    console.log("Signing up user:", email);
+
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
-      options: {
-        shouldCreateUser,
-        emailRedirectTo: `${window.location.origin}/auth/confirm`,
-      },
+      password: password,
     });
 
     if (error) {
-      console.error("Magic link error details:", error);
+      console.error("Sign up error:", error);
       throw error;
     }
 
-    console.log("Magic link sent successfully:", data);
+    console.log("Sign up successful:", data);
+
+    // If email confirmation is disabled or user is auto-confirmed, they'll be signed in automatically
+    // If not, we'll need to handle this based on the Supabase configuration
+    if (data.user && !data.user.email_confirmed_at) {
+      console.log("User needs email confirmation");
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error("Email and password are required");
+    }
+
+    console.log("Signing in user:", email);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password: password,
+    });
+
+    if (error) {
+      console.error("Sign in error:", error);
+      throw error;
+    }
+
+    console.log("Sign in successful:", data);
   };
 
   const signOut = async () => {
+    console.log('Starting signOut process...');
     try {
       const {
         data: { session },
@@ -163,12 +200,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } = await supabase.auth.getSession();
 
       if (sessionError || !session) {
+        console.log('No session found, clearing auth data');
         clearAllAuthData();
         return;
       }
 
+      console.log('Calling supabase.auth.signOut()...');
       const { error } = await supabase.auth.signOut();
       if (error) {
+        console.error('SignOut error:', error);
         if (
           error.message?.includes("session_not_found") ||
           error.code === "session_not_found"
@@ -178,7 +218,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         throw error;
       }
+      
+      console.log('SignOut successful, clearing auth data');
+      clearAllAuthData();
     } catch (error: any) {
+      console.error('Exception during signOut:', error);
       if (
         error.message?.includes("session_not_found") ||
         error.code === "session_not_found"
@@ -191,6 +235,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const clearAllAuthData = () => {
+    console.log('Clearing all auth data...');
     setSession(null);
     setUser(null);
     setIsNewUser(false);
@@ -207,6 +252,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           document.cookie =
             name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
         });
+        console.log('Auth data cleared successfully');
       } catch (error) {
         console.error("Error clearing auth data:", error);
       }
@@ -230,7 +276,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         session,
         loading,
         isNewUser,
-        signInWithMagicLink,
+        signUp,
+        signIn,
         signOut,
         signInWithGoogle,
       }}

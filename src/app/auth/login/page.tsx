@@ -1,162 +1,142 @@
 "use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Mail, TreePine } from "lucide-react";
+import { useAuth } from "@/app/auth/AuthProvider";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
-import { useAuth } from "../AuthProvider";
-
-const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.endsWith("@stanford.edu");
-};
-
-const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>]/g, "").substring(0, 255);
-};
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
+  const { signIn, loading, user } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { signInWithMagicLink, signInWithGoogle } = useAuth();
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleMagicLinkLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const sanitizedEmail = sanitizeInput(email);
-
-    if (!validateEmail(sanitizedEmail)) {
-      toast.error("Please use a valid Stanford email address (@stanford.edu)");
-      setLoading(false);
-      return;
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (user) {
+      router.replace("/");
     }
+  }, [user, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      await signInWithMagicLink(sanitizedEmail, false);
-      setEmailSent(true);
-      toast.success("Check your email for a magic link to sign in!");
-    } catch (err: any) {
-      console.error("Magic link error:", err);
-      setError(err.message || "An error occurred while sending the magic link");
-      toast.error(err.message || "Failed to send magic link");
+      await signIn(email, password);
+      toast.success("Welcome back!");
+      router.push("/");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.message || "Failed to sign in. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const errorFromUrl = searchParams.get("error");
+  if (loading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-12 h-12 flex items-center justify-center animate-pulse">
+            <Image src="/logo.png" alt="TreeMatch" width={32} height={32} className="w-8 h-8" />
+          </div>
+          <p className="text-sm text-gray-500">{user ? "Redirecting..." : "Loading..."}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-            <TreePine className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome to TreeMatch
-          </h1>
-          <p className="text-muted-foreground">
-            Connect with Stanford students and build together
-          </p>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center">
+          <Image src="/logo.png" alt="TreeMatch" width={64} height={64} />
         </div>
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+          Sign in to TreeMatch
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Or{" "}
+          <Link
+            href="/auth/signup"
+            className="font-medium text-stanford-cardinal hover:text-stanford-gold"
+          >
+            create a new account
+          </Link>
+        </p>
+      </div>
 
-        <div className="space-y-6">
-          {(error || errorFromUrl) && (
-            <Alert variant="destructive">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>{error || errorFromUrl}</AlertDescription>
-            </Alert>
-          )}
-
-          {emailSent ? (
-            <Card>
-              <CardContent className="p-6 text-center space-y-4">
-                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Check your email</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We've sent a magic link to <strong>{email}</strong>. Click
-                    the link in your email to sign in.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setEmailSent(false);
-                    setEmail("");
-                  }}
-                  className="w-full"
-                >
-                  Use a different email
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <form onSubmit={handleMagicLinkLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email address
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your.email@stanford.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-12"
-                    required
-                    maxLength={255}
-                  />
-                </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Stanford Email
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@stanford.edu"
+                  className="block w-full"
+                />
               </div>
+            </div>
 
+            <div>
+              <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </Label>
+              <div className="mt-1 relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div>
               <Button
                 type="submit"
-                className="w-full h-12 text-sm font-medium"
-                disabled={loading}
+                disabled={isSubmitting}
+                className="w-full bg-stanford-cardinal hover:bg-stanford-gold"
               >
-                {loading ? "Sending magic link..." : "Send magic link"}
+                {isSubmitting ? "Signing in..." : "Sign in"}
               </Button>
-            </form>
-          )}
-
-          <div className="text-center space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Sign up
-              </Link>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              New here?{" "}
-              <Link
-                href="/edit"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Start with our quick setup
-              </Link>
-            </p>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

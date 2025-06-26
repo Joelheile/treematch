@@ -28,7 +28,7 @@ export default function OnboardingLogic() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const { user, signInWithMagicLink } = useAuth();
+  const { user } = useAuth();
   const { student, isLoading: studentLoading } = useCurrentStudent();
   const { data: allSkills = [], isLoading: skillsLoading } = useSkills();
 
@@ -74,6 +74,14 @@ export default function OnboardingLogic() {
   } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [tempAvatarPath, setTempAvatarPath] = useState<string>("");
+
+  // Redirect already onboarded users to home
+  useEffect(() => {
+    if (user && student && !studentLoading && student.isOnboarded) {
+      router.push("/");
+      return;
+    }
+  }, [user, student, studentLoading, router]);
 
   useEffect(() => {
     if (student && !studentLoading) {
@@ -197,26 +205,15 @@ export default function OnboardingLogic() {
     }
   }, [formData, tempAvatarPath, studentLoading]);
 
-  const steps = user
-    ? [
-        { number: 1, title: "Welcome", subtitle: "Basic Information" },
-        { number: 2, title: "Skills", subtitle: "Your Expertise" },
-        { number: 3, title: "Courses", subtitle: "Your Academic Background" },
-        { number: 4, title: "Projects", subtitle: "What You're Working On" },
-        { number: 5, title: "Goals", subtitle: "Your Aspirations" },
-        { number: 6, title: "Connect", subtitle: "Social Links" },
-        { number: 7, title: "Photo", subtitle: "Profile Picture" },
-      ]
-    : [
-        { number: 1, title: "Welcome", subtitle: "Basic Information" },
-        { number: 2, title: "Skills", subtitle: "Your Expertise" },
-        { number: 3, title: "Courses", subtitle: "Your Academic Background" },
-        { number: 4, title: "Projects", subtitle: "What You're Working On" },
-        { number: 5, title: "Goals", subtitle: "Your Aspirations" },
-        { number: 6, title: "Connect", subtitle: "Social Links" },
-        { number: 7, title: "Photo", subtitle: "Profile Picture" },
-        { number: 8, title: "Email", subtitle: "Complete Your Profile" },
-      ];
+  const steps = [
+    { number: 1, title: "Welcome", subtitle: "Basic Information" },
+    { number: 2, title: "Skills", subtitle: "Your Expertise" },
+    { number: 3, title: "Courses", subtitle: "Your Academic Background" },
+    { number: 4, title: "Projects", subtitle: "What You're Working On" },
+    { number: 5, title: "Goals", subtitle: "Your Aspirations" },
+    { number: 6, title: "Connect", subtitle: "Social Links" },
+    { number: 7, title: "Photo", subtitle: "Profile Picture" },
+  ];
 
   const countrySuggestions = countriesData
     .filter((country) =>
@@ -390,14 +387,9 @@ export default function OnboardingLogic() {
       };
       OnboardingStorage.save(onboardingData);
 
-      if (formData.email) {
-        await signInWithMagicLink(formData.email, true);
-        toast.success(
-          "Check your email for a magic link to complete your signup!"
-        );
-      } else {
-        toast.error("Email is required to complete signup");
-      }
+      // For unauthenticated users, redirect to signup page
+      toast.success("Profile saved! Please create an account to continue.");
+      router.push("/auth/signup");
     } catch (error) {
       toast.error("Failed to save profile. Please try again.");
     } finally {
@@ -411,67 +403,44 @@ export default function OnboardingLogic() {
     updateStudent,
     updateStudentSkills,
     router,
-    signInWithMagicLink,
   ]);
 
-  const handleEmailMagicLink = useCallback(async () => {
-    if (!formData.email) {
-      toast.error("Please enter your email address");
-      return;
-    }
+  const handleCreateAccount = useCallback(async () => {
+    const onboardingData: OnboardingData = {
+      name: formData.name,
+      country: formData.country,
+      university: formData.university,
+      phoneNumber: formData.phoneNumber,
+      profileImage: formData.profileImage,
+      skillIds: formData.skillIds,
+      courses: formData.courses,
+      summerGoals: formData.summerGoals,
+      currentProject: formData.currentProject,
+      linkedinUrl: formData.linkedinUrl,
+      instagramHandle: formData.instagramHandle,
+      twitterHandle: formData.twitterHandle,
+      githubUsername: formData.githubUsername,
+      websiteUrl: formData.websiteUrl,
+      tempAvatarPath,
+      icon: formData.icon,
+      email: formData.email,
+    };
 
-    if (!formData.email.endsWith("@stanford.edu")) {
-      toast.error("Please use your Stanford email address (@stanford.edu)");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const onboardingData: OnboardingData = {
-        name: formData.name,
-        country: formData.country,
-        university: formData.university,
-        phoneNumber: formData.phoneNumber,
-        profileImage: formData.profileImage,
-        skillIds: formData.skillIds,
-        courses: formData.courses,
-        summerGoals: formData.summerGoals,
-        currentProject: formData.currentProject,
-        linkedinUrl: formData.linkedinUrl,
-        instagramHandle: formData.instagramHandle,
-        twitterHandle: formData.twitterHandle,
-        githubUsername: formData.githubUsername,
-        websiteUrl: formData.websiteUrl,
-        tempAvatarPath,
-        icon: formData.icon,
-        email: formData.email,
-      };
-
-      OnboardingStorage.save(onboardingData);
-
-      await signInWithMagicLink(formData.email, true);
-      toast.success(
-        "Check your email for a magic link to complete your signup!"
-      );
-    } catch (error) {
-      console.error("Failed to send magic link:", error);
-      toast.error("Failed to send magic link. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [formData, tempAvatarPath, signInWithMagicLink, setIsSubmitting]);
+    OnboardingStorage.save(onboardingData);
+    toast.success("Profile saved! Please create an account to continue.");
+    router.push("/auth/signup");
+  }, [formData, tempAvatarPath, router]);
 
   const handleNext = useCallback(() => {
-    const maxStep = user ? 7 : 8;
+    const maxStep = 7;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     } else if (user && currentStep === 7) {
       handleCompleteProfile();
-    } else if (!user && currentStep === 8) {
-      handleEmailMagicLink();
+    } else if (!user && currentStep === 7) {
+      handleCreateAccount();
     }
-  }, [currentStep, user, handleCompleteProfile, handleEmailMagicLink]);
+  }, [currentStep, user, handleCompleteProfile, handleCreateAccount]);
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -500,12 +469,6 @@ export default function OnboardingLogic() {
         return true;
       case 7:
         return formData.profileImage.trim() !== "" && !isUploadingImage;
-      case 8:
-        return (
-          !user &&
-          formData.email.trim() !== "" &&
-          formData.email.endsWith("@stanford.edu")
-        );
       default:
         return false;
     }
@@ -586,7 +549,7 @@ export default function OnboardingLogic() {
       setSuggestedSkill={setSuggestedSkill}
       handleNext={handleNext}
       handleBack={handleBack}
-      handleEmailMagicLink={handleEmailMagicLink}
+      handleCreateAccount={handleCreateAccount}
       setShowCountrySuggestions={setShowCountrySuggestions}
     />
   );
