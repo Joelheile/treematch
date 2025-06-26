@@ -25,7 +25,6 @@ const mockStudent: StudentWithSkills = {
   name: "John Doe",
   email: "john@example.com",
   country: "USA",
-  current_project: "Building a social media app",
   coolest_thing: "Created an AI chatbot",
   profile_image: "https://example.com/profile.jpg",
   linkedin: "https://linkedin.com/in/johndoe",
@@ -74,7 +73,6 @@ describe("StudentCard", () => {
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("USA")).toBeInTheDocument();
-    expect(screen.getByText("Building a social media app")).toBeInTheDocument();
     expect(screen.getByText("Created an AI chatbot")).toBeInTheDocument();
   });
 
@@ -119,7 +117,6 @@ describe("StudentCard", () => {
       name: null,
       email: "minimal@example.com",
       country: null,
-      current_project: null,
       coolest_thing: null,
       profile_image: null,
       linkedin: null,
@@ -170,7 +167,7 @@ describe("StudentCard", () => {
 
   it("should not display current project section if student has none", () => {
     const { student: mockStudentWithoutProject } = createMockStudent({
-      current_project: null,
+      coolest_thing: null,
     });
     
     render(

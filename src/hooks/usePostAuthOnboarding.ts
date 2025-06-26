@@ -12,51 +12,55 @@ export const usePostAuthOnboarding = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const processOnboardingData = async () => {
-      if (authLoading || !user?.email || hasProcessed || isProcessing) {
-        return
-      }
-
-      const onboardingData = OnboardingStorage.load()
-      if (!onboardingData) {
-        return
-      }
-
-      if (OnboardingStorage.isExpired()) {
-        OnboardingStorage.clear()
-        return
-      }
-      setIsProcessing(true)
-      
-      try {
-        const result = await onboardingService.saveOnboardingDataToDatabase(
-          onboardingData,
-          user.email
-        )
-
-        if (result.error) {
-          toast.error(`Failed to save your profile: ${result.error}`)
-        } else {
-          toast.success('Welcome! Your profile has been created successfully. 🎉')
-          
-          OnboardingStorage.clear()
-          
-          setTimeout(() => {
-            router.push('/')
-          }, 1500)
+    if (authLoading) return;
+    if (!user?.email || hasProcessed || isProcessing) return;
+    const onboardingData = OnboardingStorage.load();
+    if (onboardingData && !OnboardingStorage.isExpired()) {
+      setIsProcessing(true);
+      (async function processOnboarding() {
+        try {
+          const result = await onboardingService.saveOnboardingDataToDatabase(
+            onboardingData,
+            user.email
+          );
+          if (result.error) {
+            toast.error(`Failed to save your profile: ${result.error}`);
+          } else {
+            toast.success('Welcome! Your profile has been created successfully. 🎉');
+            OnboardingStorage.clear();
+            setTimeout(() => {
+              router.push('/');
+            }, 1500);
+          }
+          setHasProcessed(true);
+        } catch (error) {
+          toast.error('An unexpected error occurred while setting up your profile.');
+        } finally {
+          setIsProcessing(false);
         }
-        
-        setHasProcessed(true)
-      } catch (error) {
-        toast.error('An unexpected error occurred while setting up your profile.')
-      } finally {
-        setIsProcessing(false)
-      }
+      })();
+      return;
     }
-
-    const timer = setTimeout(processOnboardingData, 100)
-    return () => clearTimeout(timer)
-  }, [user, authLoading, hasProcessed, isProcessing, router])
+    // If no onboarding data, check DB profile
+    (async function checkDbProfile() {
+      setIsProcessing(true);
+      try {
+        const { data: student } = await onboardingService.getStudentByEmail(user.email);
+        if (!student || !student.isOnboarded || !student.name || !student.country || !student.university || !student.phone_number) {
+          // Incomplete profile: show onboarding UI (handled by OnboardingLogic)
+          setHasProcessed(false);
+        } else {
+          // Complete profile: redirect to main app
+          router.push('/');
+        }
+      } catch (error) {
+        // If error, let user try onboarding again
+        setHasProcessed(false);
+      } finally {
+        setIsProcessing(false);
+      }
+    })();
+  }, [user, authLoading, hasProcessed, isProcessing, router]);
 
   return {
     isProcessing,

@@ -176,25 +176,6 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col space-y-3 sm:space-y-4 px-4 sm:px-6">
-          {/* What's their thing */}
-          {student.current_project && (
-            <div className="text-left">
-              <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                What's their thing:
-              </h4>
-              <p className="text-sm text-gray-600 line-clamp-2">
-                {student.current_project}
-              </p>
-            </div>
-          )}
-
-          {/* Spacer */}
-          {(student.current_project ||
-            student.coolest_thing ||
-            (student as any).goals) && (
-            <div className="border-t border-gray-100 my-3"></div>
-          )}
-
           {/* Coolest Thing */}
           {student.coolest_thing && (
             <div className="text-left">
@@ -206,12 +187,10 @@ export const StudentCard = ({ student }: StudentCardProps) => {
               </p>
             </div>
           )}
-
           {/* Spacer */}
           {student.coolest_thing && (student as any).goals && (
             <div className="border-t border-gray-100 my-3"></div>
           )}
-
           {/* Summer Goals */}
           {(student as any).goals && (
             <div>
@@ -223,10 +202,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
               </p>
             </div>
           )}
-
-          {/* Spacer to push content to bottom */}
           <div className="flex-1"></div>
-
           {/* Skills at bottom */}
           {student.skills && student.skills.length > 0 && (
             <div className="mt-auto">

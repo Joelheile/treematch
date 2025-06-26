@@ -216,23 +216,6 @@ export const StudentDetailPopup = ({
             </div>
           </div>
 
-          {/* What's their thing */}
-          {student.current_project && (
-            <div className="text-left mb-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                What's their thing:
-              </h4>
-              <p className="text-sm text-gray-600">{student.current_project}</p>
-            </div>
-          )}
-
-          {/* Spacer */}
-          {(student.current_project ||
-            student.coolest_thing ||
-            student.goals) && (
-            <div className="border-t border-gray-100 my-4"></div>
-          )}
-
           {/* Coolest Thing */}
           {student.coolest_thing && (
             <div className="text-left mb-4">
@@ -242,12 +225,10 @@ export const StudentDetailPopup = ({
               <p className="text-sm text-gray-600">{student.coolest_thing}</p>
             </div>
           )}
-
           {/* Spacer */}
           {student.coolest_thing && student.goals && (
             <div className="border-t border-gray-100 my-4"></div>
           )}
-
           {/* Summer Goals */}
           {student.goals && (
             <div className="mb-4">

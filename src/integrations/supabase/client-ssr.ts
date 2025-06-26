@@ -13,6 +13,11 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   );
 }
 
+let client: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
 export const createClient = () => {
-  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
-} 
+  if (!client) {
+    client = createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return client;
+}; 
