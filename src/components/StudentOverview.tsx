@@ -283,7 +283,7 @@ export const StudentOverview = () => {
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search students, skills, projects..."
+            placeholder="Search students, skills, interests..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setSearchFocused(true)}

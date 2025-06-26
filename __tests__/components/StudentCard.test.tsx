@@ -136,7 +136,7 @@ describe("StudentCard", () => {
     render(<StudentCard student={minimalStudent} />);
 
     expect(screen.getByText("Unknown")).toBeInTheDocument();
-    expect(screen.queryByText("Current Project")).not.toBeInTheDocument();
+    expect(screen.queryByText("What's their thing")).not.toBeInTheDocument();
     expect(screen.queryByText("Skills")).not.toBeInTheDocument();
     expect(screen.queryByText("Looking For")).not.toBeInTheDocument();
   });
@@ -166,5 +166,17 @@ describe("StudentCard", () => {
     expect(
       screen.queryByTestId("student-detail-popup")
     ).not.toBeInTheDocument();
+  });
+
+  it("should not display current project section if student has none", () => {
+    const { student: mockStudentWithoutProject } = createMockStudent({
+      current_project: null,
+    });
+    
+    render(
+      <StudentCard student={mockStudentWithoutProject as StudentWithSkills} />
+    );
+    
+    expect(screen.queryByText("What's their thing")).not.toBeInTheDocument();
   });
 });

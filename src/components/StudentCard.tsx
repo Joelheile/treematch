@@ -176,11 +176,11 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col space-y-3 sm:space-y-4 px-4 sm:px-6">
-          {/* Current Project */}
+          {/* What's their thing */}
           {student.current_project && (
             <div className="text-left">
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                Excited About:
+                What's their thing:
               </h4>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {student.current_project}
