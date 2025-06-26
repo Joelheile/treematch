@@ -189,7 +189,9 @@ export default function OnboardingLogic() {
           skillIds: [...prev.skillIds, newSkill.id],
         }));
         setSuggestedSkill("");
-        toast.success(`Skill "${newSkill.name}" added and selected!`);
+        toast.success(`Skill "${newSkill.name}" is now under review and will be available once approved!`, {
+          duration: 5000,
+        });
       }
     } catch (error) {
       toast.error("Failed to add skill. Please try again.");
