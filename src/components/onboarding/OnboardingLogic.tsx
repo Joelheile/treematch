@@ -76,66 +76,70 @@ export default function OnboardingLogic() {
   const [tempAvatarPath, setTempAvatarPath] = useState<string>("");
 
   useEffect(() => {
-    if (student) {
-      // Get current student's skill IDs from junction table
+    if (student && !studentLoading) {
       const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
-
-      // Get social media from localStorage (not in DB yet)
       const savedData = OnboardingStorage.load();
-
-      setFormData({
-        name: student.name || "",
-        country: student.country || "",
-        university: student.university || "",
-        phoneNumber: student.phone_number || "",
-        profileImage: student.profile_image || "",
-        skillIds: currentSkillIds,
-        courses: student.courses || [],
-        summerGoals: student.goals || "",
-        currentProject: student.current_project || "",
-        linkedinUrl: student.linkedin || "",
-        instagramHandle: student.instagram || "",
-        twitterHandle: student.twitter || "",
-        githubUsername: student.github || "",
-        websiteUrl: student.website || "",
-        icon: student.icon || "",
-        email: user?.email || "",
+      setFormData(prev => {
+        const newFormData = {
+          name: student.name || "",
+          country: student.country || "",
+          university: student.university || "",
+          phoneNumber: student.phone_number || "",
+          profileImage: student.profile_image || "",
+          skillIds: currentSkillIds,
+          courses: student.courses || [],
+          summerGoals: student.goals || "",
+          currentProject: student.current_project || "",
+          linkedinUrl: student.linkedin || "",
+          instagramHandle: student.instagram || "",
+          twitterHandle: student.twitter || "",
+          githubUsername: student.github || "",
+          websiteUrl: student.website || "",
+          icon: student.icon || "",
+          email: user?.email || "",
+        };
+        return JSON.stringify(prev) !== JSON.stringify(newFormData) ? newFormData : prev;
       });
-
       if (student.country) {
         setCountryInput(student.country);
         const matchingCountry = countriesData.find(
-          (country) =>
-            country.name.toLowerCase() === student.country?.toLowerCase()
+          (country) => country.name.toLowerCase() === student.country?.toLowerCase()
         );
         if (matchingCountry) {
           setSelectedCountry(matchingCountry);
         }
       }
-    } else if (!studentLoading) {
+    }
+  }, [student, studentLoading, studentSkills, user]);
+
+  useEffect(() => {
+    if (!student && !studentLoading) {
       const savedData = OnboardingStorage.load();
       if (savedData) {
-        setFormData({
-          name: savedData.name || "",
-          country: savedData.country || "",
-          university: savedData.university || "",
-          phoneNumber: savedData.phoneNumber || "",
-          profileImage: savedData.profileImage || "",
-          skillIds: savedData.skillIds || [],
-          courses: savedData.courses || (savedData as any).courseIds || [],
-          summerGoals: savedData.summerGoals || "",
-          currentProject: savedData.currentProject || "",
-          linkedinUrl: savedData.linkedinUrl || "",
-          instagramHandle: savedData.instagramHandle || "",
-          twitterHandle: savedData.twitterHandle || "",
-          githubUsername: savedData.githubUsername || "",
-          websiteUrl: savedData.websiteUrl || "",
-          icon: savedData.icon || "",
-          email: (savedData as any).email || "",
+        setFormData(prev => {
+          const newFormData = {
+            name: savedData.name || "",
+            country: savedData.country || "",
+            university: savedData.university || "",
+            phoneNumber: savedData.phoneNumber || "",
+            profileImage: savedData.profileImage || "",
+            skillIds: savedData.skillIds || [],
+            courses: savedData.courses || (savedData as any).courseIds || [],
+            summerGoals: savedData.summerGoals || "",
+            currentProject: savedData.currentProject || "",
+            linkedinUrl: savedData.linkedinUrl || "",
+            instagramHandle: savedData.instagramHandle || "",
+            twitterHandle: savedData.twitterHandle || "",
+            githubUsername: savedData.githubUsername || "",
+            websiteUrl: savedData.websiteUrl || "",
+            icon: savedData.icon || "",
+            email: (savedData as any).email || "",
+          };
+          return JSON.stringify(prev) !== JSON.stringify(newFormData) ? newFormData : prev;
         });
       }
     }
-  }, [student, availableSkills, studentLoading, studentSkills]);
+  }, [student, studentLoading]);
 
   const steps = user ? [
     { number: 1, title: "Welcome", subtitle: "Basic Information" },
