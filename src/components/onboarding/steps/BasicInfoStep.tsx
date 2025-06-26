@@ -14,7 +14,16 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface BasicInfoStepProps {
   formData: FormData;
@@ -49,9 +58,14 @@ export default function BasicInfoStep({
   handleNameChange,
   setShowCountrySuggestions,
 }: BasicInfoStepProps) {
+  const isMobile = useIsMobile();
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  
+  const privacyContent = "Your phone number will only be shown to people you've mutually liked.";
+  
   const phonePrivacyTooltip = useMemo(() => (
     <TooltipContent className="max-w-[250px] text-xs sm:text-sm text-center">
-      Your phone number will only be shown to people you&apos;ve mutually liked.
+      {privacyContent}
     </TooltipContent>
   ), []);
 
@@ -145,15 +159,48 @@ export default function BasicInfoStep({
             >
               Phone Number*
             </Label>
-            <TooltipProvider>
-              <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <Info size={14} className="text-gray-400 hover:text-gray-600 transition-colors" />
-                </TooltipTrigger>
-                {phonePrivacyTooltip}
-              </Tooltip>
-            </TooltipProvider>
+            
+            {isMobile ? (
+              <Dialog open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+                <DialogTrigger asChild>
+                  <button 
+                    type="button" 
+                    className="inline-flex items-center justify-center w-6 h-6 -mr-1 touch-manipulation"
+                    aria-label="Phone number privacy information"
+                  >
+                    <Info size={16} className="text-gray-400 hover:text-gray-600 transition-colors" />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="w-[90%] max-w-[320px] p-4 rounded-xl">
+                  <DialogTitle className="text-center text-base font-medium mb-2">Privacy Note</DialogTitle>
+                  <div className="text-center py-2">
+                    <p className="text-sm text-gray-600">{privacyContent}</p>
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <DialogClose asChild>
+                      <Button variant="outline" className="w-full">OK</Button>
+                    </DialogClose>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button" 
+                      className="inline-flex items-center justify-center w-5 h-5"
+                      aria-label="Phone number privacy information"
+                    >
+                      <Info size={14} className="text-gray-400 hover:text-gray-600 transition-colors" />
+                    </button>
+                  </TooltipTrigger>
+                  {phonePrivacyTooltip}
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
+          
           <PhoneInput
             value={formData.phoneNumber}
             onChange={(phone) =>
