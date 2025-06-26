@@ -16,6 +16,19 @@ export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const { student, isOnboarded, isLoading: studentLoading, error } = useCurrentStudent();
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('HomePage Debug:', {
+      user: !!user,
+      userId: user?.id,
+      authLoading,
+      studentLoading,
+      student: !!student,
+      isOnboarded,
+      error: error?.toString()
+    });
+  }, [user, authLoading, studentLoading, student, isOnboarded, error]);
   useEffect(() => {
     setHasOnboardingData(
       OnboardingStorage.exists() && !OnboardingStorage.isExpired()
