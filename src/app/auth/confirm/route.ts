@@ -65,14 +65,24 @@ export async function GET(request: NextRequest) {
     try {
       const supabase = createClient()
 
-      const { error } = await supabase.auth.verifyOtp({
+      console.log('Verify OTP attempt:', { type, token_hash: token_hash.substring(0, 8) + '...' });
+      
+      const { data, error } = await supabase.auth.verifyOtp({
         type,
         token_hash,
       })
       
-      if (!error) {
-        // Check if this is a new user and redirect to /edit if they don't have a profile
-        const { data: { user } } = await supabase.auth.getUser()
+      console.log('Verify OTP result:', { 
+        success: !error, 
+        hasSession: !!data.session,
+        hasUser: !!data.user,
+        error: error?.message 
+      });
+      
+      if (!error && data.session) {
+        // Use the verified user from the OTP response
+        const user = data.user
+        console.log('Verified user:', { id: user?.id, email: user?.email });
         
         if (user) {
           // Check if user has a student profile

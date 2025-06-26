@@ -49,6 +49,17 @@ export default function HomePage() {
           <p className="text-sm text-gray-500">
             {hasOnboardingData ? "Setting up your profile..." : "Loading..."}
           </p>
+          <Button
+            onClick={() => {
+              console.log('Manual refresh triggered');
+              window.location.reload();
+            }}
+            variant="ghost"
+            size="sm"
+            className="mt-4 text-xs"
+          >
+            Taking too long? Click to refresh
+          </Button>
         </div>
       </div>
     );
