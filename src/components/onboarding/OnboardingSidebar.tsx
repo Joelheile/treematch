@@ -33,7 +33,7 @@ export default function OnboardingSidebar({
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <Image
-              src="/icon.png"
+              src="/logo.png"
               alt="TreeMatch"
               width={24}
               height={24}
@@ -71,7 +71,7 @@ export default function OnboardingSidebar({
       <div className="p-6 w-full">
         <div className="flex items-center space-x-3 mb-8">
           <Image
-            src="/icon.png"
+            src="/logo.png"
             alt="TreeMatch"
             width={32}
             height={32}

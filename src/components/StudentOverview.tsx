@@ -735,7 +735,7 @@ export const StudentOverview = () => {
             <div className="flex items-center space-x-3">
               <div className="p-1 rounded-xl">
                 <Image
-                  src="/icon.png"
+                  src="/logo.png"
                   alt="TreeMatch Logo"
                   width={40}
                   height={40}
