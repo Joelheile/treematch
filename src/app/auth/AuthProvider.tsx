@@ -86,9 +86,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initAuth = async () => {
       try {
         console.log('AuthProvider: Starting initial auth...');
-        const { data: { session } } = await supabase.auth.getSession();
         
-        console.log('AuthProvider: Got session:', !!session);
+        // Add timeout to getSession call
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('getSession timeout')), 8000)
+        );
+        
+        const { data: { session }, error: sessionError } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
+        
+        if (sessionError) {
+          console.error('AuthProvider: Session error:', sessionError);
+          setLoading(false);
+          return;
+        }
+        
+        console.log('AuthProvider: Got session:', !!session, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -101,6 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
       } catch (error) {
         console.error("Error during initial auth:", error);
+        console.error("Error details:", error instanceof Error ? error.message : String(error));
         setLoading(false);
       }
     };
