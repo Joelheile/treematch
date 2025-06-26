@@ -27,7 +27,6 @@ import {
   ChevronDown,
   Edit,
   ExternalLink,
-  Filter,
   Github,
   Globe,
   Heart,
@@ -78,9 +77,6 @@ export const StudentOverview = () => {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showCoursesDropdown, setShowCoursesDropdown] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
-  const [sortBy, setSortBy] = useState<
-    "newest" | "alphabetical" | "mostSkills"
-  >("newest");
 
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -135,13 +131,8 @@ export const StudentOverview = () => {
   } = useStudents({
     filters,
     limit: 50,
-    orderBy:
-      sortBy === "newest"
-        ? "created_at"
-        : sortBy === "alphabetical"
-        ? "name"
-        : "created_at",
-    orderDirection: sortBy === "newest" ? "desc" : "asc",
+    orderBy: "created_at",
+    orderDirection: "desc",
   });
 
   // Wrap allStudents in useMemo to avoid dependency issues
@@ -314,42 +305,6 @@ export const StudentOverview = () => {
 
   const renderQuickFilters = () => (
     <div className="flex flex-wrap gap-2 sm:gap-3">
-      {/* Sort button */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-full border border-gray-300 hover:border-gray-400 transition-colors">
-            <Filter className="w-4 h-4 text-gray-600" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700">
-              {sortBy === "newest"
-                ? "Newest"
-                : sortBy === "alphabetical"
-                ? "A-Z"
-                : "Most Skills"}
-            </span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-48 p-2">
-          <div className="space-y-1">
-            {[
-              { value: "newest", label: "Newest First" },
-              { value: "alphabetical", label: "Alphabetical" },
-              { value: "mostSkills", label: "Most Skills" },
-            ].map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setSortBy(option.value as any)}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                  sortBy === option.value
-                    ? "bg-red-50 text-red-700"
-                    : "hover:bg-gray-50"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
 
       {/* Country filter */}
       <Popover open={showCountryDropdown} onOpenChange={setShowCountryDropdown}>
