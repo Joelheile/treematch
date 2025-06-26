@@ -466,7 +466,22 @@ export default function OnboardingLogic() {
     }
   }, [uploadAvatar, user, student, updateStudent, queryClient]);
 
-  if (user && (studentLoading || studentSkillsLoading)) {
+  // Add a timeout for loading state to prevent infinite loading
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
+  useEffect(() => {
+    if (user && (studentLoading || studentSkillsLoading)) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 10000); // 10 second timeout
+      
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [user, studentLoading, studentSkillsLoading]);
+
+  if (user && (studentLoading || studentSkillsLoading) && !loadingTimeout) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -475,6 +490,11 @@ export default function OnboardingLogic() {
         </div>
       </div>
     );
+  }
+  
+  // If loading times out or there's an issue, continue with onboarding
+  if (user && loadingTimeout) {
+    console.warn("Loading timeout reached, proceeding with onboarding");
   }
 
   return (
