@@ -16,10 +16,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isNewUser: boolean;
-  signInWithMagicLink: (
-    email: string,
-    shouldCreateUser?: boolean
-  ) => Promise<void>;
+  signInWithMagicLink: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
 }
@@ -136,10 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [supabase.auth, checkIfNewUser, clearAllAuthData]);
 
-  const signInWithMagicLink = async (
-    email: string,
-    shouldCreateUser: boolean = true
-  ) => {
+  const signInWithMagicLink = async (email: string) => {
     if (!email) {
       throw new Error("Email is required");
     }
@@ -147,7 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
-        shouldCreateUser,
+        shouldCreateUser: true,
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     });
