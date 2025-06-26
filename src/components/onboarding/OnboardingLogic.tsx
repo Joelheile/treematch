@@ -79,7 +79,7 @@ export default function OnboardingLogic() {
     if (student && !studentLoading) {
       const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
       const savedData = OnboardingStorage.load();
-      setFormData(prev => {
+      setFormData((prev) => {
         const newFormData = {
           name: student.name || "",
           country: student.country || "",
@@ -98,19 +98,22 @@ export default function OnboardingLogic() {
           icon: student.icon || "",
           email: user?.email || "",
         };
-        return JSON.stringify(prev) !== JSON.stringify(newFormData) ? newFormData : prev;
+        return JSON.stringify(prev) !== JSON.stringify(newFormData)
+          ? newFormData
+          : prev;
       });
       if (student.country) {
-        console.log('Loading country from student:', student.country);
+        console.log("Loading country from student:", student.country);
         setCountryInput(student.country);
         const matchingCountry = countriesData.find(
-          (country) => country.name.toLowerCase() === student.country?.toLowerCase()
+          (country) =>
+            country.name.toLowerCase() === student.country?.toLowerCase()
         );
-        console.log('Found matching country:', matchingCountry);
+        console.log("Found matching country:", matchingCountry);
         if (matchingCountry) {
           setSelectedCountry(matchingCountry);
         } else {
-          console.log('No matching country found for:', student.country);
+          console.log("No matching country found for:", student.country);
         }
       }
     }
@@ -120,7 +123,7 @@ export default function OnboardingLogic() {
     if (!student && !studentLoading) {
       const savedData = OnboardingStorage.load();
       if (savedData) {
-        setFormData(prev => {
+        setFormData((prev) => {
           const newFormData = {
             name: savedData.name || "",
             country: savedData.country || "",
@@ -139,30 +142,81 @@ export default function OnboardingLogic() {
             icon: savedData.icon || "",
             email: (savedData as any).email || "",
           };
-          return JSON.stringify(prev) !== JSON.stringify(newFormData) ? newFormData : prev;
+          return JSON.stringify(prev) !== JSON.stringify(newFormData)
+            ? newFormData
+            : prev;
         });
+
+        // Also restore country input and selected country state
+        if (savedData.country) {
+          setCountryInput(savedData.country);
+          const matchingCountry = countriesData.find(
+            (country) =>
+              country.name.toLowerCase() === savedData.country?.toLowerCase()
+          );
+          if (matchingCountry) {
+            setSelectedCountry(matchingCountry);
+          }
+        }
       }
     }
   }, [student, studentLoading]);
 
-  const steps = user ? [
-    { number: 1, title: "Welcome", subtitle: "Basic Info" },
-    { number: 2, title: "Skills", subtitle: "Your Expertise" },
-    { number: 3, title: "Courses", subtitle: "Academic Background" },
-    { number: 4, title: "What's your thing?", subtitle: "Share Your Passion" },
-    { number: 5, title: "Goals", subtitle: "Future Aspirations" },
-    { number: 6, title: "Connect", subtitle: "Social Profiles" },
-    { number: 7, title: "Photo", subtitle: "Profile Picture" },
-  ] : [
-    { number: 1, title: "Welcome", subtitle: "Basic Info" },
-    { number: 2, title: "Skills", subtitle: "Your Expertise" },
-    { number: 3, title: "Courses", subtitle: "Academic Background" },
-    { number: 4, title: "What's your thing?", subtitle: "Share Your Passion" },
-    { number: 5, title: "Goals", subtitle: "Future Aspirations" },
-    { number: 6, title: "Connect", subtitle: "Social Profiles" },
-    { number: 7, title: "Photo", subtitle: "Profile Picture" },
-    { number: 8, title: "Email", subtitle: "Complete Profile" },
-  ];
+  // Automatically save form data to localStorage whenever formData changes
+  useEffect(() => {
+    // Only save if we have some meaningful data and not during initial load
+    // Skip saving if we're still loading student data to avoid overwriting loaded data
+    if (
+      !studentLoading &&
+      (formData.name ||
+        formData.country ||
+        formData.university ||
+        formData.phoneNumber)
+    ) {
+      const onboardingData: OnboardingData = {
+        name: formData.name,
+        country: formData.country,
+        university: formData.university,
+        phoneNumber: formData.phoneNumber,
+        profileImage: formData.profileImage,
+        skillIds: formData.skillIds,
+        courses: formData.courses,
+        summerGoals: formData.summerGoals,
+        currentProject: formData.currentProject,
+        linkedinUrl: formData.linkedinUrl,
+        instagramHandle: formData.instagramHandle,
+        twitterHandle: formData.twitterHandle,
+        githubUsername: formData.githubUsername,
+        websiteUrl: formData.websiteUrl,
+        icon: formData.icon,
+        email: formData.email,
+        tempAvatarPath,
+      };
+
+      OnboardingStorage.save(onboardingData);
+    }
+  }, [formData, tempAvatarPath, studentLoading]);
+
+  const steps = user
+    ? [
+        { number: 1, title: "Welcome", subtitle: "Basic Information" },
+        { number: 2, title: "Skills", subtitle: "Your Expertise" },
+        { number: 3, title: "Courses", subtitle: "Your Academic Background" },
+        { number: 4, title: "Projects", subtitle: "What You're Working On" },
+        { number: 5, title: "Goals", subtitle: "Your Aspirations" },
+        { number: 6, title: "Connect", subtitle: "Social Links" },
+        { number: 7, title: "Photo", subtitle: "Profile Picture" },
+      ]
+    : [
+        { number: 1, title: "Welcome", subtitle: "Basic Information" },
+        { number: 2, title: "Skills", subtitle: "Your Expertise" },
+        { number: 3, title: "Courses", subtitle: "Your Academic Background" },
+        { number: 4, title: "Projects", subtitle: "What You're Working On" },
+        { number: 5, title: "Goals", subtitle: "Your Aspirations" },
+        { number: 6, title: "Connect", subtitle: "Social Links" },
+        { number: 7, title: "Photo", subtitle: "Profile Picture" },
+        { number: 8, title: "Email", subtitle: "Complete Your Profile" },
+      ];
 
   const countrySuggestions = countriesData
     .filter((country) =>
@@ -209,9 +263,12 @@ export default function OnboardingLogic() {
           skillIds: [...prev.skillIds, newSkill.id],
         }));
         setSuggestedSkill("");
-        toast.success(`Skill "${newSkill.name}" is now under review and will be available once approved!`, {
-          duration: 5000,
-        });
+        toast.success(
+          `Skill "${newSkill.name}" is now under review and will be available once approved!`,
+          {
+            duration: 5000,
+          }
+        );
       }
     } catch (error) {
       toast.error("Failed to add skill. Please try again.");
@@ -368,7 +425,7 @@ export default function OnboardingLogic() {
       toast.error("Please enter your email address");
       return;
     }
-    
+
     const onboardingData: OnboardingData = {
       name: formData.name,
       country: formData.country,
@@ -388,12 +445,14 @@ export default function OnboardingLogic() {
       icon: formData.icon,
       email: formData.email,
     };
-    
+
     OnboardingStorage.save(onboardingData);
-    
+
     try {
       await signInWithMagicLink(formData.email);
-      toast.success("Check your email for a magic link to complete your signup!");
+      toast.success(
+        "Check your email for a magic link to complete your signup!"
+      );
     } catch (error) {
       toast.error("Failed to send magic link. Please try again.");
     }
@@ -427,7 +486,11 @@ export default function OnboardingLogic() {
       case 7:
         return formData.profileImage.trim() !== "" && !isUploadingImage;
       case 8:
-        return !user && formData.email.trim() !== "" && formData.email.endsWith("@stanford.edu");
+        return (
+          !user &&
+          formData.email.trim() !== "" &&
+          formData.email.endsWith("@stanford.edu")
+        );
       default:
         return false;
     }
