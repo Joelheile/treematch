@@ -51,6 +51,8 @@ export default function BasicInfoStep({
   const [hasPhoneBeenEdited, setHasPhoneBeenEdited] = useState(false);
   const privacyContent = "Your phone number will only be shown to people you've mutually liked.";
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+  const countryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!hasPhoneBeenEdited) return;
@@ -74,6 +76,24 @@ export default function BasicInfoStep({
       }
     };
   }, [formData.phoneNumber, hasPhoneBeenEdited]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        countryDropdownRef.current && 
+        !countryDropdownRef.current.contains(event.target as Node) &&
+        countryInputRef.current && 
+        !countryInputRef.current.contains(event.target as Node)
+      ) {
+        setShowCountrySuggestions(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setShowCountrySuggestions]);
 
   return (
     <div className="space-y-6">
@@ -248,32 +268,46 @@ export default function BasicInfoStep({
             <div className="relative flex-1">
               <Input
                 id="country"
+                ref={countryInputRef}
                 value={countryInput}
-                onChange={(e) => handleCountryInputChange(e.target.value)}
-                onFocus={() =>
-                  setShowCountrySuggestions(countryInput.length > 0)
-                }
-                onBlur={() =>
-                  setTimeout(() => setShowCountrySuggestions(false), 200)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && showCountrySuggestions && countrySuggestions.length > 0) {
-                    e.preventDefault();
-                    handleCountrySelect(countrySuggestions[0]);
+                onChange={(e) => {
+                  handleCountryInputChange(e.target.value);
+                  if (e.target.value.length > 0) {
+                    setShowCountrySuggestions(true);
+                  } else {
+                    setShowCountrySuggestions(false);
+                  }
+                }}
+                onFocus={() => {
+                  if (countryInput.length > 0) {
+                    setShowCountrySuggestions(true);
                   }
                 }}
                 placeholder="Start typing your country..."
                 className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
                 autoComplete="off"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && showCountrySuggestions && countrySuggestions.length > 0) {
+                    e.preventDefault();
+                    handleCountrySelect(countrySuggestions[0]);
+                    setShowCountrySuggestions(false);
+                  }
+                }}
               />
 
               {showCountrySuggestions && countrySuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 sm:max-h-60 overflow-auto">
+                <div 
+                  ref={countryDropdownRef}
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 sm:max-h-60 overflow-auto"
+                >
                   {countrySuggestions.map((country) => (
                     <div
                       key={country.code}
                       className="px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-2 text-sm sm:text-base"
-                      onClick={() => handleCountrySelect(country)}
+                      onClick={() => {
+                        handleCountrySelect(country);
+                        setShowCountrySuggestions(false);
+                      }}
                     >
                       <span className="text-base sm:text-lg">
                         {countryToFlag(country.code)}
