@@ -28,6 +28,30 @@ export default function HomePage() {
       isOnboarded,
       error: error?.toString()
     });
+
+    // Check localStorage for onboarding data
+    if (typeof window !== 'undefined') {
+      const localStorageKeys = Object.keys(localStorage);
+      const onboardingKeys = localStorageKeys.filter(key => 
+        key.includes('onboarding') || key.includes('Onboarding') || key.includes('TreeMatch')
+      );
+      
+      console.log('🗂️ LocalStorage Debug:', {
+        totalKeys: localStorageKeys.length,
+        onboardingKeys,
+        allKeys: localStorageKeys.slice(0, 10) // Show first 10 keys
+      });
+
+      // Check specific onboarding data
+      onboardingKeys.forEach(key => {
+        try {
+          const data = localStorage.getItem(key);
+          console.log(`📦 LocalStorage [${key}]:`, data ? JSON.parse(data) : null);
+        } catch (e) {
+          console.log(`📦 LocalStorage [${key}]:`, localStorage.getItem(key));
+        }
+      });
+    }
   }, [user, authLoading, studentLoading, student, isOnboarded, error]);
   useEffect(() => {
     setHasOnboardingData(
