@@ -221,18 +221,18 @@ export default function BasicInfoStep({
               
             }}
             inputClassName={`h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full ${
-              phoneValidationError ? "border-red-300 focus:border-red-500" : ""
+              phoneValidationError && hasPhoneBeenEdited ? "border-red-300 focus:border-red-500" : ""
             }`}
             className="w-full"
             placeholder="Enter your phone number"
             onBlur={() => {
-              if (formData.phoneNumber.trim() && hasPhoneBeenEdited) {
+              if (hasPhoneBeenEdited && formData.phoneNumber.trim()) {
                 const validation = validatePhoneNumber(formData.phoneNumber);
                 setPhoneValidationError(validation.error || "");
               }
             }}
           />
-          {phoneValidationError && (
+          {phoneValidationError && hasPhoneBeenEdited && (
             <p className="text-red-500 text-sm mt-1">{phoneValidationError}</p>
           )}
         </div>
