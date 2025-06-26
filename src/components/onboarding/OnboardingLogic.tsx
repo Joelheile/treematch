@@ -142,22 +142,22 @@ export default function OnboardingLogic() {
   }, [student, studentLoading]);
 
   const steps = user ? [
-    { number: 1, title: "Welcome", subtitle: "Basic Information" },
+    { number: 1, title: "Welcome", subtitle: "Basic Info" },
     { number: 2, title: "Skills", subtitle: "Your Expertise" },
-    { number: 3, title: "Courses", subtitle: "Your Academic Background" },
-    { number: 4, title: "Projects", subtitle: "What You're Working On" },
-    { number: 5, title: "Goals", subtitle: "Your Aspirations" },
-    { number: 6, title: "Connect", subtitle: "Social Links" },
+    { number: 3, title: "Courses", subtitle: "Academic Background" },
+    { number: 4, title: "What's your thing?", subtitle: "Share Your Passion" },
+    { number: 5, title: "Goals", subtitle: "Future Aspirations" },
+    { number: 6, title: "Connect", subtitle: "Social Profiles" },
     { number: 7, title: "Photo", subtitle: "Profile Picture" },
   ] : [
-    { number: 1, title: "Welcome", subtitle: "Basic Information" },
+    { number: 1, title: "Welcome", subtitle: "Basic Info" },
     { number: 2, title: "Skills", subtitle: "Your Expertise" },
-    { number: 3, title: "Courses", subtitle: "Your Academic Background" },
-    { number: 4, title: "Projects", subtitle: "What You're Working On" },
-    { number: 5, title: "Goals", subtitle: "Your Aspirations" },
-    { number: 6, title: "Connect", subtitle: "Social Links" },
+    { number: 3, title: "Courses", subtitle: "Academic Background" },
+    { number: 4, title: "What's your thing?", subtitle: "Share Your Passion" },
+    { number: 5, title: "Goals", subtitle: "Future Aspirations" },
+    { number: 6, title: "Connect", subtitle: "Social Profiles" },
     { number: 7, title: "Photo", subtitle: "Profile Picture" },
-    { number: 8, title: "Email", subtitle: "Complete Your Profile" },
+    { number: 8, title: "Email", subtitle: "Complete Profile" },
   ];
 
   const countrySuggestions = countriesData

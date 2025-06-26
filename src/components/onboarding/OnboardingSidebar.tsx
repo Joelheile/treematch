@@ -1,7 +1,7 @@
 "use client";
 
 import { Progress } from "@/components/ui/progress";
-import { Briefcase, Check, Target, User, Users } from "lucide-react";
+import { Briefcase, Check, Target, User, Users, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { Step } from "./types";
 
@@ -19,7 +19,7 @@ export default function OnboardingSidebar({
   isMobile = false,
 }: OnboardingSidebarProps) {
   const stepsWithIcons = steps.map((step) => {
-    const icons = [Target, Target, Briefcase, Check, Users, User];
+    const icons = [Target, Sparkles, Briefcase, Check, Users, User];
     return {
       ...step,
       icon: icons[step.number - 1],
