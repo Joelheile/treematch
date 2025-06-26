@@ -1,0 +1,41 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Trigger Vercel Deployment
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Trigger Vercel Deploy
+        run: |
+          echo "Triggering Vercel deployment..."
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.vercel.com/v1/integrations/deploy/prj_PbiRtkKs2otxYxmL4Xb4IT0C2zAA/KEgF46afOP")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n -1)
+          
+          echo "HTTP Status Code: $http_code"
+          echo "Response Body: $body"
+          
+          if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ] || [ "$http_code" -eq 202 ]; then
+            echo "✅ Deployment triggered successfully"
+            echo "Job ID: $(echo "$body" | grep -o '"id":"[^"]*' | cut -d'"' -f4)"
+          else
+            echo "❌ Failed to trigger deployment"
+            exit 1
+          fi
+        
+      - name: Deployment Status
+        run: |
+          echo "Deployment webhook has been triggered."
+          echo "Check your Vercel dashboard for deployment status." 
