@@ -15,8 +15,8 @@ function isRateLimited(tokenHash: string): boolean {
   const record = failedVerifications.get(tokenHash)
   
   if (!record) return false
-  
-  // Reset if outside rate limit window
+   
+  // Reset if outside rate limit  window
   if (now - record.lastAttempt > RATE_LIMIT_WINDOW) {
     failedVerifications.delete(tokenHash)
     return false
