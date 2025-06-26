@@ -449,6 +449,14 @@ export default function OnboardingLogic() {
     }
   }, [formData, tempAvatarPath, signInWithMagicLink]);
 
+  const handleNext = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
+    } else if (currentStep === steps.length) {
+      handleCompleteProfile();
+    }
+  };
+
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
