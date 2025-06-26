@@ -85,15 +85,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const initAuth = async () => {
       try {
+        console.log('AuthProvider: Starting initial auth...');
         const { data: { session } } = await supabase.auth.getSession();
         
+        console.log('AuthProvider: Got session:', !!session);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('AuthProvider: Checking if new user...');
           await checkIfNewUser(session.user.id);
         }
         
+        console.log('AuthProvider: Setting loading to false');
         setLoading(false);
       } catch (error) {
         console.error("Error during initial auth:", error);
@@ -101,7 +105,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    initAuth();
+    // Safeguard: Force loading to false after 10 seconds
+    const loadingTimeout = setTimeout(() => {
+      console.warn('AuthProvider: Force setting loading to false after timeout');
+      setLoading(false);
+    }, 10000);
+
+    initAuth().finally(() => {
+      clearTimeout(loadingTimeout);
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
