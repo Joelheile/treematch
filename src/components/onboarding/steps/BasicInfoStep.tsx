@@ -7,6 +7,14 @@ import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import { Country, FormData } from "../types";
 import { countryToFlag } from "../utils";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+import { useMemo } from "react";
 
 interface BasicInfoStepProps {
   formData: FormData;
@@ -41,6 +49,12 @@ export default function BasicInfoStep({
   handleNameChange,
   setShowCountrySuggestions,
 }: BasicInfoStepProps) {
+  const phonePrivacyTooltip = useMemo(() => (
+    <TooltipContent className="max-w-[250px] text-xs sm:text-sm text-center">
+      Your phone number will only be shown to people you&apos;ve mutually liked.
+    </TooltipContent>
+  ), []);
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -124,12 +138,22 @@ export default function BasicInfoStep({
         </div>
 
         <div>
-          <Label
-            htmlFor="phoneNumber"
-            className="text-sm font-medium text-gray-700 mb-1 block"
-          >
-            Phone Number*
-          </Label>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Label
+              htmlFor="phoneNumber"
+              className="text-sm font-medium text-gray-700 block"
+            >
+              Phone Number*
+            </Label>
+            <TooltipProvider>
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <Info size={14} className="text-gray-400 hover:text-gray-600 transition-colors" />
+                </TooltipTrigger>
+                {phonePrivacyTooltip}
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <PhoneInput
             value={formData.phoneNumber}
             onChange={(phone) =>
