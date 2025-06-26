@@ -16,7 +16,7 @@ function isRateLimited(tokenHash: string): boolean {
   
   if (!record) return false
   
-  // Reset if outside rate limit windoww
+  // Reset if outside rate limit window
   if (now - record.lastAttempt > RATE_LIMIT_WINDOW) {
     failedVerifications.delete(tokenHash)
     return false
