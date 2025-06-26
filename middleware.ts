@@ -29,9 +29,18 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
-  const isOnboardingPage = request.nextUrl.pathname.startsWith('/onboarding')
   const isEditPage = request.nextUrl.pathname === '/edit'
+  const isLogoutPage = request.nextUrl.pathname === '/logout'
   const isPublicPage = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/meet')
+
+  console.log('[Middleware]', {
+    pathname: request.nextUrl.pathname,
+    user: !!user,
+    isAuthPage,
+    isEditPage,
+    isLogoutPage,
+    isPublicPage
+  })
 
   if (!user && !isAuthPage && !isPublicPage) {
     const url = request.nextUrl.clone()
@@ -46,7 +55,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if authenticated user has a complete profile
-  if (user && !isAuthPage && !isEditPage && !isPublicPage) {
+  if (user && !isAuthPage && !isEditPage && !isLogoutPage && !isPublicPage) {
     try {
       const { data: student } = await supabase
         .from('students')

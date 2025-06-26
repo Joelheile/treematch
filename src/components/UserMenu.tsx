@@ -22,10 +22,13 @@ export const UserMenu = () => {
     setLoading(true)
     try {
       await signOut()
+      // Use window.location.href for a full page redirect to ensure clean logout
+      window.location.href = '/auth/login'
     } catch (error: any) {
       console.error('Error signing out:', error)
-    } finally {
+      // Still redirect even if there's an error
       window.location.href = '/auth/login'
+    } finally {
       setLoading(false)
     }
   }
