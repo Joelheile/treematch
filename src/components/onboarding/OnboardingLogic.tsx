@@ -389,12 +389,15 @@ export default function OnboardingLogic() {
         icon: formData.icon,
       };
       OnboardingStorage.save(onboardingData);
-      if (user?.email) {
-        await signInWithMagicLink(user.email);
+
+      if (formData.email) {
+        await signInWithMagicLink(formData.email, true);
+        toast.success(
+          "Check your email for a magic link to complete your signup!"
+        );
+      } else {
+        toast.error("Email is required to complete signup");
       }
-      toast.success(
-        "Check your email for a magic link to complete your signup!"
-      );
     } catch (error) {
       toast.error("Failed to save profile. Please try again.");
     } finally {
@@ -417,45 +420,58 @@ export default function OnboardingLogic() {
       return;
     }
 
-    const onboardingData: OnboardingData = {
-      name: formData.name,
-      country: formData.country,
-      university: formData.university,
-      phoneNumber: formData.phoneNumber,
-      profileImage: formData.profileImage,
-      skillIds: formData.skillIds,
-      courses: formData.courses,
-      summerGoals: formData.summerGoals,
-      currentProject: formData.currentProject,
-      linkedinUrl: formData.linkedinUrl,
-      instagramHandle: formData.instagramHandle,
-      twitterHandle: formData.twitterHandle,
-      githubUsername: formData.githubUsername,
-      websiteUrl: formData.websiteUrl,
-      tempAvatarPath,
-      icon: formData.icon,
-      email: formData.email,
-    };
+    if (!formData.email.endsWith("@stanford.edu")) {
+      toast.error("Please use your Stanford email address (@stanford.edu)");
+      return;
+    }
 
-    OnboardingStorage.save(onboardingData);
+    setIsSubmitting(true);
 
     try {
-      await signInWithMagicLink(formData.email);
+      const onboardingData: OnboardingData = {
+        name: formData.name,
+        country: formData.country,
+        university: formData.university,
+        phoneNumber: formData.phoneNumber,
+        profileImage: formData.profileImage,
+        skillIds: formData.skillIds,
+        courses: formData.courses,
+        summerGoals: formData.summerGoals,
+        currentProject: formData.currentProject,
+        linkedinUrl: formData.linkedinUrl,
+        instagramHandle: formData.instagramHandle,
+        twitterHandle: formData.twitterHandle,
+        githubUsername: formData.githubUsername,
+        websiteUrl: formData.websiteUrl,
+        tempAvatarPath,
+        icon: formData.icon,
+        email: formData.email,
+      };
+
+      OnboardingStorage.save(onboardingData);
+
+      await signInWithMagicLink(formData.email, true);
       toast.success(
         "Check your email for a magic link to complete your signup!"
       );
     } catch (error) {
+      console.error("Failed to send magic link:", error);
       toast.error("Failed to send magic link. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [formData, tempAvatarPath, signInWithMagicLink]);
+  }, [formData, tempAvatarPath, signInWithMagicLink, setIsSubmitting]);
 
-  const handleNext = () => {
-    if (currentStep < steps.length) {
+  const handleNext = useCallback(() => {
+    const maxStep = user ? 7 : 8;
+    if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
-    } else if (currentStep === steps.length) {
+    } else if (user && currentStep === 7) {
       handleCompleteProfile();
+    } else if (!user && currentStep === 8) {
+      handleEmailMagicLink();
     }
-  };
+  }, [currentStep, user, handleCompleteProfile, handleEmailMagicLink]);
 
   const handleBack = () => {
     if (currentStep > 1) {

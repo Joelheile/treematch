@@ -39,7 +39,7 @@ export default function SignupPage() {
     }
 
     try {
-      await signInWithMagicLink(email);
+      await signInWithMagicLink(email, true);
       setSuccess(true);
       toast.success("Check your email for a magic link to sign up!");
     } catch (err: any) {
