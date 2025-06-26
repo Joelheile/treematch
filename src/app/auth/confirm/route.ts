@@ -123,6 +123,9 @@ export async function GET(request: NextRequest) {
         
         // Handle specific OTP errors
         console.error('OTP verification failed:', error)
+        console.error('Full error details:', JSON.stringify(error, null, 2))
+        console.error('Server time:', new Date().toISOString())
+        console.error('Token hash (first 8 chars):', token_hash.substring(0, 8))
         
         if (error.message?.includes('otp_expired') || error.message?.includes('expired')) {
           // Don't retry expired OTPs, redirect with specific error
