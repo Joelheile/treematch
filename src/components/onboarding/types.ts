@@ -49,8 +49,9 @@ export type IconOption = {
 }
 
 export const ICON_OPTIONS: IconOption[] = [
+  { value: 'squirrel', label: 'Squirrel', emoji: '🐿️' },
   { value: 'trophy', label: 'Trophy', emoji: '🏆' },
+  { value: 'goat', label: 'Goat', emoji: '🐐' },
+  { value: 'factory', label: 'Factory', emoji: '🏭' },
   { value: 'turtle', label: 'Turtle', emoji: '🐢' },
-  { value: 'rabbit', label: 'Rabbit', emoji: '🐇' },
-  { value: 'sheep', label: 'Sheep', emoji: '🐑' },
 ] 
