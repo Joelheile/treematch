@@ -85,47 +85,51 @@ export async function GET(request: NextRequest) {
         console.log('Verified user:', { id: user?.id, email: user?.email });
         
         if (user) {
-          // Check if user has a student profile
+          // Check if user has a student profile by email first (handles ID mismatches)
           const { data: student } = await supabase
             .from('students')
-            .select('id, name')
-            .eq('id', user.id)
+            .select('id, name, email')
+            .eq('email', user.email)
             .single()
           
-          // If no student profile exists, create a minimal record and redirect to home
-          // The PostAuthOnboardingProcessor will handle the localStorage data
           if (!student) {
+            // No student profile exists for this email, create a minimal record
             try {
-              // Upsert a minimal student record (handles duplicates gracefully)
-              const { error: upsertError } = await supabase
+              console.log('Creating new student record for:', user.email)
+              const { error: insertError } = await supabase
                 .from('students')
-                .upsert({
+                .insert({
                   id: user.id,
                   email: user.email,
                   name: '', // Will be updated from localStorage by PostAuthOnboardingProcessor
-                  isOnboarded: false,
-                  updated_at: new Date().toISOString()
-                }, {
-                  onConflict: 'email', // Handle conflicts on email column
-                  ignoreDuplicates: false // Update existing records
+                  isOnboarded: false
                 })
               
-              if (upsertError) {
-                console.error('Failed to upsert student record:', upsertError)
+              if (insertError) {
+                console.error('Failed to insert student record:', insertError)
               } else {
-                console.log('Student record upserted successfully')
+                console.log('Student record created successfully')
               }
             } catch (error) {
-              console.error('Exception upserting student record:', error)
+              console.error('Exception creating student record:', error)
             }
             
             // Redirect to home - PostAuthOnboardingProcessor will process localStorage data
             return NextResponse.redirect(new URL('/', request.url))
-          }
-          
-          // If student exists but name is empty, still need onboarding
-          if (!student.name) {
-            return NextResponse.redirect(new URL('/edit', request.url))
+          } else if (student.id !== user.id) {
+            // Student exists with same email but different user ID
+            // Let PostAuthOnboarding handle this case by redirecting to home
+            console.log('Student exists with different ID. Email:', user.email, 'Existing ID:', student.id, 'New ID:', user.id)
+            console.log('Redirecting to home - PostAuthOnboarding will handle data reconciliation')
+            return NextResponse.redirect(new URL('/', request.url))
+          } else {
+            // Student exists with correct email and ID
+            console.log('Student exists with correct ID:', user.id)
+            
+            // If student exists but name is empty, still need onboarding
+            if (!student.name) {
+              return NextResponse.redirect(new URL('/edit', request.url))
+            }
           }
         }
         
