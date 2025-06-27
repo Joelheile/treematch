@@ -125,7 +125,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       clearTimeout(loadingTimeout);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const supabaseForAuth = createClient()
+    const { data: { subscription } } = supabaseForAuth.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -138,7 +139,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const validateSessionPeriodically = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const supabaseForValidation = createClient()
+        const { data: { session }, error } = await supabaseForValidation.auth.getSession();
         if (error || !session) {
           clearAllAuthData();
         }
@@ -153,13 +155,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, [supabase.auth, checkIfNewUser, clearAllAuthData]);
+  }, [checkIfNewUser, clearAllAuthData]);
 
   const signInWithMagicLink = async (email: string) => {
     if (!email) {
       throw new Error("Email is required");
     }
 
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
@@ -175,6 +178,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      const supabase = createClient()
       const {
         data: { session },
         error: sessionError,
@@ -209,6 +213,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
