@@ -1,5 +1,5 @@
 import { useAuth } from "@/app/auth/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@/integrations/supabase/client-ssr";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -14,6 +14,7 @@ export const useStudentLikes = () => {
     queryFn: async (): Promise<string[]> => {
       if (!user?.id) return [];
 
+      const supabase = createClient()
       const { data, error } = await supabase
         .from("student_likes")
         .select("liked_student_id")
@@ -30,6 +31,7 @@ export const useStudentLikes = () => {
       if (!user?.id) throw new Error("User not authenticated");
 
       const isLiked = likedStudentIds.includes(studentId);
+      const supabase = createClient()
 
       if (isLiked) {
         const { error } = await supabase
@@ -79,6 +81,7 @@ export const useStudentLikes = () => {
     const likedByMe = likedStudentIds.includes(studentId);
     if (!likedByMe) return false;
     // Check if student liked current user
+    const supabase = createClient()
     const { data, error } = await supabase
       .from("student_likes")
       .select("liked_student_id")
