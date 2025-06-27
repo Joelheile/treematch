@@ -40,7 +40,7 @@ export default function CoolestThingStep({ formData, setFormData }: CoolestThing
     <div className={`max-w-2xl mx-auto space-y-7 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
       {/* Header */}
       <h2 className="text-3xl font-semibold text-gray-900">
-        What are you most proud of?
+      Whats your thing/story/passion?
       </h2>
 
       {/* Input Area */}

@@ -220,7 +220,7 @@ export const StudentDetailPopup = ({
           {student.coolest_thing && (
             <div className="text-left mb-4">
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                Most Proud Of:
+                What's your thing/story/passion?
               </h4>
               <p className="text-sm text-gray-600 whitespace-pre-wrap">{student.coolest_thing}</p>
             </div>
