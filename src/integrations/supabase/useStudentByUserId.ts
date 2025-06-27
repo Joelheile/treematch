@@ -13,7 +13,6 @@ export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['student-by-user-id', userId],
     queryFn: async (): Promise<ServiceResponse<Student>> => {
-      console.log('🔍 useStudentByUserId: Fetching student for ID:', userId)
       const supabase = createClient()
       
       const { data: studentData, error: studentError } = await supabase
@@ -25,12 +24,10 @@ export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
       if (studentError) {
         if (studentError.code === 'PGRST116') {
           // User ID not found, try to find by email instead
-          console.log('🔄 useStudentByUserId: ID not found, trying to get user email for fallback lookup')
           
           try {
             const { data: { user } } = await supabase.auth.getUser()
             if (user?.email) {
-              console.log('🔍 useStudentByUserId: Fallback lookup by email:', user.email)
               const { data: studentByEmail, error: emailError } = await supabase
                 .from('students')
                 .select('*')
@@ -38,7 +35,6 @@ export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
                 .single()
               
               if (!emailError && studentByEmail) {
-                console.log('✅ useStudentByUserId: Found student by email with different ID:', studentByEmail.id)
                 
                 // Get skills for this student
                 const { data: skillsData, error: skillsError } = await supabase

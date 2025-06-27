@@ -17,6 +17,7 @@ export interface StudentFilters {
   search?: string
   isOnboarded?: boolean
   likedByUserId?: string
+  hasEngr145Team?: boolean
 }
 
 export interface StudentSearchOptions {
@@ -92,6 +93,10 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
           ? query.not('website', 'is', null)
           : query.is('website', null)
       }
+
+      // if (filters.hasEngr145Team !== undefined) {
+      //   query = query.eq('has_engr145_team', filters.hasEngr145Team)
+      // }
 
       if (filters.search) {
         const sanitizedSearch = sanitizeSearchTerm(filters.search)

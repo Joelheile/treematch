@@ -15,6 +15,7 @@ export interface FormData {
   websiteUrl: string;
   icon: string;
   email: string;
+  hasEngr145Team?: boolean;
 }
 
 export interface Skill {

@@ -64,25 +64,15 @@ export async function GET(request: NextRequest) {
 
     try {
       const supabase = createClient()
-
-      console.log('Verify OTP attempt:', { type, token_hash: token_hash.substring(0, 8) + '...' });
       
       const { data, error } = await supabase.auth.verifyOtp({
         type,
         token_hash,
       })
       
-      console.log('Verify OTP result:', { 
-        success: !error, 
-        hasSession: !!data.session,
-        hasUser: !!data.user,
-        error: error?.message 
-      });
-      
       if (!error && data.session) {
         // Use the verified user from the OTP response
         const user = data.user
-        console.log('Verified user:', { id: user?.id, email: user?.email });
         
         if (user) {
           // Check if user has a student profile by email first (handles ID mismatches)
@@ -95,7 +85,6 @@ export async function GET(request: NextRequest) {
           if (!student) {
             // No student profile exists for this email, create a minimal record
             try {
-              console.log('Creating new student record for:', user.email)
               const { error: insertError } = await supabase
                 .from('students')
                 .insert({
@@ -107,8 +96,6 @@ export async function GET(request: NextRequest) {
               
               if (insertError) {
                 console.error('Failed to insert student record:', insertError)
-              } else {
-                console.log('Student record created successfully')
               }
             } catch (error) {
               console.error('Exception creating student record:', error)
@@ -119,17 +106,11 @@ export async function GET(request: NextRequest) {
           } else if (student.id !== user.id) {
             // Student exists with same email but different user ID
             // Let PostAuthOnboarding handle this case by redirecting to home
-            console.log('Student exists with different ID. Email:', user.email, 'Existing ID:', student.id, 'New ID:', user.id)
-            console.log('Redirecting to home - PostAuthOnboarding will handle data reconciliation')
             return NextResponse.redirect(new URL('/', request.url))
-          } else {
-            // Student exists with correct email and ID
-            console.log('Student exists with correct ID:', user.id)
           }
         }
         
         // Always redirect to home - let PostAuthOnboarding and homepage handle routing logic
-        console.log('Confirm route: Redirecting to home')
         return NextResponse.redirect(new URL('/', request.url))
       } else {
         // Record failed verification attempt

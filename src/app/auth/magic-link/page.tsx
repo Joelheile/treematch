@@ -17,7 +17,6 @@ export default function MagicLinkPage() {
       setIsVerifying(true)
       // Redirect to our confirmation route
       const confirmationUrl = `/auth/confirm?token_hash=${tokenHash}&type=${type}`
-      console.log('Redirecting to:', confirmationUrl)
       window.location.href = confirmationUrl
     }
   }
