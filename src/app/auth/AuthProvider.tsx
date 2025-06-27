@@ -87,35 +87,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const supabase = createClient()
         
-        // Remove timeout - just get session directly
+        console.log('🔄 AuthProvider: Initializing auth...')
+        
+        // Get current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('AuthProvider: Session error:', sessionError);
+          console.error('❌ AuthProvider: Session error:', sessionError);
           setLoading(false);
           return;
         }
+        
+        console.log('✅ AuthProvider: Session retrieved:', !!session)
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('👤 AuthProvider: User found:', session.user.email)
           await checkIfNewUser(session.user.id);
         }
         
         setLoading(false);
+        console.log('✅ AuthProvider: Initialization complete')
       } catch (error) {
-        console.error("Error during initial auth:", error);
-        console.error("Error details:", error instanceof Error ? error.message : String(error));
+        console.error("💥 AuthProvider: Error during init:", error);
         setLoading(false);
       }
     };
 
-    // Safeguard: Force loading to false after 10 seconds
+    // Reduced timeout to 5 seconds and better logging
     const loadingTimeout = setTimeout(() => {
-      console.warn('AuthProvider: Force setting loading to false after timeout');
+      console.warn('⏰ AuthProvider: Force setting loading to false after 5s timeout');
       setLoading(false);
-    }, 10000);
+    }, 5000);
 
     initAuth().finally(() => {
       clearTimeout(loadingTimeout);
@@ -123,12 +128,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const supabaseForAuth = createClient()
     const { data: { subscription } } = supabaseForAuth.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 AuthProvider: Auth state change:', event, !!session)
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (event === "SIGNED_IN" && session?.user) {
+        console.log('✅ AuthProvider: User signed in:', session.user.email)
         await checkIfNewUser(session.user.id);
       } else if (event === "SIGNED_OUT") {
+        console.log('👋 AuthProvider: User signed out')
         setIsNewUser(false);
       }
     });
@@ -138,9 +147,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const supabaseForValidation = createClient()
         const { data: { session }, error } = await supabaseForValidation.auth.getSession();
         if (error || !session) {
+          console.log('⚠️ AuthProvider: Session validation failed, clearing auth')
           clearAllAuthData();
         }
       } catch (error) {
+        console.log('💥 AuthProvider: Session validation error, clearing auth')
         clearAllAuthData();
       }
     };

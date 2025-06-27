@@ -51,7 +51,7 @@ export const usePostAuthOnboarding = () => {
       return
     }
 
-    // Add small delay to ensure auth context is fully established
+    // Reduced delay to 200ms since auth is now more stable
     const timeoutId = setTimeout(() => {
       if (executionRef.current) return
       
@@ -59,7 +59,7 @@ export const usePostAuthOnboarding = () => {
       setIsProcessing(true)
 
       handlePostAuthFlow()
-    }, 500) // 500ms delay to ensure auth is stable
+    }, 200) // Reduced from 500ms
 
     return () => clearTimeout(timeoutId)
   }, [user?.email, authLoading, session, pathname, hasProcessed, isProcessing])
@@ -68,10 +68,10 @@ export const usePostAuthOnboarding = () => {
     try {
       console.log('🔄 PostAuthOnboarding: Starting processing for', user?.email)
       
-      // First, check the current database profile with retry logic
+      // Simplified: try to get student data with shorter retry
       let student = null
       let retryCount = 0
-      const maxRetries = 3
+      const maxRetries = 2 // Reduced from 3
       
       while (retryCount < maxRetries && !student) {
         try {
@@ -79,18 +79,18 @@ export const usePostAuthOnboarding = () => {
           student = result.data
           if (!student && retryCount < maxRetries - 1) {
             console.log(`🔄 Student not found, retrying... (${retryCount + 1}/${maxRetries})`)
-            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
+            await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1))) // Shorter delays
           }
         } catch (error) {
           console.error(`💥 Error fetching student (attempt ${retryCount + 1}):`, error)
           if (retryCount < maxRetries - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
+            await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)))
           }
         }
         retryCount++
       }
       
-      // If user has a complete profile in the database, clear localStorage
+      // If user has a complete profile, clear localStorage
       if (student && student.isOnboarded && student.name && student.country && student.university && student.phone_number) {
         console.log('✅ User has complete profile, clearing localStorage')
         if (OnboardingStorage.exists()) {
@@ -121,27 +121,18 @@ export const usePostAuthOnboarding = () => {
           toast.success('Welcome! Your profile has been created successfully. 🎉')
           OnboardingStorage.clear()
           
-          // Invalidate and refetch queries with proper keys
-          const invalidatePromises = [
-            queryClient.invalidateQueries({ queryKey: ['student-by-user-id', user!.id] }),
-            queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] }),
-            queryClient.invalidateQueries({ queryKey: ['students'] }),
-            queryClient.invalidateQueries({ queryKey: ['current-student'] })
-          ]
-          
-          await Promise.all(invalidatePromises)
-          
-          // Force immediate refetch
+          // Simplified cache invalidation
+          await queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] })
           await queryClient.refetchQueries({ queryKey: ['student-by-user-id', user!.id] })
         }
         setHasProcessed(true)
       } else {
         console.log('📝 No localStorage data found - user needs to complete onboarding')
-        setHasProcessed(true) // Mark as processed even if no data to process
+        setHasProcessed(true)
       }
     } catch (error) {
       console.error('💥 PostAuthOnboarding: Error processing:', error)
-      setHasProcessed(true) // Mark as processed to avoid infinite loops
+      setHasProcessed(true)
     } finally {
       setIsProcessing(false)
     }
