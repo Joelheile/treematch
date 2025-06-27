@@ -107,6 +107,7 @@ export type Database = {
           email: string | null
           github: string | null
           goals: string | null
+          has_engr145_team: boolean | null
           icon: string | null
           id: string
           instagram: string | null
@@ -128,6 +129,7 @@ export type Database = {
           email?: string | null
           github?: string | null
           goals?: string | null
+          has_engr145_team?: boolean | null
           icon?: string | null
           id?: string
           instagram?: string | null
@@ -149,6 +151,7 @@ export type Database = {
           email?: string | null
           github?: string | null
           goals?: string | null
+          has_engr145_team?: boolean | null
           icon?: string | null
           id?: string
           instagram?: string | null

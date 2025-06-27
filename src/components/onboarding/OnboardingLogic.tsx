@@ -61,6 +61,7 @@ export default function OnboardingLogic() {
     websiteUrl: "",
     icon: "",
     email: "",
+    hasEngr145Team: false,
   });
   const [countryInput, setCountryInput] = useState("");
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
@@ -153,6 +154,7 @@ export default function OnboardingLogic() {
           websiteUrl: student.website || "",
           icon: student.icon || "",
           email: user.email || "",
+          hasEngr145Team: (student as any).has_engr145_team || false,
         };
         
         setFormData(newFormData);
@@ -214,6 +216,7 @@ export default function OnboardingLogic() {
           websiteUrl: savedData.websiteUrl || "",
           icon: savedData.icon || "",
           email: savedData.email || "",
+          hasEngr145Team: savedData.hasEngr145Team || false,
         });
         if (savedData.country) {
           setCountryInput(savedData.country);
@@ -310,6 +313,7 @@ export default function OnboardingLogic() {
           website: formData.websiteUrl,
           icon: formData.icon,
           isOnboarded: true,
+          has_engr145_team: formData.hasEngr145Team || false,
         },
       });
 
@@ -337,6 +341,8 @@ export default function OnboardingLogic() {
         }
       }
 
+
+      
       OnboardingStorage.clear();
       toast.success("Profile completed successfully!");
       router.push("/");
