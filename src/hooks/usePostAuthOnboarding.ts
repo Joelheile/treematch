@@ -4,6 +4,7 @@ import { OnboardingStorage } from '@/lib/onboarding-storage'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const usePostAuthOnboarding = () => {
   const { user, loading: authLoading } = useAuth()
@@ -12,6 +13,7 @@ export const usePostAuthOnboarding = () => {
   const router = useRouter()
   const pathname = usePathname()
   const executionRef = useRef(false)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     if (authLoading) {
@@ -91,6 +93,12 @@ export const usePostAuthOnboarding = () => {
           } else {
             toast.success('Welcome! Your profile has been created successfully. 🎉');
             OnboardingStorage.clear();
+            
+            // Invalidate React Query cache to refetch student data
+            console.log('🔄 PostAuthOnboarding: Invalidating React Query cache...');
+            queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] });
+            queryClient.invalidateQueries({ queryKey: ['students'] });
+            
             setTimeout(() => {
               router.push('/');
             }, 1500);
