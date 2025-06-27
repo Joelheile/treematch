@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/integrations/supabase/client-ssr";
+import { createClient } from "@/integrations/supabase/client-ssr";
 import { Session, User } from "@supabase/supabase-js";
 import {
   createContext,
@@ -36,12 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
-  // Using singleton supabase client
   const initializedRef = useRef(false);
 
   const checkIfNewUser = useCallback(
     async (userId: string) => {
       try {
+        const supabase = createClient()
         const { data: student } = await supabase
           .from("students")
           .select("id, name")
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsNewUser(true);
       }
     },
-    [supabase]
+    []
   );
 
   const clearAllAuthData = useCallback(() => {
@@ -86,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initAuth = async () => {
       try {
         console.log('AuthProvider: Starting initial auth...');
+        const supabase = createClient()
         
         // Remove timeout - just get session directly
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
