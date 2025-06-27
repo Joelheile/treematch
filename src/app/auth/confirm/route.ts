@@ -70,77 +70,103 @@ export async function GET(request: NextRequest) {
         token_hash,
       })
       
-      if (!error && data.session) {
-        // Use the verified user from the OTP response
+      if (!error && data.session && data.user) {
+        console.log('✅ OTP verification successful for user:', data.user.email)
+        
+        // Create fresh client with the new session for database operations
+        const authenticatedSupabase = createClient()
+        
+        // Set the session explicitly to ensure auth context
+        await authenticatedSupabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        })
+        
         const user = data.user
         
-        if (user) {
-          // Check if user has a student profile by email first (handles ID mismatches)
-          const { data: student } = await supabase
+        try {
+          // Check if student profile exists by email first
+          const { data: existingStudent, error: fetchError } = await authenticatedSupabase
             .from('students')
-            .select('id, name, email')
+            .select('id, name, email, "isOnboarded"')
             .eq('email', user.email)
-            .single()
+            .maybeSingle()
           
-          if (!student) {
-            // No student profile exists for this email, create a minimal record
-            try {
-              const { error: insertError } = await supabase
-                .from('students')
-                .insert({
-                  id: user.id,
-                  email: user.email,
-                  name: '', // Will be updated from localStorage by PostAuthOnboardingProcessor
-                  isOnboarded: false
-                })
-              
-              if (insertError) {
-                console.error('Failed to insert student record:', insertError)
-              }
-            } catch (error) {
-              console.error('Exception creating student record:', error)
-            }
-            
-            // Redirect to home - PostAuthOnboardingProcessor will process localStorage data
-            return NextResponse.redirect(new URL('/', request.url))
-          } else if (student.id !== user.id) {
-            // Student exists with same email but different user ID
-            // Let PostAuthOnboarding handle this case by redirecting to home
-            return NextResponse.redirect(new URL('/', request.url))
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            console.error('Error checking existing student:', fetchError)
           }
+          
+          if (!existingStudent) {
+            // Create new student record with authenticated context
+            console.log('🆕 Creating new student record for:', user.email)
+            const { data: newStudent, error: insertError } = await authenticatedSupabase
+              .from('students')
+              .insert({
+                id: user.id,
+                email: user.email,
+                name: '',
+                isOnboarded: false
+              })
+              .select()
+              .single()
+            
+            if (insertError) {
+              console.error('❌ Failed to create student record:', insertError)
+              // Don't fail the auth flow, just log the error
+            } else {
+              console.log('✅ Successfully created student record:', newStudent.id)
+            }
+          } else if (existingStudent.id !== user.id) {
+            // Student exists with same email but different user ID - update the ID
+            console.log('🔄 Updating student ID for existing email:', user.email)
+            const { error: updateError } = await authenticatedSupabase
+              .from('students')
+              .update({ id: user.id })
+              .eq('email', user.email)
+            
+            if (updateError) {
+              console.error('❌ Failed to update student ID:', updateError)
+            } else {
+              console.log('✅ Successfully updated student ID')
+            }
+          } else {
+            console.log('✅ Student record already exists:', existingStudent.id)
+          }
+        } catch (dbError) {
+          console.error('💥 Database operation failed:', dbError)
+          // Don't fail the auth flow for database errors
         }
         
-        // Always redirect to home - let PostAuthOnboarding and homepage handle routing logic
+        // Always redirect to home - PostAuthOnboarding will handle the rest
         return NextResponse.redirect(new URL('/', request.url))
       } else {
         // Record failed verification attempt
         recordFailedVerification(token_hash)
         
         // Handle specific OTP errors
-        console.error('OTP verification failed:', error)
-        console.error('Full error details:', JSON.stringify(error, null, 2))
+        console.error('❌ OTP verification failed:', error)
         console.error('Server time:', new Date().toISOString())
         console.error('Token hash (first 8 chars):', token_hash.substring(0, 8))
         
         if (error.message?.includes('otp_expired') || error.message?.includes('expired')) {
           // Don't retry expired OTPs, redirect with specific error
-          console.warn(`Expired OTP verification attempt for token: ${token_hash.substring(0, 8)}...`)
+          console.warn(`⏰ Expired OTP for token: ${token_hash.substring(0, 8)}...`)
           return NextResponse.redirect(new URL('/auth/auth-code-error?error=expired', request.url))
         }
         
         if (error.message?.includes('invalid') || error.message?.includes('not_found')) {
           // Invalid or already used OTP
-          console.warn(`Invalid/used OTP verification attempt for token: ${token_hash.substring(0, 8)}...`)
+          console.warn(`❌ Invalid/used OTP for token: ${token_hash.substring(0, 8)}...`)
           return NextResponse.redirect(new URL('/auth/auth-code-error?error=invalid', request.url))
         }
         
         // Log other errors but don't expose details to user
-        console.error('Unexpected OTP verification error:', error)
+        console.error('💥 Unexpected OTP verification error:', error)
         return NextResponse.redirect(new URL('/auth/auth-code-error?error=unknown', request.url))
       }
     } catch (exception) {
       // Catch any unexpected errors/exceptions during verification
-      console.error('Exception during OTP verification:', exception)
+      console.error('💥 Exception during OTP verification:', exception)
       recordFailedVerification(token_hash)
       return NextResponse.redirect(new URL('/auth/auth-code-error?error=exception', request.url))
     }

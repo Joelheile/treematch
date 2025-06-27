@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 
 export const usePostAuthOnboarding = () => {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, session } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [hasProcessed, setHasProcessed] = useState(false)
   const router = useRouter()
@@ -16,83 +16,136 @@ export const usePostAuthOnboarding = () => {
   const queryClient = useQueryClient()
 
   useEffect(() => {
+    // Reset execution ref when user changes
+    if (!user) {
+      executionRef.current = false
+      setHasProcessed(false)
+      setIsProcessing(false)
+      return
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    // Don't run if auth is still loading
     if (authLoading) {
-      return;
+      return
     }
     
-    if (!user?.email) {
-      return;
+    // Don't run if no user or session
+    if (!user?.email || !session) {
+      return
     }
     
+    // Don't run on auth pages or logout
     if (pathname === '/logout' || pathname?.startsWith('/auth/')) {
-      executionRef.current = false;
-      return;
+      return
     }
     
+    // Don't run if already processed or processing
     if (hasProcessed || isProcessing) {
-      return;
+      return
     }
     
+    // Prevent duplicate execution
     if (executionRef.current) {
-      return;
+      return
     }
 
-    executionRef.current = true;
-    setIsProcessing(true);
+    // Add small delay to ensure auth context is fully established
+    const timeoutId = setTimeout(() => {
+      if (executionRef.current) return
+      
+      executionRef.current = true
+      setIsProcessing(true)
 
-    (async function handlePostAuthFlow() {
-      try {
-        // First, always check the current database profile
-        const { data: student } = await onboardingService.getStudentByEmail(user.email);
-        
-        // If user has a complete profile in the database, clear any stale localStorage
-        if (student && student.isOnboarded && student.name && student.country && student.university && student.phone_number) {
-          // Clear any stale localStorage data since DB profile is complete
-          if (OnboardingStorage.exists()) {
-            OnboardingStorage.clear();
+      handlePostAuthFlow()
+    }, 500) // 500ms delay to ensure auth is stable
+
+    return () => clearTimeout(timeoutId)
+  }, [user?.email, authLoading, session, pathname, hasProcessed, isProcessing])
+
+  const handlePostAuthFlow = async () => {
+    try {
+      console.log('🔄 PostAuthOnboarding: Starting processing for', user?.email)
+      
+      // First, check the current database profile with retry logic
+      let student = null
+      let retryCount = 0
+      const maxRetries = 3
+      
+      while (retryCount < maxRetries && !student) {
+        try {
+          const result = await onboardingService.getStudentByEmail(user!.email!)
+          student = result.data
+          if (!student && retryCount < maxRetries - 1) {
+            console.log(`🔄 Student not found, retrying... (${retryCount + 1}/${maxRetries})`)
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
           }
-          setHasProcessed(true);
-          return;
-        }
-        
-        // If profile is incomplete, check if we have localStorage data to process
-        const onboardingData = OnboardingStorage.load();
-        const hasLocalData = !!onboardingData && !OnboardingStorage.isExpired();
-        
-        if (hasLocalData) {
-          const result = await onboardingService.saveOnboardingDataToDatabase(
-            onboardingData,
-            user.email
-          );
-          
-          if (result.error) {
-            toast.error(`Failed to save your profile: ${result.error}`);
-          } else {
-            toast.success('Welcome! Your profile has been created successfully. 🎉');
-            OnboardingStorage.clear();
-            
-            // Invalidate React Query cache to refetch student data
-            queryClient.invalidateQueries({ queryKey: ['student-by-user-id', user.id] });
-            queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] }); // Catch any without userId
-            queryClient.invalidateQueries({ queryKey: ['students'] });
-            
-            // Force immediate refetch
-            queryClient.refetchQueries({ queryKey: ['student-by-user-id', user.id] });
+        } catch (error) {
+          console.error(`💥 Error fetching student (attempt ${retryCount + 1}):`, error)
+          if (retryCount < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
           }
-          setHasProcessed(true);
-        } else {
-          // No localStorage data and incomplete profile - user needs to complete onboarding
-          setHasProcessed(false);
         }
-      } catch (error) {
-        console.error('💥 PostAuthOnboarding: Error processing:', error);
-        // On error, allow user to try onboarding
-        setHasProcessed(false);
-      } finally {
-        setIsProcessing(false);
+        retryCount++
       }
-    })();
-  }, [user?.email, authLoading, pathname, router]);
+      
+      // If user has a complete profile in the database, clear localStorage
+      if (student && student.isOnboarded && student.name && student.country && student.university && student.phone_number) {
+        console.log('✅ User has complete profile, clearing localStorage')
+        if (OnboardingStorage.exists()) {
+          OnboardingStorage.clear()
+        }
+        setHasProcessed(true)
+        return
+      }
+      
+      // Check for localStorage data to process
+      const onboardingData = OnboardingStorage.load()
+      const hasLocalData = !!onboardingData && !OnboardingStorage.isExpired()
+      
+      console.log('📦 LocalStorage check:', { hasLocalData, dataKeys: onboardingData ? Object.keys(onboardingData) : [] })
+      
+      if (hasLocalData) {
+        console.log('🚀 Processing onboarding data from localStorage')
+        const result = await onboardingService.saveOnboardingDataToDatabase(
+          onboardingData,
+          user!.email!
+        )
+        
+        if (result.error) {
+          console.error('❌ Failed to save profile:', result.error)
+          toast.error(`Failed to save your profile: ${result.error}`)
+        } else {
+          console.log('✅ Successfully saved profile to database')
+          toast.success('Welcome! Your profile has been created successfully. 🎉')
+          OnboardingStorage.clear()
+          
+          // Invalidate and refetch queries with proper keys
+          const invalidatePromises = [
+            queryClient.invalidateQueries({ queryKey: ['student-by-user-id', user!.id] }),
+            queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] }),
+            queryClient.invalidateQueries({ queryKey: ['students'] }),
+            queryClient.invalidateQueries({ queryKey: ['current-student'] })
+          ]
+          
+          await Promise.all(invalidatePromises)
+          
+          // Force immediate refetch
+          await queryClient.refetchQueries({ queryKey: ['student-by-user-id', user!.id] })
+        }
+        setHasProcessed(true)
+      } else {
+        console.log('📝 No localStorage data found - user needs to complete onboarding')
+        setHasProcessed(true) // Mark as processed even if no data to process
+      }
+    } catch (error) {
+      console.error('💥 PostAuthOnboarding: Error processing:', error)
+      setHasProcessed(true) // Mark as processed to avoid infinite loops
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   return {
     isProcessing,
