@@ -76,10 +76,8 @@ export const usePostAuthOnboarding = () => {
             queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] }); // Catch any without userId
             queryClient.invalidateQueries({ queryKey: ['students'] });
             
-            // Force immediate refetch and redirect after data is ready
-            queryClient.refetchQueries({ queryKey: ['student-by-user-id', user.id] }).then(() => {
-              router.push('/welcome');
-            });
+            // Force immediate refetch
+            queryClient.refetchQueries({ queryKey: ['student-by-user-id', user.id] });
           }
           setHasProcessed(true);
         } else {
