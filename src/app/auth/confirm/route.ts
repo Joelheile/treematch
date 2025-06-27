@@ -125,16 +125,12 @@ export async function GET(request: NextRequest) {
           } else {
             // Student exists with correct email and ID
             console.log('Student exists with correct ID:', user.id)
-            
-            // If student exists but name is empty, still need onboarding
-            if (!student.name) {
-              return NextResponse.redirect(new URL('/edit', request.url))
-            }
           }
         }
         
-        // Redirect to app after successful verification
-        return NextResponse.redirect(new URL(next, request.url))
+        // Always redirect to home - let PostAuthOnboarding and homepage handle routing logic
+        console.log('Confirm route: Redirecting to home')
+        return NextResponse.redirect(new URL('/', request.url))
       } else {
         // Record failed verification attempt
         recordFailedVerification(token_hash)

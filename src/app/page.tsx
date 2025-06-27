@@ -6,6 +6,7 @@ import { StudentOverview } from "@/components/StudentOverview";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
+import { usePostAuthOnboarding } from "@/hooks/usePostAuthOnboarding";
 import { OnboardingStorage } from "@/lib/onboarding-storage";
 import { TreePine } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ export default function HomePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { student, isOnboarded, isLoading: studentLoading, error } = useCurrentStudent();
+  const { isProcessing: onboardingProcessing, hasProcessed: onboardingProcessed } = usePostAuthOnboarding();
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
 
   // Debug logging
@@ -26,6 +28,8 @@ export default function HomePage() {
       studentLoading,
       student: !!student,
       isOnboarded,
+      onboardingProcessing,
+      onboardingProcessed,
       error: error?.toString()
     });
 
@@ -89,20 +93,23 @@ export default function HomePage() {
     );
   }
 
-  if (studentLoading) {
+  if (studentLoading || onboardingProcessing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
         <div className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
             <TreePine className="w-6 h-6 text-white" />
           </div>
-          <p className="text-sm text-gray-500">Loading...</p>
+          <p className="text-sm text-gray-500">
+            {onboardingProcessing ? "Setting up your profile..." : "Loading..."}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (error || !isOnboarded) {
+  // Only show "not onboarded" if PostAuthOnboarding has completed and user still not onboarded
+  if (error || (!isOnboarded && onboardingProcessed)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
         <div className="text-center space-y-4">
