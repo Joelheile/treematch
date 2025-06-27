@@ -95,13 +95,19 @@ export const usePostAuthOnboarding = () => {
             OnboardingStorage.clear();
             
             // Invalidate React Query cache to refetch student data
-            console.log('🔄 PostAuthOnboarding: Invalidating React Query cache...');
-            queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] });
+            console.log('🔄 PostAuthOnboarding: Invalidating and refetching React Query cache for user:', user.id);
+            queryClient.invalidateQueries({ queryKey: ['student-by-user-id', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['student-by-user-id'] }); // Catch any without userId
             queryClient.invalidateQueries({ queryKey: ['students'] });
             
+            // Force immediate refetch
             setTimeout(() => {
-              router.push('/');
-            }, 1500);
+              queryClient.refetchQueries({ queryKey: ['student-by-user-id', user.id] });
+              console.log('🔄 PostAuthOnboarding: Forced refetch completed');
+            }, 100);
+            
+            // No redirect needed - user is already on correct page
+            console.log('🔄 PostAuthOnboarding: Profile setup complete, staying on current page');
           }
           setHasProcessed(true);
         } else {

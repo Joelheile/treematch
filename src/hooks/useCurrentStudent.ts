@@ -14,19 +14,6 @@ export const useCurrentStudent = () => {
   } = useStudentByUserId(user?.id || '', !!user?.id)
 
   const student = studentResponse?.data
-  
-  // Debug student data
-  if (student) {
-    console.log('🔍 useCurrentStudent: Student data:', {
-      id: student.id,
-      email: student.email,
-      name: student.name,
-      isOnboarded: student.isOnboarded,
-      hasIsOnboardedField: 'isOnboarded' in student,
-      allFields: Object.keys(student)
-    })
-  }
-  
   const isOnboarded = student ? (student.isOnboarded === true) : false
 
   // Safeguard: Force loading to false after 15 seconds
