@@ -79,6 +79,13 @@ export default function OnboardingUI({
   handleEmailMagicLink,
   setShowCountrySuggestions,
 }: OnboardingUIProps) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && isStepValid && !isSubmitting) {
+      e.preventDefault();
+      handleNext();
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -163,7 +170,11 @@ export default function OnboardingUI({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
+    <div 
+      className="min-h-screen bg-gray-50 flex flex-col lg:flex-row" 
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
+    >
       <OnboardingSidebar
         currentStep={currentStep}
         steps={steps}
