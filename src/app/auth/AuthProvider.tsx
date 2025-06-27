@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/integrations/supabase/client-ssr";
+import { supabase } from "@/integrations/supabase/client-ssr";
 import { Session, User } from "@supabase/supabase-js";
 import {
   createContext,
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
-  const supabase = createClient();
+  // Using singleton supabase client
   const initializedRef = useRef(false);
 
   const checkIfNewUser = useCallback(
