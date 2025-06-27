@@ -340,7 +340,7 @@ export default function OnboardingLogic() {
 
       OnboardingStorage.clear();
       toast.success("Profile completed successfully!");
-      router.push("/");
+      router.push("/welcome");
     } catch (error) {
       console.error("Error completing profile:", error);
       toast.error("Failed to complete profile. Please try again.");
