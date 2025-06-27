@@ -19,54 +19,18 @@ export default function HomePage() {
   const { isProcessing: onboardingProcessing, hasProcessed: onboardingProcessed } = usePostAuthOnboarding();
   const [hasOnboardingData, setHasOnboardingData] = useState(false);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('HomePage Debug:', {
-      user: !!user,
-      userId: user?.id,
-      authLoading,
-      studentLoading,
-      student: !!student,
-      isOnboarded,
-      onboardingProcessing,
-      onboardingProcessed,
-      error: error?.toString()
-    });
-
-    // Check localStorage for onboarding data
-    if (typeof window !== 'undefined') {
-      const localStorageKeys = Object.keys(localStorage);
-      const onboardingKeys = localStorageKeys.filter(key => 
-        key.includes('onboarding') || key.includes('Onboarding') || key.includes('TreeMatch')
-      );
-      
-      console.log('🗂️ LocalStorage Debug:', {
-        totalKeys: localStorageKeys.length,
-        onboardingKeys,
-        allKeys: localStorageKeys.slice(0, 10) // Show first 10 keys
-      });
-
-      // Check specific onboarding data
-      onboardingKeys.forEach(key => {
-        try {
-          const data = localStorage.getItem(key);
-          console.log(`📦 LocalStorage [${key}]:`, data ? JSON.parse(data) : null);
-        } catch (e) {
-          console.log(`📦 LocalStorage [${key}]:`, localStorage.getItem(key));
-        }
-      });
-    }
-  }, [user, authLoading, studentLoading, student, isOnboarded, error]);
   useEffect(() => {
     setHasOnboardingData(
       OnboardingStorage.exists() && !OnboardingStorage.isExpired()
     );
   }, []);
 
+  // Show landing page for unauthenticated users
   if (!authLoading && !user) {
     return <LandingPage />;
   }
 
+  // Show loading state while auth is loading
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -78,10 +42,7 @@ export default function HomePage() {
             {hasOnboardingData ? "Setting up your profile..." : "Loading..."}
           </p>
           <Button
-            onClick={() => {
-              console.log('Manual refresh triggered');
-              window.location.reload();
-            }}
+            onClick={() => window.location.reload()}
             variant="ghost"
             size="sm"
             className="mt-4 text-xs"
@@ -93,6 +54,7 @@ export default function HomePage() {
     );
   }
 
+  // Show loading state while student data is loading or onboarding is processing
   if (studentLoading || onboardingProcessing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -101,14 +63,14 @@ export default function HomePage() {
             <TreePine className="w-6 h-6 text-white" />
           </div>
           <p className="text-sm text-gray-500">
-            {onboardingProcessing ? "Setting up your profile..." : "Loading..."}
+            {onboardingProcessing ? "Setting up your profile..." : "Loading your profile..."}
           </p>
         </div>
       </div>
     );
   }
 
-  // Only show "not onboarded" if PostAuthOnboarding has completed and user still not onboarded
+  // Show onboarding prompt if user is not onboarded and post-auth processing is complete
   if (error || (!isOnboarded && onboardingProcessed)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
@@ -133,6 +95,7 @@ export default function HomePage() {
     );
   }
 
+  // Show main app if user is authenticated and onboarded
   return (
     <div className="relative">
       <div className="absolute top-4 right-4 z-10">
