@@ -153,15 +153,13 @@ export class OnboardingService {
             }
           }
         } catch (avatarError) {
-          // Avatar moving failed, using existing image
+          console.error('Avatar moving failed:', avatarError)
         }
       }
       
-      // Retry logic for race conditions
-      let existingStudentResponse = await this.getStudentByEmail(userEmail)
-      
+      const existingStudentResponse = await this.getStudentByEmail(userEmail)
       const studentData = this.convertOnboardingDataToStudent({ ...onboardingData, profileImage }, userEmail)
-      const skillIds = onboardingData.skillIds
+      const skillIds = onboardingData.skillIds || []
       
       if (existingStudentResponse.data) {
         // Update existing student
@@ -170,29 +168,12 @@ export class OnboardingService {
         const result = await this.updateStudent(id, updateData, skillIds)
         return result
       } else {
-        // Try to create new student, but handle race condition
-        try {
-          const result = await this.createStudent(studentData, skillIds)
-          return result
-        } catch (createError: any) {
-          // If student creation fails due to duplicate email, try update instead
-          if (createError.message?.includes('duplicate key value violates unique constraint') || 
-              createError.code === '23505') {
-            console.log('🔄 Race condition detected, retrying as update...')
-            
-            // Re-check for existing student
-            existingStudentResponse = await this.getStudentByEmail(userEmail)
-            if (existingStudentResponse.data) {
-              const { id } = existingStudentResponse.data
-              const { id: _, ...updateData } = studentData
-              const result = await this.updateStudent(id, updateData, skillIds)
-              return result
-            }
-          }
-          throw createError
-        }
+        // Create new student
+        const result = await this.createStudent(studentData, skillIds)
+        return result
       }
     } catch (error) {
+      console.error('saveOnboardingDataToDatabase error:', error)
       return {
         data: null,
         error: `Failed to save profile: ${error instanceof Error ? error.message : 'Unknown error'}`
