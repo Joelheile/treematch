@@ -81,8 +81,13 @@ export default function OnboardingUI({
 }: OnboardingUIProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && isStepValid && !isSubmitting) {
-      e.preventDefault();
-      handleNext();
+      const target = e.target as HTMLElement;
+      const isInInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
+      
+      if (!isInInputField) {
+        e.preventDefault();
+        handleNext();
+      }
     }
   };
 
