@@ -180,7 +180,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
           {student.coolest_thing && (
             <div className="text-left">
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                Most Proud Of:
+                What's your thing/story/passion?
               </h4>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {student.coolest_thing}
