@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from './client-ssr';
+import { supabase } from './client-ssr';
 
 export interface StudentSkill {
   id: string;
@@ -18,7 +18,6 @@ export const useStudentSkills = (studentId?: string) => {
     queryFn: async () => {
       if (!studentId) return [];
       
-      const supabase = createClient();
       const { data, error } = await supabase
         .from('student_skills')
         .select(`
@@ -42,8 +41,6 @@ export const useUpdateStudentSkills = () => {
 
   return useMutation({
     mutationFn: async ({ studentId, skillIds }: { studentId: string; skillIds: string[] }) => {
-      const supabase = createClient();
-
       // Delete existing skills
       const { error: deleteError } = await supabase
         .from('student_skills')

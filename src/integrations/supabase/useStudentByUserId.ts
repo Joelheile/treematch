@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from './client-ssr'
+import { supabase } from './client-ssr'
 import { Tables } from './types'
 
 type Student = Tables<'students'>
@@ -13,7 +13,7 @@ export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['student-by-user-id', userId],
     queryFn: async (): Promise<ServiceResponse<Student>> => {
-      const supabase = createClient()
+      console.log('🔍 useStudentByUserId: Fetching student for ID:', userId)
       
       const { data: studentData, error: studentError } = await supabase
         .from('students')
