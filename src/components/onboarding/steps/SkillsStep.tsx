@@ -46,7 +46,7 @@ export default function SkillsStep({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pt-4">
       <div className="text-center mb-6 flex-shrink-0">
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 px-2">
           What are your skills?
