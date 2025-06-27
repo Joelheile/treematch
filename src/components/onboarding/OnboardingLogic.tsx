@@ -246,14 +246,13 @@ export default function OnboardingLogic() {
       };
       OnboardingStorage.save(onboardingData);
       await signInWithMagicLink(formData.email);
-      toast.success("Check your email for a magic link to complete your signup!");
-      setCurrentStep(1);
+      router.push(`/welcome?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
       toast.error("Failed to send magic link. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, tempAvatarPath, signInWithMagicLink]);
+  }, [formData, tempAvatarPath, signInWithMagicLink, router]);
 
   const steps = user
     ? [
@@ -340,7 +339,7 @@ export default function OnboardingLogic() {
 
       OnboardingStorage.clear();
       toast.success("Profile completed successfully!");
-      router.push("/welcome");
+      router.push("/");
     } catch (error) {
       console.error("Error completing profile:", error);
       toast.error("Failed to complete profile. Please try again.");
