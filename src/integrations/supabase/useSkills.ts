@@ -8,7 +8,6 @@ export const useSkills = () => {
   return useQuery({
     queryKey: ['skills'],
     queryFn: async (): Promise<Skill[]> => {
-      console.log('🔍 useSkills: Fetching skills...')
       const supabase = createClient()
       const { data, error } = await supabase
         .from('skills')
@@ -16,12 +15,7 @@ export const useSkills = () => {
         .eq('is_global', true)
         .order('name')
 
-      if (error) {
-        console.error('❌ useSkills error:', error)
-        throw error
-      }
-      
-      console.log('✅ useSkills: Fetched skills:', data?.length || 0)
+      if (error) throw error
       return data || []
     },
     retry: 3,

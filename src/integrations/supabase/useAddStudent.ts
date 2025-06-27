@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from './client'
+import { supabase } from './client-ssr'
 import { TablesInsert } from './types'
 
 type StudentInsert = TablesInsert<'students'>

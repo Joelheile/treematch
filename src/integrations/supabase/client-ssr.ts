@@ -20,4 +20,7 @@ export const createClient = () => {
     client = createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
   return client;
-}; 
+};
+
+// Export a singleton instance for compatibility with old client pattern
+export const supabase = createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY); 

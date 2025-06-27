@@ -87,16 +87,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log('AuthProvider: Starting initial auth...');
         
-        // Add timeout to getSession call
+        // Get session with longer timeout and better error handling
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('getSession timeout')), 8000)
+          setTimeout(() => reject(new Error('getSession timeout')), 15000)
         );
         
-        const { data: { session }, error: sessionError } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any;
+        let sessionResult;
+        try {
+          sessionResult = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        } catch (timeoutError) {
+          // If timeout, try once more without timeout
+          console.warn('getSession timed out, retrying without timeout...');
+          try {
+            sessionResult = await supabase.auth.getSession();
+          } catch (retryError) {
+            console.error('Retry also failed:', retryError);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        const { data: { session }, error: sessionError } = sessionResult;
         
         if (sessionError) {
           console.error('AuthProvider: Session error:', sessionError);
