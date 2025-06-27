@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from './client'
+import { supabase } from './client-ssr'
 
 export const useDeleteSkill = () => {
   const queryClient = useQueryClient()

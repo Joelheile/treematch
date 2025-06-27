@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import imageCompression from 'browser-image-compression'
-import { supabase } from './client'
+import { supabase } from './client-ssr'
 
 interface UploadAvatarOptions {
   file: File

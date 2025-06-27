@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/auth/AuthProvider'
-import { supabase } from './client'
+import { supabase } from './client-ssr'
 
 export const useDeleteStudent = () => {
   const queryClient = useQueryClient()
