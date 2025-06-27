@@ -46,7 +46,7 @@ export default function SkillsStep({
   };
 
   return (
-    <div className="flex flex-col h-full pt-4">
+    <div className="flex flex-col h-full">
       <div className="text-center mb-6 flex-shrink-0">
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 px-2">
           What are your skills?
@@ -65,7 +65,7 @@ export default function SkillsStep({
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto">
-            <div className="flex flex-wrap gap-2 sm:gap-3 px-1 pb-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3 px-1 pb-4 pt-4">
               {allSkills.map((skill) => {
                 const isSelected = formData.skillIds.includes(skill.id);
                 const isSuggested = !skill.is_global;
