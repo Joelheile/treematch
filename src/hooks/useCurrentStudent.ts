@@ -3,7 +3,7 @@ import { useStudentByUserId } from '@/integrations/supabase/useStudentByUserId'
 import { useEffect, useState } from 'react'
 
 export const useCurrentStudent = () => {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [forcedNotLoading, setForcedNotLoading] = useState(false)
   
   const {
@@ -11,22 +11,22 @@ export const useCurrentStudent = () => {
     isLoading,
     error,
     refetch
-  } = useStudentByUserId(user?.id || '', !!user?.id)
+  } = useStudentByUserId(user?.id || '', !!user?.id && !authLoading)
 
   const student = studentResponse?.data
   const isOnboarded = student ? (student.isOnboarded === true) : false
 
-  // Safeguard: Force loading to false after 15 seconds
+  // Reduced timeout to 8 seconds to coordinate with AuthProvider's 5s timeout
   useEffect(() => {
-    if (isLoading && user?.id) {
+    if (isLoading && user?.id && !authLoading) {
       const timeout = setTimeout(() => {
-        console.warn('useCurrentStudent: Force setting loading to false after timeout')
+        console.warn('⏰ useCurrentStudent: Force setting loading to false after 8s timeout')
         setForcedNotLoading(true)
-      }, 15000)
+      }, 8000)
       
       return () => clearTimeout(timeout)
     }
-  }, [isLoading, user?.id])
+  }, [isLoading, user?.id, authLoading])
 
   // Reset forced state when loading changes
   useEffect(() => {
@@ -35,10 +35,13 @@ export const useCurrentStudent = () => {
     }
   }, [isLoading])
 
+  // Don't show as loading if auth is still loading
+  const actuallyLoading = isLoading && !forcedNotLoading && !authLoading
+
   return {
     student,
     isOnboarded,
-    isLoading: isLoading && !forcedNotLoading,
+    isLoading: actuallyLoading,
     error,
     refetch
   }
