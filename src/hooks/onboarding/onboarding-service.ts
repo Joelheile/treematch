@@ -102,6 +102,8 @@ export class OnboardingService {
     return { data: studentData, error: null }
   }
 
+
+
   async createStudent(student: TablesInsert<'students'>, skillIds: string[] = []) {
     const supabase = createClient()
     const { data, error } = await supabase
