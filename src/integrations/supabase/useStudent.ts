@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from './client-ssr'
+import { supabase } from './client-ssr'
 import { StudentWithSkills } from './useStudents'
 
 export const useStudent = (id: string) => {
   return useQuery({
     queryKey: ['student', id],
     queryFn: async (): Promise<StudentWithSkills> => {
-      const supabase = createClient()
       const { data: studentData, error: studentError } = await supabase
         .from('students')
         .select('*')
