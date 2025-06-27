@@ -17,6 +17,7 @@ export interface OnboardingData {
   email?: string
   completedAt?: string
   tempAvatarPath?: string
+  hasEngr145Team?: boolean
 }
 
 const STORAGE_KEY = 'treematch_onboarding_data'

@@ -51,7 +51,8 @@ export class OnboardingService {
       instagram: this.extractUsername("instagram", onboardingData.instagramHandle),
       twitter: this.extractUsername("twitter", onboardingData.twitterHandle),
       isOnboarded: true,
-    }
+      has_engr145_team: onboardingData.hasEngr145Team || false,
+    } as TablesInsert<'students'>
   }
 
   async createStudentSkills(studentId: string, skillIds: string[]) {

@@ -27,6 +27,7 @@ export interface Student {
   created_at: string | null
   updated_at: string | null
   icon: string | null
+  has_engr145_team: boolean | null
 }
 
 export interface StudentWithSkills extends Omit<Student, 'skills'> {
@@ -44,7 +45,8 @@ export interface Skill {
 export const formatStudentFromDB = (dbStudent: StudentRow, skills: SkillRow[] = []): StudentWithSkills => {
   return {
     ...dbStudent,
-    skills: skills
+    skills: skills,
+    has_engr145_team: (dbStudent as any).has_engr145_team || null
   }
 }
 
@@ -64,7 +66,8 @@ export const formatStudentForDB = (student: Partial<StudentRow>): StudentInsert 
     website: student.website || null,
     instagram: student.instagram || null,
     twitter: student.twitter || null,
-    ...(student.icon !== undefined ? { icon: student.icon } : {})
+    ...(student.icon !== undefined ? { icon: student.icon } : {}),
+    ...((student as any).has_engr145_team !== undefined ? { has_engr145_team: (student as any).has_engr145_team } : {})
   }
 }
 

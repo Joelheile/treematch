@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus } from "lucide-react";
 import { FormData } from "../types";
 
@@ -238,6 +239,11 @@ export default function CoursesStep({
               className="w-full text-lg py-4 pr-14"
               autoFocus
               autoComplete="off"
+              name="course-search"
+              data-form-type="search"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-dashlane-ignore="true"
             />
             {courseInput.trim() && suggestions.length > 0 && (
               <div className="absolute z-10 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -299,6 +305,32 @@ export default function CoursesStep({
             <p className="text-gray-500 text-sm text-center italic">
               No courses added yet. Start by entering a course code above.
             </p>
+          )}
+
+          {formData.courses.includes("ENGR145") && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="engr145-team"
+                  checked={formData.hasEngr145Team || false}
+                  onCheckedChange={(checked) => 
+                    setFormData((prev) => ({
+                      ...prev,
+                      hasEngr145Team: checked === true
+                    }))
+                  }
+                />
+                <label 
+                  htmlFor="engr145-team" 
+                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                >
+                  I already have a team for ENGR145 (Technology Entrepreneurship)
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 ml-6">
+                Check this if you're already part of a team for this course
+              </p>
+            </div>
           )}
         </div>
       </div>

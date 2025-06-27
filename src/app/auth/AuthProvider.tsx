@@ -85,7 +85,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const initAuth = async () => {
       try {
-        console.log('AuthProvider: Starting initial auth...');
         const supabase = createClient()
         
         // Remove timeout - just get session directly
@@ -97,16 +96,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
         
-        console.log('AuthProvider: Got session:', !!session, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('AuthProvider: Checking if new user...');
           await checkIfNewUser(session.user.id);
         }
         
-        console.log('AuthProvider: Setting loading to false');
         setLoading(false);
       } catch (error) {
         console.error("Error during initial auth:", error);
