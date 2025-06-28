@@ -68,4 +68,5 @@ export const ICON_OPTIONS: IconOption[] = [
   { value: 'tennis', label: 'Tennis', emoji: '🎾' },
   { value: 'dino', label: 'Dino', emoji: '🦖' },
   { value: 'lion', label: 'Lion', emoji: '🦁' },
+  { value: 'pridest', label: 'The Pridest', emoji: '🍑💦' }
 ] 
