@@ -19,13 +19,12 @@ interface BasicInfoStepProps {
   showCountrySuggestions: boolean;
   selectedCountry: Country | null;
   countrySuggestions: Country[];
-  firstName: string;
-  lastName: string;
+  name: string;
   user: any;
   student: any;
   handleCountryInputChange: (value: string) => void;
   handleCountrySelect: (country: Country) => void;
-  handleNameChange: (field: "first" | "last", value: string) => void;
+  handleNameChange: (value: string) => void;
   setShowCountrySuggestions: (show: boolean) => void;
 }
 
@@ -36,8 +35,7 @@ export default function BasicInfoStep({
   showCountrySuggestions,
   selectedCountry,
   countrySuggestions,
-  firstName,
-  lastName,
+  name,
   user,
   student,
   handleCountryInputChange,
@@ -97,37 +95,20 @@ export default function BasicInfoStep({
       </div>
 
       <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div>
-            <Label
-              htmlFor="firstName"
-              className="text-sm font-medium text-gray-700 mb-1 block"
-            >
-              First Name*
-            </Label>
-            <Input
-              id="firstName"
-              value={firstName}
-              onChange={(e) => handleNameChange("first", e.target.value)}
-              placeholder="First Name"
-              className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
-            />
-          </div>
-          <div>
-            <Label
-              htmlFor="lastName"
-              className="text-sm font-medium text-gray-700 mb-1 block"
-            >
-              Last Name*
-            </Label>
-            <Input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => handleNameChange("last", e.target.value)}
-              placeholder="Last Name"
-              className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
-            />
-          </div>
+        <div>
+          <Label
+            htmlFor="name"
+            className="text-sm font-medium text-gray-700 mb-1 block"
+          >
+            Full Name*
+          </Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => handleNameChange(e.target.value)}
+            placeholder="Enter your full name"
+            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
+          />
         </div>
 
         <div>
