@@ -57,7 +57,11 @@ const SOCIAL_MEDIA_FILTERS = [
 
 const OTHER_FILTERS = [
   { id: "liked", label: "Liked", icon: Heart },
-  { id: "engr145NoTeam", label: "Looking for ENGR145 Team", icon: Users2 }
+  {
+    id: "engr145NoTeam",
+    label: "Looking for Entrepreneurship Team",
+    icon: Users2,
+  },
 ];
 
 export const StudentOverview = () => {
@@ -333,7 +337,6 @@ export const StudentOverview = () => {
 
   const renderQuickFilters = () => (
     <div className="flex flex-wrap gap-2 sm:gap-3">
-
       {/* Country filter */}
       <Popover open={showCountryDropdown} onOpenChange={setShowCountryDropdown}>
         <PopoverTrigger asChild>
@@ -456,7 +459,7 @@ export const StudentOverview = () => {
 
       {/* Other Quick Filters */}
       {OTHER_FILTERS.map((filter) => {
-        const isActive = 
+        const isActive =
           (filter.id === "liked" && showLiked) ||
           (filter.id === "engr145NoTeam" && showEngr145WithoutTeam);
         const Icon = filter.icon;
@@ -724,8 +727,13 @@ export const StudentOverview = () => {
           {showEngr145WithoutTeam && (
             <div className="flex items-center gap-1 bg-orange-50 text-orange-700 px-3 py-1 rounded-full border border-orange-200">
               <Users2 className="w-3 h-3" />
-              <span className="text-xs sm:text-sm font-medium">Looking for ENGR145 Team</span>
-              <button onClick={() => setShowEngr145WithoutTeam(false)} className="ml-1">
+              <span className="text-xs sm:text-sm font-medium">
+                Looking for Entrepreneurship Team
+              </span>
+              <button
+                onClick={() => setShowEngr145WithoutTeam(false)}
+                className="ml-1"
+              >
                 <X className="w-3 h-3 hover:text-orange-900" />
               </button>
             </div>
@@ -790,9 +798,9 @@ export const StudentOverview = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <a 
-                href="https://coff.ee/treematch" 
-                target="_blank" 
+              <a
+                href="https://coff.ee/treematch"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200"
               >
