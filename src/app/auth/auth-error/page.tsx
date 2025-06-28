@@ -78,7 +78,7 @@ function AuthErrorContent() {
       <div className="max-w-md w-full space-y-8 text-center">
         {/* Logo */}
         <div className="flex justify-center">
-          <Image src="/icon.png" alt="TreeMatch" width={64} height={64} />
+          <Image src="/logo.png" alt="TreeMatch" width={64} height={64} />
         </div>
 
         {/* Error Icon */}
@@ -131,7 +131,7 @@ export default function AuthErrorPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Image src="/icon.png" alt="TreeMatch" width={64} height={64} className="mx-auto mb-4" />
+          <Image src="/logo.png" alt="TreeMatch" width={64} height={64} className="mx-auto mb-4" />
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>

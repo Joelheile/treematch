@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle, TreePine } from "lucide-react";
+import { CheckCircle } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -35,7 +36,7 @@ export default function WelcomePage() {
 
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-            <TreePine className="w-4 h-4 text-green-600" />
+            <Image src="/logo.png" alt="TreeMatch Logo" width={16} height={16} />
             <span>Your profile is ready to go</span>
           </div>
         </div>
