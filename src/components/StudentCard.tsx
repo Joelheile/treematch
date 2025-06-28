@@ -94,14 +94,14 @@ export const StudentCard = ({ student }: StudentCardProps) => {
         <button
           onClick={handleHeartClick}
           disabled={isToggling}
-          className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-200 ${
+          className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-colors duration-75 active:scale-95 ${
             isLiked(student.id)
-              ? "bg-red-500 text-white shadow-lg"
+              ? "bg-red-500 text-white hover:bg-red-600"
               : "bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 border border-gray-200"
-          } ${isToggling ? "opacity-50" : ""}`}
+          } ${isToggling ? "opacity-60" : ""}`}
         >
           <Heart
-            className={`w-4 h-4 ${isLiked(student.id) ? "fill-current" : ""}`}
+            className={`w-4 h-4 transition-transform duration-75 ${isLiked(student.id) ? "fill-current" : ""}`}
           />
         </button>
 

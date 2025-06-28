@@ -35,6 +35,7 @@ import {
   Loader2,
   Search,
   Users,
+  Users2,
   X,
   Zap,
 } from "lucide-react";
@@ -54,7 +55,10 @@ const SOCIAL_MEDIA_FILTERS = [
   { id: "hasWebsite", label: "Website", icon: ExternalLink },
 ];
 
-const OTHER_FILTERS = [{ id: "liked", label: "Liked", icon: Heart }];
+const OTHER_FILTERS = [
+  { id: "liked", label: "Liked", icon: Heart },
+  { id: "engr145NoTeam", label: "Looking for ENGR145 Team", icon: Users2 }
+];
 
 export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -73,6 +77,7 @@ export const StudentOverview = () => {
   });
   const [showSocialDropdown, setShowSocialDropdown] = useState(false);
   const [showLiked, setShowLiked] = useState(false);
+  const [showEngr145WithoutTeam, setShowEngr145WithoutTeam] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
@@ -113,6 +118,7 @@ export const StudentOverview = () => {
     if (socialMediaFilters.hasGithub) result.hasGithub = true;
     if (socialMediaFilters.hasWebsite) result.hasWebsite = true;
     if (showLiked && user?.id) result.likedByUserId = user.id;
+    if (showEngr145WithoutTeam) result.hasEngr145Team = false;
     return result;
   }, [
     searchTerm,
@@ -120,6 +126,7 @@ export const StudentOverview = () => {
     selectedSkillIds,
     socialMediaFilters,
     showLiked,
+    showEngr145WithoutTeam,
     user?.id,
   ]);
 
@@ -143,17 +150,32 @@ export const StudentOverview = () => {
 
   // Client-side course filtering
   const students = useMemo(() => {
-    if (selectedCourses.length === 0) return allStudents;
+    let filteredStudents = allStudents;
 
-    return allStudents.filter((student) => {
-      const studentCourses = (student as any).courses || [];
-      return selectedCourses.some((selectedCourse) =>
-        studentCourses.some((course: string) =>
-          course.toLowerCase().includes(selectedCourse.toLowerCase())
-        )
-      );
-    });
-  }, [allStudents, selectedCourses]);
+    // Apply course filters
+    if (selectedCourses.length > 0) {
+      filteredStudents = filteredStudents.filter((student) => {
+        const studentCourses = (student as any).courses || [];
+        return selectedCourses.some((selectedCourse) =>
+          studentCourses.some((course: string) =>
+            course.toLowerCase().includes(selectedCourse.toLowerCase())
+          )
+        );
+      });
+    }
+
+    // Apply ENGR145 without team filter
+    if (showEngr145WithoutTeam) {
+      filteredStudents = filteredStudents.filter((student) => {
+        const studentCourses = (student as any).courses || [];
+        return studentCourses.some((course: string) =>
+          course.toLowerCase().includes("engr145")
+        );
+      });
+    }
+
+    return filteredStudents;
+  }, [allStudents, selectedCourses, showEngr145WithoutTeam]);
 
   const totalCount = students.length;
 
@@ -216,6 +238,8 @@ export const StudentOverview = () => {
   const handleQuickFilter = (filterType: string) => {
     if (filterType === "liked") {
       setShowLiked((prev) => !prev);
+    } else if (filterType === "engr145NoTeam") {
+      setShowEngr145WithoutTeam((prev) => !prev);
     }
   };
 
@@ -231,6 +255,7 @@ export const StudentOverview = () => {
       hasWebsite: false,
     });
     setShowLiked(false);
+    setShowEngr145WithoutTeam(false);
   };
 
   const hasActiveFilters =
@@ -239,7 +264,8 @@ export const StudentOverview = () => {
     selectedSkills.length > 0 ||
     selectedCourses.length > 0 ||
     Object.values(socialMediaFilters).some(Boolean) ||
-    showLiked;
+    showLiked ||
+    showEngr145WithoutTeam;
 
   const activeSocialFilters =
     Object.values(socialMediaFilters).filter(Boolean).length;
@@ -251,6 +277,7 @@ export const StudentOverview = () => {
       selectedCourses.length > 0,
       activeSocialFilters > 0,
       showLiked,
+      showEngr145WithoutTeam,
     ].filter(Boolean).length +
     selectedSkillIds.length +
     selectedCourses.length +
@@ -429,7 +456,9 @@ export const StudentOverview = () => {
 
       {/* Other Quick Filters */}
       {OTHER_FILTERS.map((filter) => {
-        const isActive = filter.id === "liked" && showLiked;
+        const isActive = 
+          (filter.id === "liked" && showLiked) ||
+          (filter.id === "engr145NoTeam" && showEngr145WithoutTeam);
         const Icon = filter.icon;
 
         return (
@@ -688,6 +717,16 @@ export const StudentOverview = () => {
               <span className="text-xs sm:text-sm font-medium">Liked</span>
               <button onClick={() => setShowLiked(false)} className="ml-1">
                 <X className="w-3 h-3 hover:text-red-900" />
+              </button>
+            </div>
+          )}
+
+          {showEngr145WithoutTeam && (
+            <div className="flex items-center gap-1 bg-orange-50 text-orange-700 px-3 py-1 rounded-full border border-orange-200">
+              <Users2 className="w-3 h-3" />
+              <span className="text-xs sm:text-sm font-medium">Looking for ENGR145 Team</span>
+              <button onClick={() => setShowEngr145WithoutTeam(false)} className="ml-1">
+                <X className="w-3 h-3 hover:text-orange-900" />
               </button>
             </div>
           )}
