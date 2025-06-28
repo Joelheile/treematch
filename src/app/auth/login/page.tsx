@@ -62,9 +62,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-            <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
-          </div>
+          <Image src="/logo.png" alt="TreeMatch Logo" width={48} height={48} className="mx-auto" />
           <h1 className="text-3xl font-bold tracking-tight">
             Welcome to TreeMatch
           </h1>
