@@ -5,21 +5,21 @@ export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; er
     return { isValid: false, error: 'Phone number is required' }
   }
 
-  try {
-    const parsedNumber = parsePhoneNumber(phoneNumber)
-    
-    if (!parsedNumber) {
-      return { isValid: false, error: 'Invalid phone number format' }
-    }
-
-    if (!parsedNumber.isValid()) {
-      return { isValid: false, error: 'Phone number is not valid for the selected country' }
-    }
-
-    return { isValid: true }
-  } catch (error) {
-    return { isValid: false, error: 'Invalid phone number format' }
+  // Basic format validation - more lenient approach
+  const cleanNumber = phoneNumber.replace(/\s+/g, '').replace(/[().-]/g, '')
+  
+  // Check if it starts with + and has reasonable length
+  if (!cleanNumber.startsWith('+') || cleanNumber.length < 8 || cleanNumber.length > 18) {
+    return { isValid: false, error: 'Phone number should start with + and be 8-18 digits' }
   }
+  
+  // Check if it contains only valid characters after cleaning
+  const digitsOnly = cleanNumber.slice(1) // Remove the +
+  if (!/^\d+$/.test(digitsOnly)) {
+    return { isValid: false, error: 'Phone number should contain only digits after country code' }
+  }
+
+  return { isValid: true }
 }
 
 export const isValidPhone = (phoneNumber: string): boolean => {
@@ -27,9 +27,14 @@ export const isValidPhone = (phoneNumber: string): boolean => {
     return false
   }
 
-  try {
-    return isValidPhoneNumber(phoneNumber)
-  } catch (error) {
+  // More lenient validation for step validation
+  const cleanNumber = phoneNumber.replace(/\s+/g, '').replace(/[().-]/g, '')
+  
+  // Just check basic format: starts with +, reasonable length, contains digits
+  if (!cleanNumber.startsWith('+')) {
     return false
   }
+  
+  const digitsOnly = cleanNumber.slice(1)
+  return /^\d+$/.test(digitsOnly) && digitsOnly.length >= 7 && digitsOnly.length <= 17
 } 
