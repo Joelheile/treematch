@@ -1,22 +1,21 @@
-import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js'
-
 export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; error?: string } => {
   if (!phoneNumber || phoneNumber.trim() === '') {
     return { isValid: false, error: 'Phone number is required' }
   }
 
-  // Basic format validation - more lenient approach
-  const cleanNumber = phoneNumber.replace(/\s+/g, '').replace(/[().-]/g, '')
+  const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, '')
   
-  // Check if it starts with + and has reasonable length
-  if (!cleanNumber.startsWith('+') || cleanNumber.length < 8 || cleanNumber.length > 18) {
-    return { isValid: false, error: 'Phone number should start with + and be 8-18 digits' }
+  if (!cleaned.startsWith('+')) {
+    return { isValid: false, error: 'Phone number must start with country code (e.g. +54...)' }
   }
   
-  // Check if it contains only valid characters after cleaning
-  const digitsOnly = cleanNumber.slice(1) // Remove the +
-  if (!/^\d+$/.test(digitsOnly)) {
+  const digits = cleaned.slice(1)
+  if (!/^\d+$/.test(digits)) {
     return { isValid: false, error: 'Phone number should contain only digits after country code' }
+  }
+  
+  if (digits.length < 7 || digits.length > 15) {
+    return { isValid: false, error: 'Phone number should be 7-15 digits long' }
   }
 
   return { isValid: true }
@@ -27,14 +26,12 @@ export const isValidPhone = (phoneNumber: string): boolean => {
     return false
   }
 
-  // More lenient validation for step validation
-  const cleanNumber = phoneNumber.replace(/\s+/g, '').replace(/[().-]/g, '')
+  const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, '')
   
-  // Just check basic format: starts with +, reasonable length, contains digits
-  if (!cleanNumber.startsWith('+')) {
+  if (!cleaned.startsWith('+')) {
     return false
   }
   
-  const digitsOnly = cleanNumber.slice(1)
-  return /^\d+$/.test(digitsOnly) && digitsOnly.length >= 7 && digitsOnly.length <= 17
+  const digits = cleaned.slice(1)
+  return /^\d+$/.test(digits) && digits.length >= 7 && digits.length <= 15
 } 

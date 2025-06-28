@@ -3,8 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
-import { PhoneInput } from "react-international-phone";
-import "react-international-phone/style.css";
+
 import { Country, FormData } from "../types";
 import { countryToFlag } from "../utils";
 import { Info } from "lucide-react";
@@ -182,22 +181,18 @@ export default function BasicInfoStep({
             )}
           </div>
           
-          <PhoneInput
+          <Input
+            id="phoneNumber"
+            type="tel"
             value={formData.phoneNumber}
-            onChange={(phone) => {
+            onChange={(e) => {
               setFormData((prev) => ({
                 ...prev,
-                phoneNumber: phone || "",
+                phoneNumber: e.target.value,
               }));
             }}
-            inputClassName="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
-            className="w-full"
-            placeholder="Enter your phone number"
-            forceDialCode={false}
-            disableCountryGuess={false}
-            hideDropdown={false}
-            showDisabledDialCodeAndPrefix={false}
-            charAfterDialCode=" "
+            placeholder="e.g. +54 9 11 6661 1731"
+            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
           />
         </div>
 
