@@ -557,7 +557,28 @@ export default function OnboardingLogic() {
         }
       }}
       handleImageUpload={handleImageUpload}
-      handleSuggestSkill={() => {}}
+      handleSuggestSkill={() => {
+        if (!suggestedSkill.trim()) return;
+        
+        try {
+          addSkill.mutateAsync({
+            name: suggestedSkill.trim(),
+            is_global: false,
+          }).then(newSkill => {
+            if (newSkill) {
+              setFormData(prev => ({
+                ...prev,
+                skillIds: [...prev.skillIds, newSkill.id]
+              }));
+              setSuggestedSkill("");
+              toast.success(`Added skill: ${newSkill.name}`);
+            }
+          });
+        } catch (error) {
+          console.error("Error adding suggested skill:", error);
+          toast.error("Failed to add skill. Please try again.");
+        }
+      }}
       suggestedSkill={suggestedSkill}
       setSuggestedSkill={setSuggestedSkill}
       handleNext={handleNext}
