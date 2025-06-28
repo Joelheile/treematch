@@ -77,7 +77,7 @@ export default function ProfilePhotoStep({
               </Label>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.HEIC"
                 onChange={handleImageUpload}
                 className="hidden"
                 id="image-upload-change"
@@ -92,7 +92,7 @@ export default function ProfilePhotoStep({
             </div>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.HEIC"
               onChange={handleImageUpload}
               className="hidden"
               id="image-upload"
@@ -110,7 +110,7 @@ export default function ProfilePhotoStep({
               </Button>
             </Label>
             <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4">
-              JPG, PNG or GIF • Max 5MB
+              JPG, PNG, GIF, or HEIC • Max 10MB
             </p>
           </div>
         )}
