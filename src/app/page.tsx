@@ -6,72 +6,40 @@ import { StudentOverview } from "@/components/StudentOverview";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
-import { usePostAuthOnboarding } from "@/hooks/usePostAuthOnboarding";
-import { OnboardingStorage } from "@/lib/onboarding-storage";
 import { TreePine } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
+// Loading component
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
+          <TreePine className="w-6 h-6 text-white" />
+        </div>
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { student, isOnboarded, isLoading: studentLoading, error } = useCurrentStudent();
-  const { isProcessing: onboardingProcessing, hasProcessed: onboardingProcessed } = usePostAuthOnboarding();
-  const [hasOnboardingData, setHasOnboardingData] = useState(false);
 
-  useEffect(() => {
-    setHasOnboardingData(
-      OnboardingStorage.exists() && !OnboardingStorage.isExpired()
-    );
-  }, []);
+  // Show loading state while auth or student data is loading
+  if (authLoading || (user && studentLoading)) {
+    return <LoadingSpinner />;
+  }
 
   // Show landing page for unauthenticated users
-  if (!authLoading && !user) {
+  if (!user) {
     return <LandingPage />;
   }
 
-  // Show loading state while auth is loading
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
-            <TreePine className="w-6 h-6 text-white" />
-          </div>
-          <p className="text-sm text-gray-500">
-            {hasOnboardingData ? "Setting up your profile..." : "Loading..."}
-          </p>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="ghost"
-            size="sm"
-            className="mt-4 text-xs"
-          >
-            Taking too long? Click to refresh
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading state while student data is loading or onboarding is processing
-  if (studentLoading || onboardingProcessing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
-            <TreePine className="w-6 h-6 text-white" />
-          </div>
-          <p className="text-sm text-gray-500">
-            {onboardingProcessing ? "Setting up your profile..." : "Loading your profile..."}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show onboarding prompt if user is not onboarded and post-auth processing is complete
-  if (error || (!isOnboarded && onboardingProcessed)) {
+  // Show onboarding prompt if user is not onboarded
+  if (error || !isOnboarded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
         <div className="text-center space-y-4">

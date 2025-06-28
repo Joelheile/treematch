@@ -5,4 +5,4 @@ export { default as CoolestThingStep } from './CurrentProjectStep';
 export { default as GoalsStep } from './GoalsStep';
 export { default as SocialsStep } from './SocialsStep';
 export { default as ProfilePhotoStep } from './ProfilePhotoStep';
-export { EmailStep } from './EmailStep'; 
+export { default as EmailStep } from './EmailStep'; 

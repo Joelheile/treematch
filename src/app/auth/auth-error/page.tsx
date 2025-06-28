@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Clock, Mail } from "lucide-react";
+import { AlertCircle, Lock, UserX, ShieldX, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -13,59 +13,59 @@ function AuthErrorContent() {
 
   const getErrorDetails = () => {
     switch (error) {
-      case "expired":
+      case "invalid_credentials":
         return {
-          icon: Clock,
-          title: "Magic Link Expired",
-          message: "Your magic link has expired. Magic links are only valid for 1 hour for security reasons.",
-          suggestion: "Please request a new magic link to continue.",
-          actionText: "Get New Magic Link",
-          actionLink: "/auth/signup",
-        };
-      case "invalid":
-        return {
-          icon: AlertCircle,
-          title: "Invalid Link",
-          message: "This magic link is invalid or has already been used.",
-          suggestion: "Please request a new magic link to continue.",
-          actionText: "Get New Magic Link",
-          actionLink: "/auth/signup",
-        };
-      case "rate_limited":
-        return {
-          icon: AlertCircle,
-          title: "Too Many Attempts",
-          message: "This magic link has been tried too many times and is now blocked for security.",
-          suggestion: "Please wait a few minutes and request a new magic link.",
-          actionText: "Get New Magic Link",
-          actionLink: "/auth/signup",
-        };
-      case "unknown":
-        return {
-          icon: AlertCircle,
-          title: "Verification Failed",
-          message: "We couldn't verify your magic link due to an unexpected error.",
-          suggestion: "Please try requesting a new magic link.",
-          actionText: "Get New Magic Link",
-          actionLink: "/auth/signup",
-        };
-      case "exception":
-        return {
-          icon: AlertCircle,
-          title: "System Error",
-          message: "A technical error occurred while processing your request.",
-          suggestion: "Please try again in a few moments or contact support.",
+          icon: Lock,
+          title: "Invalid Credentials",
+          message: "The email or password you entered is incorrect.",
+          suggestion: "Please check your credentials and try again.",
           actionText: "Try Again",
-          actionLink: "/auth/signup",
+          actionLink: "/auth/login",
+        };
+      case "account_not_found":
+        return {
+          icon: UserX,
+          title: "Account Not Found",
+          message: "No account exists with this email address.",
+          suggestion: "Create an account to get started.",
+          actionText: "Create Account",
+          actionLink: "/edit",
+        };
+      case "too_many_attempts":
+        return {
+          icon: ShieldX,
+          title: "Too Many Attempts",
+          message: "Your account has been temporarily locked due to too many failed login attempts.",
+          suggestion: "Please wait a few minutes before trying again.",
+          actionText: "Try Again Later",
+          actionLink: "/auth/login",
+        };
+      case "email_not_confirmed":
+        return {
+          icon: Mail,
+          title: "Email Not Verified",
+          message: "Please verify your email address before signing in.",
+          suggestion: "Check your email for a verification link.",
+          actionText: "Resend Email",
+          actionLink: "/edit",
+        };
+      case "signup_disabled":
+        return {
+          icon: AlertCircle,
+          title: "Signup Temporarily Disabled",
+          message: "New account creation is temporarily disabled.",
+          suggestion: "Please try again later or contact support.",
+          actionText: "Try Again",
+          actionLink: "/edit",
         };
       default:
         return {
           icon: AlertCircle,
           title: "Authentication Error",
-          message: "There was a problem verifying your email address.",
+          message: "There was a problem with your authentication request.",
           suggestion: "Please try again or contact support if the problem persists.",
           actionText: "Try Again",
-          actionLink: "/auth/signup",
+          actionLink: "/auth/login",
         };
     }
   };
@@ -101,7 +101,6 @@ function AuthErrorContent() {
         <div className="space-y-4">
           <Button asChild className="w-full">
             <Link href={errorDetails.actionLink}>
-              <Mail className="w-4 h-4 mr-2" />
               {errorDetails.actionText}
             </Link>
           </Button>
@@ -116,9 +115,9 @@ function AuthErrorContent() {
         {/* Additional Help */}
         <div className="text-xs text-gray-400 space-y-2">
           <p>Need help? Contact support at support@treematch.com</p>
-          {error === "expired" && (
+          {error === "too_many_attempts" && (
             <p className="text-blue-600">
-              💡 Tip: Check your email immediately after requesting a magic link
+              💡 Tip: Wait 15 minutes before attempting to sign in again
             </p>
           )}
         </div>
@@ -127,7 +126,7 @@ function AuthErrorContent() {
   );
 }
 
-export default function AuthCodeErrorPage() {
+export default function AuthErrorPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

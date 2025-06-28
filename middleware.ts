@@ -33,32 +33,36 @@ export async function middleware(request: NextRequest) {
   const isLogoutPage = request.nextUrl.pathname === '/logout'
   const isPublicPage = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/meet')
 
-  if (!user && !isAuthPage && !isPublicPage) {
+  // Redirect unauthenticated users to login (except for public pages and edit page)
+  if (!user && !isAuthPage && !isPublicPage && !isEditPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
 
+  // Redirect authenticated users away from auth pages
   if (user && isAuthPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)
   }
 
+  // Check if user needs to complete profile (redirect to /edit if not onboarded)
   if (user && !isAuthPage && !isEditPage && !isLogoutPage && !isPublicPage) {
     try {
       const { data: student } = await supabase
         .from('students')
-        .select('id, name')
+        .select('id, name, "isOnboarded"')
         .eq('id', user.id)
         .single()
       
-      if (!student || !student.name) {
+      if (!student || !student.isOnboarded) {
         const url = request.nextUrl.clone()
         url.pathname = '/edit'
         return NextResponse.redirect(url)
       }
     } catch (error) {
+      // If student record doesn't exist, redirect to profile setup
       const url = request.nextUrl.clone()
       url.pathname = '/edit'
       return NextResponse.redirect(url)

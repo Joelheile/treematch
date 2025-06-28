@@ -2,10 +2,10 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Mail, TreePine } from "lucide-react";
+import { AlertCircle, Mail, Lock, TreePine } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -17,39 +17,39 @@ const validateEmail = (email: string): boolean => {
   return emailRegex.test(email) && email.endsWith("@stanford.edu");
 };
 
-const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/[<>]/g, "").substring(0, 255);
-};
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signInWithMagicLink, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
 
-  const handleMagicLinkLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const sanitizedEmail = sanitizeInput(email);
-
-    if (!validateEmail(sanitizedEmail)) {
+    if (!validateEmail(email)) {
       toast.error("Please use a valid Stanford email address (@stanford.edu)");
       setLoading(false);
       return;
     }
 
+    if (!password) {
+      toast.error("Please enter your password");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await signInWithMagicLink(sanitizedEmail);
-      setEmailSent(true);
-      toast.success("Check your email for a magic link to sign in!");
+      await signIn(email, password);
+      toast.success("Welcome back!");
+      router.push("/");
     } catch (err: any) {
-      setError(err.message || "An error occurred while sending the magic link");
-      toast.error(err.message || "Failed to send magic link");
+      setError(err.message || "Failed to sign in");
+      toast.error(err.message || "Failed to sign in");
     } finally {
       setLoading(false);
     }
@@ -72,41 +72,22 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="space-y-6">
-          {(error || errorFromUrl) && (
-            <Alert variant="destructive">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>{error || errorFromUrl}</AlertDescription>
-            </Alert>
-          )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign In</CardTitle>
+            <CardDescription>
+              Enter your Stanford email and password to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(error || errorFromUrl) && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="w-4 h-4" />
+                <AlertDescription>{error || errorFromUrl}</AlertDescription>
+              </Alert>
+            )}
 
-          {emailSent ? (
-            <Card>
-              <CardContent className="p-6 text-center space-y-4">
-                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Check your email</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We've sent a magic link to <strong>{email}</strong>. Click
-                    the link in your email to sign in.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setEmailSent(false);
-                    setEmail("");
-                  }}
-                  className="w-full"
-                >
-                  Use a different email
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <form onSubmit={handleMagicLinkLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address
@@ -126,28 +107,46 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 h-12"
+                    required
+                  />
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full h-12 text-sm font-medium"
                 disabled={loading}
               >
-                {loading ? "Sending magic link..." : "Send magic link"}
+                {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
-          )}
 
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              New to TreeMatch?{" "}
-              <Link
-                href="/edit"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Create your profile
-              </Link>
-            </p>
-          </div>
-        </div>
+            <div className="text-center mt-4">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <Link
+                  href="/edit"
+                  className="font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

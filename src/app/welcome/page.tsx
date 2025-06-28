@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Mail } from "lucide-react";
+import { CheckCircle, TreePine } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -21,32 +21,41 @@ export default function WelcomePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md mx-auto text-center space-y-6">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-          <Mail className="w-8 h-8 text-green-600" />
+          <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
         
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-gray-900">
-            Check your email
+            Welcome to TreeMatch!
           </h1>
           <p className="text-gray-600">
-            We've sent you a magic link{email && ` at ${email}`}. Click the link to complete your signup and create your profile.
+            Your account has been successfully created{email && ` for ${email}`}. You can now start connecting with other Stanford students.
           </p>
         </div>
 
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <span>Your profile information is saved</span>
+            <TreePine className="w-4 h-4 text-green-600" />
+            <span>Your profile is ready to go</span>
           </div>
         </div>
 
-        <Button
-          onClick={() => router.push("/")}
-          variant="outline"
-          className="w-full"
-        >
-          Back to Home
-        </Button>
+        <div className="space-y-3">
+          <Button
+            onClick={() => router.push("/")}
+            className="w-full"
+          >
+            Start Matching
+          </Button>
+          
+          <Button
+            onClick={() => router.push("/auth/login")}
+            variant="outline"
+            className="w-full"
+          >
+            Sign In Later
+          </Button>
+        </div>
       </div>
     </div>
   );

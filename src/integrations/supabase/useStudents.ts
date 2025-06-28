@@ -94,9 +94,9 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
           : query.is('website', null)
       }
 
-      // if (filters.hasEngr145Team !== undefined) {
-      //   query = query.eq('has_engr145_team', filters.hasEngr145Team)
-      // }
+      if (filters.hasEngr145Team !== undefined) {
+        query = query.eq('has_engr145_team', filters.hasEngr145Team)
+      }
 
       if (filters.search) {
         const sanitizedSearch = sanitizeSearchTerm(filters.search)

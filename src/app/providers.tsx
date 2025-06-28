@@ -1,6 +1,5 @@
 "use client";
 
-import { PostAuthOnboardingProcessor } from "@/components/PostAuthOnboardingProcessor";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import posthog from "posthog-js";
@@ -27,7 +26,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <PostAuthOnboardingProcessor />
             {children}
           </TooltipProvider>
         </QueryClientProvider>

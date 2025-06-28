@@ -10,8 +10,8 @@ import {
   ProfilePhotoStep,
   SkillsStep,
   SocialsStep,
+  EmailStep,
 } from "./steps";
-import { EmailStep } from "./steps/EmailStep";
 import { Country, FormData, Skill, Step } from "./types";
 
 interface OnboardingUIProps {
@@ -43,8 +43,9 @@ interface OnboardingUIProps {
   setSuggestedSkill: (value: string) => void;
   handleNext: () => void;
   handleBack: () => void;
-  handleEmailMagicLink: () => void;
+
   setShowCountrySuggestions: (show: boolean) => void;
+  onCreateAccount: (email: string, password: string) => Promise<void>;
 }
 
 export default function OnboardingUI({
@@ -76,8 +77,9 @@ export default function OnboardingUI({
   setSuggestedSkill,
   handleNext,
   handleBack,
-  handleEmailMagicLink,
+
   setShowCountrySuggestions,
+  onCreateAccount,
 }: OnboardingUIProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && isStepValid && !isSubmitting) {
@@ -162,12 +164,16 @@ export default function OnboardingUI({
         );
 
       case 8:
-        return !user ? (
-          <EmailStep
-            email={formData.email}
-            setEmail={(email) => setFormData(prev => ({ ...prev, email }))}
-          />
-        ) : null;
+        // Only show EmailStep for unauthenticated users
+        if (!user) {
+          return (
+            <EmailStep
+              onCreateAccount={onCreateAccount}
+              isSubmitting={isSubmitting}
+            />
+          );
+        }
+        return null;
 
       default:
         return null;
@@ -211,7 +217,7 @@ export default function OnboardingUI({
           student={student}
           handleNext={handleNext}
           handleBack={handleBack}
-          handleEmailMagicLink={handleEmailMagicLink}
+
         />
       </div>
     </div>

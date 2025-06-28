@@ -47,35 +47,9 @@ export default function BasicInfoStep({
 }: BasicInfoStepProps) {
   const isMobile = useIsMobile();
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
-  const [phoneValidationError, setPhoneValidationError] = useState<string>("");
-  const [hasPhoneBeenEdited, setHasPhoneBeenEdited] = useState(false);
   const privacyContent = "Your phone number will only be shown to people you've mutually liked.";
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
   const countryInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!hasPhoneBeenEdited) return;
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    
-    timeoutRef.current = setTimeout(() => {
-      if (formData.phoneNumber.trim()) {
-        const validation = validatePhoneNumber(formData.phoneNumber);
-        setPhoneValidationError(validation.error || "");
-      } else {
-        setPhoneValidationError("");
-      }
-    }, 500);
-    
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [formData.phoneNumber, hasPhoneBeenEdited]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -232,29 +206,16 @@ export default function BasicInfoStep({
             onChange={(phone) => {
               setFormData((prev) => ({
                 ...prev,
-                phoneNumber: phone,
+                phoneNumber: phone || "",
               }));
-              
-              if (!hasPhoneBeenEdited) {
-                setHasPhoneBeenEdited(true);
-              }
-              
             }}
-            inputClassName={`h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full ${
-              phoneValidationError && hasPhoneBeenEdited ? "border-red-300 focus:border-red-500" : ""
-            }`}
+            inputClassName="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
             className="w-full"
             placeholder="Enter your phone number"
-            onBlur={() => {
-              if (hasPhoneBeenEdited && formData.phoneNumber.trim()) {
-                const validation = validatePhoneNumber(formData.phoneNumber);
-                setPhoneValidationError(validation.error || "");
-              }
-            }}
+            defaultCountry="us"
+            forceDialCode={false}
+            disableCountryGuess={false}
           />
-          {phoneValidationError && hasPhoneBeenEdited && (
-            <p className="text-red-500 text-sm mt-1">{phoneValidationError}</p>
-          )}
         </div>
 
         <div className="relative">
