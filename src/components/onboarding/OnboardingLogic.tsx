@@ -136,6 +136,8 @@ export default function OnboardingLogic() {
 
 
   const handleCreateAccount = useCallback(async (email: string, password: string) => {
+
+
     if (isCreatingAccount.current) {
       return;
     }
@@ -183,20 +185,10 @@ export default function OnboardingLogic() {
       if (!authData.user) {
         throw new Error("Failed to create user account");
       }
-
-      // Wait for auth state to be properly established
-      const supabase = createClient();
-      
-      // Wait a moment for auth context to update
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Verify auth state before proceeding
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser || currentUser.id !== authData.user.id) {
-        throw new Error("Auth state not properly established. Please try again.");
-      }
       
       // Check if student already exists (this might be the 409 source)
+      const supabase = createClient();
+      
       // Check by ID
       const { data: existingStudentById } = await supabase
         .from('students')
@@ -243,96 +235,104 @@ export default function OnboardingLogic() {
           .single();
         
         if (updateError) {
+          console.error("Failed to update student:", updateError);
           throw updateError;
         }
         
         studentRecord = updatedStudent;
         
-      } else if (existingStudentByEmail) {
-        toast.error("An account with this email already exists. Please try logging in.");
-        router.push("/auth/login");
-        return;
+              } else if (existingStudentByEmail) {
+          toast.error("An account with this email already exists. Please try logging in.");
+          router.push("/auth/login");
+          return;
+          
+        } else {
         
-      } else {
-        
-        // Create student profile using current form data
-        const studentData = {
-          id: authData.user.id,
-          email: email,
-          name: formData.name,
-          country: formData.country,
-          university: formData.university,
-          phone_number: formData.phoneNumber,
-          profile_image: formData.profileImage,
-          courses: formData.courses,
-          goals: formData.summerGoals,
-          coolest_thing: formData.coolestThing,
-          linkedin: formData.linkedinUrl,
-          instagram: formData.instagramHandle,
-          twitter: formData.twitterHandle,
-          github: formData.githubUsername,
-          website: formData.websiteUrl,
-          icon: formData.icon,
-          isOnboarded: true,
-          has_engr145_team: formData.hasEngr145Team || false,
-        };
+         // Create student profile using current form data
+         const studentData = {
+           id: authData.user.id,
+           email: email,
+           name: formData.name,
+           country: formData.country,
+           university: formData.university,
+           phone_number: formData.phoneNumber,
+           profile_image: formData.profileImage,
+           courses: formData.courses,
+           goals: formData.summerGoals,
+           coolest_thing: formData.coolestThing,
+           linkedin: formData.linkedinUrl,
+           instagram: formData.instagramHandle,
+           twitter: formData.twitterHandle,
+           github: formData.githubUsername,
+           website: formData.websiteUrl,
+           icon: formData.icon,
+           isOnboarded: true,
+           has_engr145_team: formData.hasEngr145Team || false,
+         };
 
-        // Create student profile
-        try {
-          const createdStudent = await addStudent.mutateAsync({
-            student: studentData,
-            skillIds: formData.skillIds,
-          });
-          studentRecord = createdStudent;
-        } catch (studentError) {
-          // Enhanced error handling for RLS and auth issues
-          if (studentError?.code === '42501') {
-            throw new Error("Permission denied. Please try refreshing the page and registering again.");
-          } else if (studentError?.code === '23505') {
-            throw new Error("An account with this information already exists. Please try logging in.");
-          }
-          throw studentError;
-        }
-      }
+         // Create student profile
+         try {
+           const createdStudent = await addStudent.mutateAsync({
+             student: studentData,
+             skillIds: formData.skillIds,
+           });
+           studentRecord = createdStudent;
+         } catch (studentError) {
+           console.error("Failed to create student profile:", studentError);
+           console.error("Student error details:", {
+             code: studentError?.code,
+             message: studentError?.message,
+             details: studentError?.details,
+             hint: studentError?.hint
+           });
+           throw studentError;
+         }
+       }
 
-      // Add skills for existing students (new students get skills via addStudent)
-      if (existingStudentById && formData.skillIds.length > 0) {
-        try {
-          await updateStudentSkills.mutateAsync({
-            studentId: authData.user.id,
-            skillIds: formData.skillIds,
-          });
-        } catch (error) {
-          // Don't fail the entire registration for skill errors
-        }
-      }
-
-      // Add suggested skill if provided
-      if (suggestedSkill.trim()) {
-        try {
-          const newSkill = await addSkill.mutateAsync({
-            name: suggestedSkill.trim(),
-            is_global: false,
-          });
-          if (newSkill) {
+              // Add skills for existing students (new students get skills via addStudent)
+        if (existingStudentById && formData.skillIds.length > 0) {
+          try {
             await updateStudentSkills.mutateAsync({
               studentId: authData.user.id,
-              skillIds: [...formData.skillIds, newSkill.id],
+              skillIds: formData.skillIds,
             });
+          } catch (error) {
+            console.error("Error adding skills:", error);
           }
-        } catch (error) {
-          // Don't fail the entire registration for skill errors
         }
-      }
 
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ queryKey: ['student', authData.user.id] });
-      await queryClient.invalidateQueries({ queryKey: ['students'] });
-      
-      toast.success("Account created! Please check your email to verify your account.");
-      router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
+        // Add suggested skill if provided
+        if (suggestedSkill.trim()) {
+          try {
+            const newSkill = await addSkill.mutateAsync({
+              name: suggestedSkill.trim(),
+              is_global: false,
+            });
+            if (newSkill) {
+              await updateStudentSkills.mutateAsync({
+                studentId: authData.user.id,
+                skillIds: [...formData.skillIds, newSkill.id],
+              });
+            }
+          } catch (error) {
+            console.error("Error adding suggested skill:", error);
+          }
+        }
+
+              // Invalidate queries to refresh data
+        await queryClient.invalidateQueries({ queryKey: ['student', authData.user.id] });
+        await queryClient.invalidateQueries({ queryKey: ['students'] });
+        
+        toast.success("Account created! Please check your email to verify your account.");
+        router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
       
     } catch (error: any) {
+      console.error("Account creation error:", error);
+      console.error("Error details:", {
+        code: error?.code,
+        message: error?.message,
+        details: error?.details
+      });
       
       // Handle specific error cases
       if (error?.code === '23505' || error.message?.includes('duplicate key')) {
@@ -344,10 +344,6 @@ export default function OnboardingLogic() {
       } else if (error.message?.includes('Email already registered')) {
         toast.error("This email is already registered. Please try logging in instead.");
         router.push("/auth/login");
-      } else if (error?.code === '42501' || error.message?.includes('Permission denied')) {
-        toast.error("Registration failed due to permissions. Please try again or contact support.");
-      } else if (error.message?.includes('Auth state not properly established')) {
-        toast.error("Registration in progress. Please wait a moment and try again.");
       } else {
         toast.error(error.message || "Failed to create account. Please try again.");
       }
