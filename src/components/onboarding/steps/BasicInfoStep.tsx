@@ -193,9 +193,11 @@ export default function BasicInfoStep({
             inputClassName="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
             className="w-full"
             placeholder="Enter your phone number"
-            defaultCountry="us"
             forceDialCode={false}
             disableCountryGuess={false}
+            hideDropdown={false}
+            showDisabledDialCodeAndPrefix={false}
+            charAfterDialCode=" "
           />
         </div>
 
