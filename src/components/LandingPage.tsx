@@ -11,7 +11,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Login button and coffee button */}
-      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+      <div className="absolute top-6 left-6 z-10">
         <a 
           href="https://coff.ee/treematch" 
           target="_blank" 
@@ -21,6 +21,8 @@ export function LandingPage() {
           <Coffee className="w-4 h-4" />
           <span>Buy us a coffee</span>
         </a>
+      </div>
+      <div className="absolute top-6 right-6 z-10">
         <Button
           variant="ghost"
           onClick={() => router.push("/auth/login")}
@@ -39,7 +41,7 @@ export function LandingPage() {
         <div className="relative px-6 py-12 sm:py-16 lg:py-20">
           <div className="mx-auto max-w-3xl text-center">
             {/* Large Logo */}
-            <div className="mb-8 sm:mb-12">
+            <div className="mb-8 sm:mb-12 mt-12">
               <Image 
                 src="/logo.png" 
                 alt="TreeMatch" 
