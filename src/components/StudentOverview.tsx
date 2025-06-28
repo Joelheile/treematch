@@ -57,7 +57,11 @@ const SOCIAL_MEDIA_FILTERS = [
 
 const OTHER_FILTERS = [
   { id: "liked", label: "Liked", icon: Heart },
-  { id: "engr145NoTeam", label: "Looking for ENGR145 Team", icon: Users2 },
+  {
+    id: "engr145NoTeam",
+    label: "Looking for Entrepreneurship Team",
+    icon: Users2,
+  },
 ];
 
 export const StudentOverview = () => {
