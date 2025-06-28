@@ -33,6 +33,9 @@ export const StudentCard = ({ student }: StudentCardProps) => {
     student.instagram ||
     student.twitter;
 
+  // Check if this is a builder card (has goat emoji)
+  const isBuilder = student.icon === "goat";
+
   // Helper function to format social media URLs
   const formatSocialUrl = (platform: string, username: string) => {
     if (!username) return "";
@@ -88,7 +91,11 @@ export const StudentCard = ({ student }: StudentCardProps) => {
   return (
     <>
       <Card
-        className="h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer relative"
+        className={`h-full flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
+          isBuilder 
+            ? "border-red-300" 
+            : "border border-gray-200"
+        } cursor-pointer relative bg-white`}
         onClick={handleCardClick}
       >
         <button
@@ -112,7 +119,9 @@ export const StudentCard = ({ student }: StudentCardProps) => {
               alt={student.name || "Student"}
               width={80}
               height={80}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto object-cover border-3 border-red-100"
+              className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto object-cover ${
+                isBuilder ? "border-2 border-red-400" : "border-3 border-red-100"
+              }`}
               loading="lazy"
             />
           ) : (
