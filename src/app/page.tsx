@@ -19,9 +19,7 @@ function LoadingSpinner() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
       <div className="text-center space-y-4">
-        <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
-          <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
-        </div>
+        <Image src="/logo.png" alt="TreeMatch Logo" width={48} height={48} className="mx-auto animate-pulse" />
         <p className="text-sm text-gray-500">Loading...</p>
       </div>
     </div>
@@ -48,9 +46,7 @@ export default function HomePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
         <div className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center">
-            <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
-          </div>
+          <Image src="/logo.png" alt="TreeMatch Logo" width={64} height={64} className="mx-auto" />
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">Welcome to Treematch!</h1>
             <p className="text-gray-600">

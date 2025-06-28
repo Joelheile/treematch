@@ -511,9 +511,7 @@ export default function OnboardingLogic() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
-            <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
-          </div>
+          <Image src="/logo.png" alt="TreeMatch Logo" width={48} height={48} className="mx-auto animate-pulse" />
           <p className="text-gray-600">Loading your profile...</p>
         </div>
       </div>
