@@ -26,8 +26,7 @@ interface OnboardingUIProps {
   availableSkills: Skill[];
   suggestedSkills: Skill[];
   skillsLoading: boolean;
-  firstName: string;
-  lastName: string;
+  name: string;
   progressPercentage: number;
   isStepValid: boolean;
   isSubmitting: boolean;
@@ -36,7 +35,7 @@ interface OnboardingUIProps {
   student: any;
   handleCountryInputChange: (value: string) => void;
   handleCountrySelect: (country: Country) => void;
-  handleNameChange: (field: "first" | "last", value: string) => void;
+  handleNameChange: (value: string) => void;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSuggestSkill: () => void;
   suggestedSkill: string;
@@ -60,8 +59,7 @@ export default function OnboardingUI({
   availableSkills,
   suggestedSkills,
   skillsLoading,
-  firstName,
-  lastName,
+  name,
   progressPercentage,
   isStepValid,
   isSubmitting,
@@ -104,8 +102,7 @@ export default function OnboardingUI({
             showCountrySuggestions={showCountrySuggestions}
             selectedCountry={selectedCountry}
             countrySuggestions={countrySuggestions}
-            firstName={firstName}
-            lastName={lastName}
+            name={name}
             user={user}
             student={student}
             handleCountryInputChange={handleCountryInputChange}

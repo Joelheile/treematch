@@ -533,8 +533,7 @@ export default function OnboardingLogic() {
       availableSkills={availableSkills}
       suggestedSkills={suggestedSkills}
       skillsLoading={skillsLoading}
-      firstName={formData.name.split(" ")[0] || ""}
-      lastName={formData.name.split(" ").slice(1).join(" ") || ""}
+      name={formData.name}
       progressPercentage={((currentStep - 1) / (steps.length - 1)) * 100}
       isStepValid={isStepValid()}
       isSubmitting={isSubmitting}
@@ -543,18 +542,11 @@ export default function OnboardingLogic() {
       student={student}
       handleCountryInputChange={setCountryInput}
       handleCountrySelect={handleCountrySelect}
-      handleNameChange={(field, value) => {
-        if (field === "first") {
-          setFormData((prev) => ({ 
-            ...prev, 
-            name: value + (formData.name.split(" ").slice(1).join(" ") ? " " + formData.name.split(" ").slice(1).join(" ") : "") 
-          }));
-        } else {
-          setFormData((prev) => ({ 
-            ...prev, 
-            name: (formData.name.split(" ")[0] || "") + " " + value 
-          }));
-        }
+      handleNameChange={(value) => {
+        setFormData((prev) => ({ 
+          ...prev, 
+          name: value 
+        }));
       }}
       handleImageUpload={handleImageUpload}
       handleSuggestSkill={() => {}}
