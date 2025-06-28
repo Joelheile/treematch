@@ -50,7 +50,7 @@ export const StudentDetailPopup = ({
 
   // Early return after all hooks are called
   if (!student) return null;
-
+  
   const hasLinks =
     student.linkedin ||
     student.github ||
