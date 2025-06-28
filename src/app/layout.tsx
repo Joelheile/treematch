@@ -9,6 +9,10 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "TreeMatch",
   description: "Stanford Student Matching Platform",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

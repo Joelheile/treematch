@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Mail, TreePine, AlertCircle, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Mail, AlertCircle, CheckCircle } from 'lucide-react'
 import { createClient } from '@/integrations/supabase/client-ssr'
 
 export default function ResetPasswordPage() {
@@ -64,7 +65,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-            <TreePine className="w-6 h-6 text-primary-foreground" />
+            <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Reset your password</h1>
           <p className="text-muted-foreground">Enter your email to receive a reset link</p>

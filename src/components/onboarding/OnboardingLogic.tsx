@@ -19,7 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import OnboardingUI from "./OnboardingUI";
 import { FormData } from "./types";
 import { isValidPhone } from "@/lib/phone-validation";
-import { TreePine } from "lucide-react";
+import Image from "next/image";
 import { createClient } from "@/integrations/supabase/client-ssr";
 
 
@@ -512,7 +512,7 @@ export default function OnboardingLogic() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center animate-pulse">
-            <TreePine className="w-6 h-6 text-white" />
+            <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
           </div>
           <p className="text-gray-600">Loading your profile...</p>
         </div>

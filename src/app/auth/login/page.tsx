@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Mail, Lock, TreePine } from "lucide-react";
+import { AlertCircle, Mail, Lock } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -62,7 +63,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-            <TreePine className="w-6 h-6 text-primary-foreground" />
+            <Image src="/logo.png" alt="TreeMatch Logo" width={24} height={24} />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">
             Welcome to TreeMatch
