@@ -92,88 +92,149 @@ export default function OnboardingUI({
   };
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <BasicInfoStep
-            formData={formData}
-            setFormData={setFormData}
-            countryInput={countryInput}
-            showCountrySuggestions={showCountrySuggestions}
-            selectedCountry={selectedCountry}
-            countrySuggestions={countrySuggestions}
-            name={name}
-            user={user}
-            student={student}
-            handleCountryInputChange={handleCountryInputChange}
-            handleCountrySelect={handleCountrySelect}
-            handleNameChange={handleNameChange}
-            setShowCountrySuggestions={setShowCountrySuggestions}
-          />
-        );
+    if (user) {
+      // Authenticated user steps (1-7)
+      switch (currentStep) {
+        case 1:
+          return (
+            <BasicInfoStep
+              formData={formData}
+              setFormData={setFormData}
+              countryInput={countryInput}
+              showCountrySuggestions={showCountrySuggestions}
+              selectedCountry={selectedCountry}
+              countrySuggestions={countrySuggestions}
+              name={name}
+              user={user}
+              student={student}
+              handleCountryInputChange={handleCountryInputChange}
+              handleCountrySelect={handleCountrySelect}
+              handleNameChange={handleNameChange}
+              setShowCountrySuggestions={setShowCountrySuggestions}
+            />
+          );
 
-      case 2:
-        return (
-          <SkillsStep
-            formData={formData}
-            setFormData={setFormData}
-            availableSkills={availableSkills}
-            suggestedSkills={suggestedSkills}
-            skillsLoading={skillsLoading}
-            suggestedSkill={suggestedSkill}
-            setSuggestedSkill={setSuggestedSkill}
-            handleSuggestSkill={handleSuggestSkill}
-          />
-        );
+        case 2:
+          return (
+            <SkillsStep
+              formData={formData}
+              setFormData={setFormData}
+              availableSkills={availableSkills}
+              suggestedSkills={suggestedSkills}
+              skillsLoading={skillsLoading}
+              suggestedSkill={suggestedSkill}
+              setSuggestedSkill={setSuggestedSkill}
+              handleSuggestSkill={handleSuggestSkill}
+            />
+          );
 
-      case 3:
-        return (
-          <CoursesStep
-            formData={formData}
-            setFormData={setFormData}
-            availableCourses={[]}
-            coursesLoading={false}
-            onNext={handleNext}
-          />
-        );
+        case 3:
+          return (
+            <CoursesStep
+              formData={formData}
+              setFormData={setFormData}
+              availableCourses={[]}
+              coursesLoading={false}
+              onNext={handleNext}
+            />
+          );
 
-      case 4:
-        return (
-          <CoolestThingStep formData={formData} setFormData={setFormData} />
-        );
+        case 4:
+          return (
+            <CoolestThingStep formData={formData} setFormData={setFormData} />
+          );
 
-      case 5:
-        return <GoalsStep formData={formData} setFormData={setFormData} />;
+        case 5:
+          return <GoalsStep formData={formData} setFormData={setFormData} />;
 
-      case 6:
-        return <SocialsStep formData={formData} setFormData={setFormData} />;
+        case 6:
+          return <SocialsStep formData={formData} setFormData={setFormData} />;
 
-      case 7:
-        return (
-          <ProfilePhotoStep
-            formData={formData}
-            setFormData={setFormData}
-            isUploadingImage={isUploadingImage}
-            user={user}
-            student={student}
-            handleImageUpload={handleImageUpload}
-          />
-        );
+        case 7:
+          return (
+            <ProfilePhotoStep
+              formData={formData}
+              setFormData={setFormData}
+              isUploadingImage={isUploadingImage}
+              user={user}
+              student={student}
+              handleImageUpload={handleImageUpload}
+            />
+          );
 
-      case 8:
-        // Only show EmailStep for unauthenticated users
-        if (!user) {
+        default:
+          return null;
+      }
+    } else {
+      // Unauthenticated user steps (1-5, skipping coolest thing, goals, social links)
+      switch (currentStep) {
+        case 1:
+          return (
+            <BasicInfoStep
+              formData={formData}
+              setFormData={setFormData}
+              countryInput={countryInput}
+              showCountrySuggestions={showCountrySuggestions}
+              selectedCountry={selectedCountry}
+              countrySuggestions={countrySuggestions}
+              name={name}
+              user={user}
+              student={student}
+              handleCountryInputChange={handleCountryInputChange}
+              handleCountrySelect={handleCountrySelect}
+              handleNameChange={handleNameChange}
+              setShowCountrySuggestions={setShowCountrySuggestions}
+            />
+          );
+
+        case 2:
+          return (
+            <SkillsStep
+              formData={formData}
+              setFormData={setFormData}
+              availableSkills={availableSkills}
+              suggestedSkills={suggestedSkills}
+              skillsLoading={skillsLoading}
+              suggestedSkill={suggestedSkill}
+              setSuggestedSkill={setSuggestedSkill}
+              handleSuggestSkill={handleSuggestSkill}
+            />
+          );
+
+        case 3:
+          return (
+            <CoursesStep
+              formData={formData}
+              setFormData={setFormData}
+              availableCourses={[]}
+              coursesLoading={false}
+              onNext={handleNext}
+            />
+          );
+
+        case 4:
+          return (
+            <ProfilePhotoStep
+              formData={formData}
+              setFormData={setFormData}
+              isUploadingImage={isUploadingImage}
+              user={user}
+              student={student}
+              handleImageUpload={handleImageUpload}
+            />
+          );
+
+        case 5:
           return (
             <EmailStep
               onCreateAccount={onCreateAccount}
               isSubmitting={isSubmitting}
             />
           );
-        }
-        return null;
 
-      default:
-        return null;
+        default:
+          return null;
+      }
     }
   };
 

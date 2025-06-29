@@ -84,11 +84,8 @@ export default function OnboardingLogic() {
         { number: 1, title: "Welcome", subtitle: "Basic Information" },
         { number: 2, title: "Skills", subtitle: "Your Expertise" },
         { number: 3, title: "Courses", subtitle: "Your Academic Background" },
-        { number: 4, title: "Coolest Thing", subtitle: "What You're Most Proud Of" },
-        { number: 5, title: "Goals", subtitle: "Your Aspirations" },
-        { number: 6, title: "Connect", subtitle: "Social Links" },
-        { number: 7, title: "Photo", subtitle: "Profile Picture" },
-        { number: 8, title: "Account", subtitle: "Create Your Account" },
+        { number: 4, title: "Photo", subtitle: "Profile Picture" },
+        { number: 5, title: "Account", subtitle: "Create Your Account" },
       ];
 
   // Load existing student data if user is authenticated
@@ -164,7 +161,7 @@ export default function OnboardingLogic() {
       return;
     }
 
-    if (currentStep !== 8) {
+    if (currentStep !== 5) {
       toast.error("Please complete all profile steps first");
       return;
     }
@@ -454,32 +451,53 @@ export default function OnboardingLogic() {
   };
 
   const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          formData.name.trim() !== "" &&
-          formData.country.trim() !== "" &&
-          formData.university.trim() !== "" &&
-          isValidPhone(formData.phoneNumber)
-        );
-      case 2:
-        return formData.skillIds.length > 0;
-      case 3:
-        return true;
-      case 4:
-        return formData.coolestThing.trim() !== "";
-      case 5:
-        return formData.summerGoals.trim() !== "";
-      case 6:
-        return true;
-      case 7:
-        return formData.profileImage.trim() !== "" && !isUploadingImage;
-      case 8:
-        // For unauthenticated users, EmailStep handles its own validation
-        // We'll let the EmailStep component control the submit button
-        return !user ? true : false;
-      default:
-        return false;
+    if (user) {
+      // Authenticated user steps (1-7)
+      switch (currentStep) {
+        case 1:
+          return (
+            formData.name.trim() !== "" &&
+            formData.country.trim() !== "" &&
+            formData.university.trim() !== "" &&
+            isValidPhone(formData.phoneNumber)
+          );
+        case 2:
+          return formData.skillIds.length > 0;
+        case 3:
+          return true;
+        case 4:
+          return formData.coolestThing.trim() !== "";
+        case 5:
+          return formData.summerGoals.trim() !== "";
+        case 6:
+          return true;
+        case 7:
+          return formData.profileImage.trim() !== "" && !isUploadingImage;
+        default:
+          return false;
+      }
+    } else {
+      // Unauthenticated user steps (1-5, skipping coolest thing, goals, social links)
+      switch (currentStep) {
+        case 1:
+          return (
+            formData.name.trim() !== "" &&
+            formData.country.trim() !== "" &&
+            formData.university.trim() !== "" &&
+            isValidPhone(formData.phoneNumber)
+          );
+        case 2:
+          return formData.skillIds.length > 0;
+        case 3:
+          return true;
+        case 4:
+          return formData.profileImage.trim() !== "" && !isUploadingImage;
+        case 5:
+          // EmailStep handles its own validation
+          return true;
+        default:
+          return false;
+      }
     }
   };
 

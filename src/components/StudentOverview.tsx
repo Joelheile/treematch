@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useOnboardingCompletion } from "@/hooks/useOnboardingCompletion";
 import { useStudentLikes } from "@/integrations/supabase/useStudentLikes";
 import type { StudentFilters } from "@/integrations/supabase/useStudents";
 import { useStudents } from "@/integrations/supabase/useStudents";
@@ -90,6 +91,7 @@ export const StudentOverview = () => {
 
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const { isOnboardingComplete } = useOnboardingCompletion();
   const { data: skillsWithCounts = [] } = useStudentSkillsFilter();
   const { likedStudentIds } = useStudentLikes();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -809,10 +811,18 @@ export const StudentOverview = () => {
                 <span className="sm:hidden">Coffee</span>
               </a>
               <Link href="/edit">
-                <Button className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 rounded-xl">
+                <Button className={`flex items-center space-x-2 rounded-xl ${
+                  isOnboardingComplete 
+                    ? "bg-red-600 hover:bg-red-700" 
+                    : "bg-orange-600 hover:bg-orange-700"
+                }`}>
                   <Edit className="w-4 h-4" />
-                  <span className="hidden sm:inline">Edit Profile</span>
-                  <span className="sm:hidden">Edit</span>
+                  <span className="hidden sm:inline">
+                    {isOnboardingComplete ? "Edit Profile" : "Complete Onboarding"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isOnboardingComplete ? "Edit" : "Complete"}
+                  </span>
                 </Button>
               </Link>
             </div>
