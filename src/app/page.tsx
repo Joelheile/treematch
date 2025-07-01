@@ -4,7 +4,7 @@ import { useAuth } from "@/app/auth/AuthProvider";
 import { LandingPage } from "@/components/LandingPage";
 import { StudentOverview } from "@/components/StudentOverview";
 import { Button } from "@/components/ui/button";
-import { UserMenu } from "@/components/UserMenu";
+import LogoutButtonFixed from "@/components/LogoutButtonFixed";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { TreePine } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -67,9 +67,7 @@ export default function HomePage() {
   // Show main app if user is authenticated and onboarded
   return (
     <div className="relative">
-      <div className="absolute top-4 right-4 z-10">
-        <UserMenu />
-      </div>
+      <LogoutButtonFixed />
       <StudentOverview />
     </div>
   );
