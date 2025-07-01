@@ -1,4 +1,3 @@
-import { LogoutButton } from "@/components/LogoutButton";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import React from "react";
@@ -26,7 +25,6 @@ export default function RootLayout({
         <Providers>
           <ClientToasters />
           {children}
-          <LogoutButton />
           <SpeedInsights />
         </Providers>
       </body>

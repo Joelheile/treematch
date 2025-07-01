@@ -22,9 +22,10 @@ import { isValidPhone } from "@/lib/phone-validation";
 import { debounce } from "@/lib/utils";
 import Image from "next/image";
 import { createClient } from "@/integrations/supabase/client-ssr";
+import { validateReferralCode } from "@/lib/validation";
 
 
-const getInitialFormData = (): FormData => ({
+const getInitialFormData = (referralCode?: string): FormData => ({
   name: "",
   country: "",
   university: "",
@@ -42,9 +43,14 @@ const getInitialFormData = (): FormData => ({
   icon: "",
   email: "",
   hasEngr145Team: false,
+  referralCode: referralCode || "",
 });
 
-export default function OnboardingLogic() {
+interface OnboardingLogicProps {
+  referralCode?: string;
+}
+
+export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -69,7 +75,7 @@ export default function OnboardingLogic() {
   const addSkill = useAddSkill();
 
   const [suggestedSkill, setSuggestedSkill] = useState("");
-  const [formData, setFormData] = useState<FormData>(getInitialFormData);
+  const [formData, setFormData] = useState<FormData>(getInitialFormData(referralCode));
   const [countryInput, setCountryInput] = useState("");
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<{ name: string; code: string } | null>(null);
@@ -360,6 +366,48 @@ export default function OnboardingLogic() {
            throw studentError;
          }
        }
+
+        // Process referral code if provided
+        if (formData.referralCode?.trim()) {
+          try {
+            const validCode = validateReferralCode(formData.referralCode.trim());
+            if (validCode) {
+              // Use transaction for atomic referral processing
+              const { data: referralData, error: fetchError } = await supabase
+                .from('referrals')
+                .select('id, referrer_id')
+                .eq('referral_code', validCode)
+                .eq('is_used', false)
+                .neq('referrer_id', authData.user.id) // Prevent self-referral
+                .single();
+
+              if (!fetchError && referralData) {
+                // Atomic update with proper error handling
+                const { error: updateError } = await supabase
+                  .from('referrals')
+                  .update({
+                    referred_id: authData.user.id,
+                    is_used: true,
+                    used_at: new Date().toISOString()
+                  })
+                  .eq('id', referralData.id)
+                  .eq('is_used', false); // Prevent race conditions
+                
+                if (!updateError) {
+                  toast.success("Referral bonus applied!");
+                } else {
+                  console.warn("Referral already used or invalid:", updateError);
+                }
+              } else if (fetchError?.code !== 'PGRST116') {
+                // Log non-"not found" errors
+                console.warn("Referral lookup error:", fetchError);
+              }
+            }
+          } catch (error) {
+            console.error("Error processing referral:", error);
+            // Don't block account creation if referral processing fails
+          }
+        }
 
               // Add skills for existing students (new students get skills via addStudent)
         if (existingStudentById && formData.skillIds.length > 0) {

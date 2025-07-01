@@ -35,6 +35,7 @@ import {
   Linkedin,
   Loader2,
   Search,
+  Trophy,
   Users,
   Users2,
   X,
@@ -43,6 +44,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import FloatingShareButton from "@/components/FloatingShareButton";
+// import ReferralCTA from "@/components/referrals/ReferralCTA";
 
 // Placeholder analytics hook since the original was undefined
 const useStudentAnalytics = () => ({
@@ -810,6 +814,13 @@ export const StudentOverview = () => {
                 <span className="hidden sm:inline">Buy us a coffee</span>
                 <span className="sm:hidden">Coffee</span>
               </a>
+              <Link href="/referrals">
+                <Button className="flex items-center gap-2 bg-stanford-red-50 text-stanford-cardinal hover:bg-stanford-red-100 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200 border-0">
+                  <Trophy className="w-4 h-4" />
+                  <span className="hidden sm:inline">Leaderboard</span>
+                  <span className="sm:hidden">Board</span>
+                </Button>
+              </Link>
               <Link href="/edit">
                 <Button className={`flex items-center space-x-2 rounded-xl ${
                   isOnboardingComplete 
@@ -839,6 +850,9 @@ export const StudentOverview = () => {
 
         {/* Active filters */}
         {renderActiveFilters()}
+
+        {/* Referral CTA */}
+        {/* <ReferralCTA /> */}
 
         {/* Results */}
         <div className="space-y-4">
@@ -891,6 +905,9 @@ export const StudentOverview = () => {
           )}
         </div>
       </div>
+
+      {/* Floating Share Button */}
+      <FloatingShareButton />
 
       <style jsx global>{`
         .scrollbar-hide {

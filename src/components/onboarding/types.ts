@@ -16,6 +16,7 @@ export interface FormData {
   icon: string;
   email: string;
   hasEngr145Team?: boolean;
+  referralCode?: string;
 }
 
 export interface Skill {
