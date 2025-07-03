@@ -122,34 +122,36 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
             localStorage.removeItem(FORM_DATA_KEY);
           }
         }
-      
-      // 2. Load from database only if no localStorage data and user/student exist
-      if (user && student && !studentLoading && !studentSkillsLoading && mounted) {
-        const currentSkillIds = Array.isArray(studentSkills) ? studentSkills.map((ss) => ss?.skill_id).filter(Boolean) : [];
         
-        const dbData = {
-          name: student.name || "",
-          country: student.country || "",
-          university: student.university || "",
-          phoneNumber: student.phone_number?.trim() || "",
-          profileImage: student.profile_image || "",
-          skillIds: currentSkillIds,
-          courses: student.courses || [],
-          summerGoals: student.goals || "",
-          coolestThing: student.coolest_thing || "",
-          linkedinUrl: student.linkedin || "",
-          instagramHandle: student.instagram || "",
-          twitterHandle: student.twitter || "",
-          githubUsername: student.github || "",
-          websiteUrl: student.website || "",
-          icon: student.icon || "",
-          email: user.email || "",
-          hasEngr145Team: Boolean(student.has_engr145_team),
-        };
+        // 2. Load from database only if no localStorage data and user/student exist
+        if (user && student && !studentLoading && !studentSkillsLoading && mounted) {
+          const currentSkillIds = Array.isArray(studentSkills) ? studentSkills.map((ss) => ss?.skill_id).filter(Boolean) : [];
+          
+          const dbData = {
+            name: student.name || "",
+            country: student.country || "",
+            university: student.university || "",
+            phoneNumber: student.phone_number?.trim() || "",
+            profileImage: student.profile_image || "",
+            skillIds: currentSkillIds,
+            courses: student.courses || [],
+            summerGoals: student.goals || "",
+            coolestThing: student.coolest_thing || "",
+            linkedinUrl: student.linkedin || "",
+            instagramHandle: student.instagram || "",
+            twitterHandle: student.twitter || "",
+            githubUsername: student.github || "",
+            websiteUrl: student.website || "",
+            icon: student.icon || "",
+            email: user.email || "",
+            hasEngr145Team: Boolean(student.has_engr145_team),
+            referralCode: referralCode || "",
+          };
+          
+          setFormData(dbData);
+        }
         
-        setFormData(dbData);
-      }
-      
+        // Always set hydrated to true, regardless of data source
         if (mounted) {
           setIsHydrated(true);
         }
@@ -167,7 +169,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
     return () => {
       mounted = false;
     };
-  }, [user, student, studentLoading, studentSkills, studentSkillsLoading]);
+  }, [user, student, studentLoading, studentSkills, studentSkillsLoading, referralCode]);
 
   // Initialize country input only once during hydration
   useEffect(() => {

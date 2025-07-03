@@ -24,7 +24,8 @@
       "mcp__supabase__get_organization",
       "Bash(npm run lint:*)",
       "mcp__supabase__get_project",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }
