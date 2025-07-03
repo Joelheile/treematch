@@ -19,16 +19,47 @@ import { useQueryClient } from "@tanstack/react-query";
 import OnboardingUI from "./OnboardingUI";
 import { FormData } from "./types";
 import { isValidPhone } from "@/lib/phone-validation";
+import { debounce } from "@/lib/utils";
 import Image from "next/image";
 import { createClient } from "@/integrations/supabase/client-ssr";
+import { validateReferralCode } from "@/lib/validation";
 
 
-export default function OnboardingLogic() {
+const getInitialFormData = (referralCode?: string): FormData => ({
+  name: "",
+  country: "",
+  university: "",
+  phoneNumber: "",
+  profileImage: "",
+  skillIds: [],
+  courses: [],
+  summerGoals: "",
+  coolestThing: "",
+  linkedinUrl: "",
+  instagramHandle: "",
+  twitterHandle: "",
+  githubUsername: "",
+  websiteUrl: "",
+  icon: "",
+  email: "",
+  hasEngr145Team: false,
+  referralCode: referralCode || "",
+});
+
+interface OnboardingLogicProps {
+  referralCode?: string;
+}
+
+export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const isCreatingAccount = useRef(false);
   const router = useRouter();
   const queryClient = useQueryClient();
+  
+  const FORM_DATA_KEY = 'treematch-edit-form-data';
 
   const { user, loading: authLoading, signUp } = useAuth();
   const { student, isLoading: studentLoading } = useCurrentStudent();
@@ -44,25 +75,7 @@ export default function OnboardingLogic() {
   const addSkill = useAddSkill();
 
   const [suggestedSkill, setSuggestedSkill] = useState("");
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    country: "",
-    university: "",
-    phoneNumber: "",
-    profileImage: "",
-    skillIds: [],
-    courses: [],
-    summerGoals: "",
-    coolestThing: "",
-    linkedinUrl: "",
-    instagramHandle: "",
-    twitterHandle: "",
-    githubUsername: "",
-    websiteUrl: "",
-    icon: "",
-    email: "",
-    hasEngr145Team: false,
-  });
+  const [formData, setFormData] = useState<FormData>(getInitialFormData(referralCode));
   const [countryInput, setCountryInput] = useState("");
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<{ name: string; code: string } | null>(null);
@@ -88,47 +101,115 @@ export default function OnboardingLogic() {
         { number: 5, title: "Account", subtitle: "Create Your Account" },
       ];
 
-  // Load existing student data if user is authenticated
+  // Single effect to handle all initialization
   useEffect(() => {
-    if (user && student && !studentLoading && !studentSkillsLoading) {
-      // For authenticated users with existing student data
-      const currentSkillIds = studentSkills.map((ss) => ss.skill_id);
+    if (typeof window === 'undefined') return;
+    
+    let mounted = true;
+    
+    const initializeForm = async () => {
+      try {
+        // 1. Load from localStorage first
+        const saved = localStorage.getItem(FORM_DATA_KEY);
+        if (saved && mounted) {
+          try {
+            setFormData(JSON.parse(saved));
+            setIsHydrated(true);
+            return; // Exit early if localStorage data exists
+          } catch (e) {
+            console.error('Failed to parse saved form data:', e);
+            // Clear corrupted data and continue
+            localStorage.removeItem(FORM_DATA_KEY);
+          }
+        }
       
-      const phoneNumber = student.phone_number && student.phone_number.trim() 
-        ? student.phone_number 
-        : "";
+      // 2. Load from database only if no localStorage data and user/student exist
+      if (user && student && !studentLoading && !studentSkillsLoading && mounted) {
+        const currentSkillIds = Array.isArray(studentSkills) ? studentSkills.map((ss) => ss?.skill_id).filter(Boolean) : [];
+        
+        const dbData = {
+          name: student.name || "",
+          country: student.country || "",
+          university: student.university || "",
+          phoneNumber: student.phone_number?.trim() || "",
+          profileImage: student.profile_image || "",
+          skillIds: currentSkillIds,
+          courses: student.courses || [],
+          summerGoals: student.goals || "",
+          coolestThing: student.coolest_thing || "",
+          linkedinUrl: student.linkedin || "",
+          instagramHandle: student.instagram || "",
+          twitterHandle: student.twitter || "",
+          githubUsername: student.github || "",
+          websiteUrl: student.website || "",
+          icon: student.icon || "",
+          email: user.email || "",
+          hasEngr145Team: Boolean(student.has_engr145_team),
+        };
+        
+        setFormData(dbData);
+      }
       
-      const newFormData = {
-        name: student.name || "",
-        country: student.country || "",
-        university: student.university || "",
-        phoneNumber: phoneNumber,
-        profileImage: student.profile_image || "",
-        skillIds: currentSkillIds,
-        courses: student.courses || [],
-        summerGoals: student.goals || "",
-        coolestThing: student.coolest_thing || "",
-        linkedinUrl: student.linkedin || "",
-        instagramHandle: student.instagram || "",
-        twitterHandle: student.twitter || "",
-        githubUsername: student.github || "",
-        websiteUrl: student.website || "",
-        icon: student.icon || "",
-        email: user.email || "",
-        hasEngr145Team: (student as any).has_engr145_team || false,
-      };
-      
-      setFormData(newFormData);
-      
-      if (student.country) {
-        setCountryInput(student.country);
-        const matchingCountry = countriesData.find((country) => country.name.toLowerCase() === student.country?.toLowerCase());
-        if (matchingCountry) {
-          setSelectedCountry(matchingCountry);
+        if (mounted) {
+          setIsHydrated(true);
+        }
+      } catch (error) {
+        console.error('Initialization failed:', error);
+        if (mounted) {
+          setHasError(true);
+          setIsHydrated(true); // Still set hydrated to show error state
         }
       }
-    }
+    };
+    
+    initializeForm();
+    
+    return () => {
+      mounted = false;
+    };
   }, [user, student, studentLoading, studentSkills, studentSkillsLoading]);
+
+  // Separate effect for country input synchronization
+  useEffect(() => {
+    if (formData.country && isHydrated) {
+      setCountryInput(formData.country);
+      const matchingCountry = countriesData.find((country) => 
+        country.name.toLowerCase() === formData.country.toLowerCase()
+      );
+      if (matchingCountry) {
+        setSelectedCountry(matchingCountry);
+      }
+    }
+  }, [formData.country, isHydrated]);
+
+  // Simple localStorage save
+  useEffect(() => {
+    if (!isHydrated) return;
+    
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(FORM_DATA_KEY, JSON.stringify(formData));
+      } catch (error: any) {
+        if (error.name === 'QuotaExceededError') {
+          toast.error('Storage full - changes may not save');
+        }
+        console.error('localStorage save failed:', error);
+      }
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData, isHydrated]);
+
+  // Cleanup function to clear localStorage
+  const clearLocalStorage = useCallback(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(FORM_DATA_KEY);
+      }
+    } catch (error) {
+      console.error('Failed to clear localStorage:', error);
+    }
+  }, [FORM_DATA_KEY]);
 
 
 
@@ -286,6 +367,48 @@ export default function OnboardingLogic() {
          }
        }
 
+        // Process referral code if provided
+        if (formData.referralCode?.trim()) {
+          try {
+            const validCode = validateReferralCode(formData.referralCode.trim());
+            if (validCode) {
+              // Use transaction for atomic referral processing
+              const { data: referralData, error: fetchError } = await supabase
+                .from('referrals')
+                .select('id, referrer_id')
+                .eq('referral_code', validCode)
+                .eq('is_used', false)
+                .neq('referrer_id', authData.user.id) // Prevent self-referral
+                .single();
+
+              if (!fetchError && referralData) {
+                // Atomic update with proper error handling
+                const { error: updateError } = await supabase
+                  .from('referrals')
+                  .update({
+                    referred_id: authData.user.id,
+                    is_used: true,
+                    used_at: new Date().toISOString()
+                  })
+                  .eq('id', referralData.id)
+                  .eq('is_used', false); // Prevent race conditions
+                
+                if (!updateError) {
+                  toast.success("Referral bonus applied!");
+                } else {
+                  console.warn("Referral already used or invalid:", updateError);
+                }
+              } else if (fetchError?.code !== 'PGRST116') {
+                // Log non-"not found" errors
+                console.warn("Referral lookup error:", fetchError);
+              }
+            }
+          } catch (error) {
+            console.error("Error processing referral:", error);
+            // Don't block account creation if referral processing fails
+          }
+        }
+
               // Add skills for existing students (new students get skills via addStudent)
         if (existingStudentById && formData.skillIds.length > 0) {
           try {
@@ -320,6 +443,9 @@ export default function OnboardingLogic() {
         await queryClient.invalidateQueries({ queryKey: ['student', authData.user.id] });
         await queryClient.invalidateQueries({ queryKey: ['students'] });
         
+        // Clear localStorage after successful account creation
+        clearLocalStorage();
+        
         toast.success("Account created! Please check your email to verify your account.");
         router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
       
@@ -348,7 +474,7 @@ export default function OnboardingLogic() {
       setIsSubmitting(false);
       isCreatingAccount.current = false;
     }
-  }, [user, signUp, currentStep, formData, suggestedSkill, addStudent, updateStudentSkills, addSkill, router, queryClient]);
+  }, [user, signUp, currentStep, formData, suggestedSkill, addStudent, updateStudentSkills, addSkill, router, queryClient, clearLocalStorage]);
 
 
 
@@ -426,6 +552,9 @@ export default function OnboardingLogic() {
       await queryClient.invalidateQueries({ queryKey: ['student', user.id] });
       await queryClient.invalidateQueries({ queryKey: ['students'] });
 
+      // Clear localStorage after successful profile completion
+      clearLocalStorage();
+
       toast.success("Profile completed successfully!");
       router.push("/");
     } catch (error) {
@@ -434,7 +563,7 @@ export default function OnboardingLogic() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, student, formData, suggestedSkill, updateStudent, addStudent, updateStudentSkills, addSkill, router, queryClient]);
+  }, [user, student, formData, suggestedSkill, updateStudent, addStudent, updateStudentSkills, addSkill, router, queryClient, clearLocalStorage]);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length) {
@@ -524,8 +653,25 @@ export default function OnboardingLogic() {
     }
   }, [uploadAvatar]);
 
-  // Show loading state for authenticated users
-  if (user && (studentLoading || studentSkillsLoading)) {
+  // Error state
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-red-600">Something went wrong loading your profile.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state until hydrated
+  if (user && (studentLoading || studentSkillsLoading || !isHydrated)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
