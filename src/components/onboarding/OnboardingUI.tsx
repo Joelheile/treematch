@@ -79,17 +79,6 @@ export default function OnboardingUI({
   setShowCountrySuggestions,
   onCreateAccount,
 }: OnboardingUIProps) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && isStepValid && !isSubmitting) {
-      const target = e.target as HTMLElement;
-      const isInInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
-      
-      if (!isInInputField) {
-        e.preventDefault();
-        handleNext();
-      }
-    }
-  };
 
   const renderStepContent = () => {
     if (user) {
@@ -239,11 +228,7 @@ export default function OnboardingUI({
   };
 
   return (
-    <div 
-      className="min-h-screen bg-gray-50 flex flex-col lg:flex-row" 
-      onKeyDown={handleKeyDown}
-      tabIndex={-1}
-    >
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       <OnboardingSidebar
         currentStep={currentStep}
         steps={steps}
