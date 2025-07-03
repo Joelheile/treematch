@@ -239,7 +239,6 @@ export default function CoursesStep({
               onChange={(e) => setCourseInput(e.target.value)}
               onKeyPress={handleKeyPress}
               className="w-full text-lg py-4 pr-14"
-              autoFocus
               autoComplete="off"
               name="course-search"
               data-form-type="search"

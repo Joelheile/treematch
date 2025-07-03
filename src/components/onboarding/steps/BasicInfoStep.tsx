@@ -60,11 +60,21 @@ export default function BasicInfoStep({
       }
     }
 
+    // Auto-close mobile tooltip when clicking outside
+    function handleTooltipClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (showMobileTooltip && !target.closest('.mobile-tooltip-container')) {
+        setShowMobileTooltip(false);
+      }
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleTooltipClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleTooltipClickOutside);
     };
-  }, [setShowCountrySuggestions]);
+  }, [setShowCountrySuggestions, showMobileTooltip]);
 
   return (
     <div className="space-y-6">
@@ -103,10 +113,11 @@ export default function BasicInfoStep({
           </Label>
           <Input
             id="name"
+            autoComplete="name"
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="Enter your full name"
-            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
+            className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
           />
         </div>
 
@@ -119,6 +130,7 @@ export default function BasicInfoStep({
           </Label>
           <Input
             id="university"
+            autoComplete="organization"
             value={formData.university}
             onChange={(e) =>
               setFormData((prev) => ({
@@ -127,7 +139,7 @@ export default function BasicInfoStep({
               }))
             }
             placeholder="Oxford, Technical University Munich, etc."
-            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
+            className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
           />
         </div>
 
@@ -141,7 +153,7 @@ export default function BasicInfoStep({
             </Label>
             
             {isMobile ? (
-              <div className="relative">
+              <div className="relative mobile-tooltip-container">
                 <button 
                   type="button" 
                   className="inline-flex items-center justify-center w-6 h-6 -mr-1 touch-manipulation"
@@ -162,12 +174,6 @@ export default function BasicInfoStep({
                     </button>
                   </div>
                 )}
-                {showMobileTooltip && (
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowMobileTooltip(false)}
-                  />
-                )}
               </div>
             ) : (
               <button 
@@ -184,6 +190,8 @@ export default function BasicInfoStep({
           <Input
             id="phoneNumber"
             type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             value={formData.phoneNumber}
             onChange={(e) => {
               setFormData((prev) => ({
@@ -192,7 +200,7 @@ export default function BasicInfoStep({
               }));
             }}
             placeholder="e.g. +1 234 567 8900 (with country code)"
-            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
+            className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
           />
           <p className="text-xs text-gray-500 mt-1">
             Include your country code (e.g. +1 for US, +44 for UK)
@@ -226,8 +234,8 @@ export default function BasicInfoStep({
                   }
                 }}
                 placeholder="Start typing your country..."
-                className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
-                autoComplete="off"
+                className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
+                autoComplete="country"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && showCountrySuggestions && countrySuggestions.length > 0) {
                     e.preventDefault();

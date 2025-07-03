@@ -116,14 +116,14 @@ export default function SkillsStep({
             value={suggestedSkill}
             onChange={(e) => setSuggestedSkill(e.target.value)}
             onKeyDown={handleSuggestSkillWithEnter}
-            className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
+            className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base"
           />
           <Button
             variant="outline"
             size="icon"
             onClick={handleSuggestSkill}
             disabled={!suggestedSkill.trim()}
-            className="h-11 w-11 sm:h-12 sm:w-12 border-gray-300 hover:bg-red-50 hover:border-red-200 disabled:opacity-50"
+            className="h-12 w-12 border-gray-300 hover:bg-red-50 hover:border-red-200 disabled:opacity-50"
           >
             <Plus className="h-5 w-5" />
           </Button>
