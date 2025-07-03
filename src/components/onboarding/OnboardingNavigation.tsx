@@ -26,8 +26,8 @@ export default function OnboardingNavigation({
   handleBack,
 
 }: OnboardingNavigationProps) {
-  // Hide navigation for step 8 (EmailStep) since it has its own submit button
-  if (!user && currentStep === 8) {
+  // Hide navigation for EmailStep (step 5 for unauthenticated users) since it has its own submit button
+  if (!user && currentStep === 5) {
     return null;
   }
 
