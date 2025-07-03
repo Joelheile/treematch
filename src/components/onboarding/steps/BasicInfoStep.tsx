@@ -191,9 +191,12 @@ export default function BasicInfoStep({
                 phoneNumber: e.target.value,
               }));
             }}
-            placeholder="e.g. +54 9 11 6661 1731"
+            placeholder="e.g. +1 234 567 8900 (with country code)"
             className="h-11 sm:h-12 border-gray-300 focus:border-red-500 focus:ring-red-500 text-base w-full"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Include your country code (e.g. +1 for US, +44 for UK)
+          </p>
         </div>
 
         <div className="relative">

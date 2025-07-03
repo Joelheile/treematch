@@ -169,9 +169,9 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
     };
   }, [user, student, studentLoading, studentSkills, studentSkillsLoading]);
 
-  // Separate effect for country input synchronization
+  // Initialize country input only once during hydration
   useEffect(() => {
-    if (formData.country && isHydrated) {
+    if (formData.country && isHydrated && !countryInput) {
       setCountryInput(formData.country);
       const matchingCountry = countriesData.find((country) => 
         country.name.toLowerCase() === formData.country.toLowerCase()
@@ -180,9 +180,9 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
         setSelectedCountry(matchingCountry);
       }
     }
-  }, [formData.country, isHydrated]);
+  }, [formData.country, isHydrated, countryInput]);
 
-  // Simple localStorage save
+  // Simple localStorage save with longer debounce
   useEffect(() => {
     if (!isHydrated) return;
     
@@ -195,7 +195,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
         }
         console.error('localStorage save failed:', error);
       }
-    }, 300);
+    }, 1000); // Increased from 300ms to 1000ms to reduce conflicts with user typing
     
     return () => clearTimeout(timeoutId);
   }, [formData, isHydrated]);

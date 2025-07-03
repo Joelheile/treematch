@@ -784,48 +784,48 @@ export const StudentOverview = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile-optimized header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-1 rounded-xl">
                 <Image
                   src="/logo.png"
                   alt="TreeMatch Logo"
                   width={40}
                   height={40}
-                  className="w-10 h-10"
+                  className="w-8 h-8 sm:w-10 sm:h-10"
                 />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Treematch</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900">Treematch</h1>
                 <p className="text-gray-500 text-sm hidden sm:block">
                   Connect with Stanford students
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 sm:space-x-3">
               <a
                 href="https://coff.ee/treematch"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200"
+                className="flex items-center gap-1 sm:gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-200"
               >
                 <Coffee className="w-4 h-4" />
                 <span className="hidden sm:inline">Buy us a coffee</span>
                 <span className="sm:hidden">Coffee</span>
               </a>
               <Link href="/referrals">
-                <Button className="flex items-center gap-2 bg-stanford-red-50 text-stanford-cardinal hover:bg-stanford-red-100 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200 border-0">
+                <Button className="flex items-center gap-1 sm:gap-2 bg-stanford-red-50 text-stanford-cardinal hover:bg-stanford-red-100 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-200 border-0">
                   <Trophy className="w-4 h-4" />
                   <span className="hidden sm:inline">Leaderboard</span>
                   <span className="sm:hidden">Board</span>
                 </Button>
               </Link>
               <Link href="/edit">
-                <Button className={`flex items-center space-x-2 rounded-xl ${
+                <Button className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium ${
                   isOnboardingComplete 
-                    ? "bg-red-600 hover:bg-red-700" 
-                    : "bg-orange-600 hover:bg-orange-700"
+                    ? "bg-red-600 hover:bg-red-700 text-white" 
+                    : "bg-orange-600 hover:bg-orange-700 text-white"
                 }`}>
                   <Edit className="w-4 h-4" />
                   <span className="hidden sm:inline">

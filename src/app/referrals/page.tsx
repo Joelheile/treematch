@@ -10,7 +10,6 @@ import Link from "next/link";
 import { useState } from "react";
 import EnhancedLeaderboard from "@/components/referrals/EnhancedLeaderboard";
 import InviteShare from "@/components/referrals/InviteShare";
-import FloatingShareButton from "@/components/FloatingShareButton";
 import LogoutButtonFixed from "@/components/LogoutButtonFixed";
 
 export default function ReferralsPage() {
@@ -50,42 +49,42 @@ export default function ReferralsPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-14 sm:h-16 px-2 sm:px-4 lg:px-8">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
                 <Image
                   src="/logo.png"
                   alt="TreeMatch Logo"
                   width={32}
                   height={32}
-                  className="rounded-lg"
+                  className="w-8 h-8 sm:w-8 sm:h-8 rounded-lg"
                 />
-                <span className="text-xl font-bold text-gray-900">Treematch</span>
+                <span className="text-lg sm:text-xl font-bold text-gray-900">Treematch</span>
               </Link>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 sm:space-x-3">
               <a
                 href="https://coff.ee/treematch"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200"
+                className="flex items-center gap-1 sm:gap-2 bg-amber-100 text-amber-800 hover:bg-amber-200 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-200"
               >
                 <Coffee className="w-4 h-4" />
                 <span className="hidden sm:inline">Buy us a coffee</span>
                 <span className="sm:hidden">Coffee</span>
               </a>
               <Link href="/">
-                <Button className="flex items-center gap-2 bg-stanford-red-50 text-stanford-cardinal hover:bg-stanford-red-100 px-3 py-2 rounded-xl text-sm font-medium transition-colors duration-200 border-0">
+                <Button className="flex items-center gap-1 sm:gap-2 bg-stanford-red-50 text-stanford-cardinal hover:bg-stanford-red-100 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors duration-200 border-0">
                   <LayoutDashboard className="w-4 h-4" />
                   <span className="hidden sm:inline">Dashboard</span>
                   <span className="sm:hidden">Dashboard</span>
                 </Button>
               </Link>
               <Link href="/edit">
-                <Button className={`flex items-center space-x-2 rounded-xl ${
+                <Button className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium ${
                   isOnboardingComplete 
-                    ? "bg-red-600 hover:bg-red-700" 
-                    : "bg-orange-600 hover:bg-orange-700"
+                    ? "bg-red-600 hover:bg-red-700 text-white" 
+                    : "bg-orange-600 hover:bg-orange-700 text-white"
                 }`}>
                   <Edit className="w-4 h-4" />
                   <span className="hidden sm:inline">
@@ -138,9 +137,6 @@ export default function ReferralsPage() {
         <EnhancedLeaderboard />
       </div>
 
-      {/* Floating Share Button */}
-      <FloatingShareButton />
-      
       {/* Bottom Left Logout Button */}
       <LogoutButtonFixed />
 

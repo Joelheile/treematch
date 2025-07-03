@@ -39,7 +39,7 @@ export default function SkillsStep({
   };
 
   const handleSuggestSkillWithEnter = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && suggestedSkill.trim()) {
       e.preventDefault();
       handleSuggestSkill();
     }
@@ -54,6 +54,9 @@ export default function SkillsStep({
         <p className="text-gray-600 text-sm sm:text-base px-2 leading-relaxed">
           Select the areas where you have experience or expertise. This helps
           others find you for the right projects.
+        </p>
+        <p className="text-gray-500 text-xs sm:text-sm px-2 mt-1">
+          Select at least one skill to continue.
         </p>
       </div>
 

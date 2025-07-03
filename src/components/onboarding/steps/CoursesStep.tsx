@@ -192,8 +192,8 @@ export default function CoursesStep({
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      e.preventDefault();
       if (suggestions.length > 0) {
+        e.preventDefault();
         const s = suggestions[0];
         const code = 'code' in s ? s.code : s.catalog_number;
         if (!formData.courses.includes(code)) {
@@ -203,9 +203,11 @@ export default function CoursesStep({
           }));
         }
         setCourseInput("");
-      } else {
+      } else if (courseInput.trim()) {
+        e.preventDefault();
         addCourse();
       }
+      // Don't prevent default if no suggestions and no input - allows normal form behavior
     }
   };
 
