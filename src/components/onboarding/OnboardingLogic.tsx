@@ -101,79 +101,38 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
         { number: 5, title: "Account", subtitle: "Create Your Account" },
       ];
 
-  // Single effect to handle all initialization
+  // Initialize form data from database if user exists
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    let mounted = true;
-    
-    const initializeForm = async () => {
-      try {
-        // 1. Load from localStorage first
-        const saved = localStorage.getItem(FORM_DATA_KEY);
-        if (saved && mounted) {
-          try {
-            setFormData(JSON.parse(saved));
-            setIsHydrated(true);
-            return; // Exit early if localStorage data exists
-          } catch (e) {
-            console.error('Failed to parse saved form data:', e);
-            // Clear corrupted data and continue
-            localStorage.removeItem(FORM_DATA_KEY);
-          }
-        }
-        
-        // 2. Load from database only if no localStorage data and user/student exist
-        if (user && student && !studentLoading && !studentSkillsLoading && mounted) {
-          const currentSkillIds = Array.isArray(studentSkills) ? studentSkills.map((ss) => ss?.skill_id).filter(Boolean) : [];
-          
-          const dbData = {
-            name: student.name || "",
-            country: student.country || "",
-            university: student.university || "",
-            phoneNumber: student.phone_number?.trim() || "",
-            profileImage: student.profile_image || "",
-            skillIds: currentSkillIds,
-            courses: student.courses || [],
-            summerGoals: student.goals || "",
-            coolestThing: student.coolest_thing || "",
-            linkedinUrl: student.linkedin || "",
-            instagramHandle: student.instagram || "",
-            twitterHandle: student.twitter || "",
-            githubUsername: student.github || "",
-            websiteUrl: student.website || "",
-            icon: student.icon || "",
-            email: user.email || "",
-            hasEngr145Team: Boolean(student.has_engr145_team),
-            referralCode: referralCode || "",
-          };
-          
-          setFormData(dbData);
-        }
-        
-        // Always set hydrated to true, regardless of data source
-        if (mounted) {
-          setIsHydrated(true);
-        }
-      } catch (error) {
-        console.error('Initialization failed:', error);
-        if (mounted) {
-          setHasError(true);
-          setIsHydrated(true); // Still set hydrated to show error state
-        }
-      }
-    };
-    
-    initializeForm();
-    
-    return () => {
-      mounted = false;
-    };
-  }, [user, student, studentLoading, studentSkills, studentSkillsLoading, referralCode]);
+    if (user && student && !studentLoading) {
+      const currentSkillIds = Array.isArray(studentSkills) ? studentSkills.map((ss) => ss?.skill_id).filter(Boolean) : [];
+      
+      setFormData({
+        name: student.name || "",
+        country: student.country || "",
+        university: student.university || "",
+        phoneNumber: student.phone_number?.trim() || "",
+        profileImage: student.profile_image || "",
+        skillIds: currentSkillIds,
+        courses: student.courses || [],
+        summerGoals: student.goals || "",
+        coolestThing: student.coolest_thing || "",
+        linkedinUrl: student.linkedin || "",
+        instagramHandle: student.instagram || "",
+        twitterHandle: student.twitter || "",
+        githubUsername: student.github || "",
+        websiteUrl: student.website || "",
+        icon: student.icon || "",
+        email: user.email || "",
+        hasEngr145Team: Boolean(student.has_engr145_team),
+        referralCode: referralCode || "",
+      });
+    }
+    setIsHydrated(true);
+  }, [user, student, studentLoading, studentSkills, referralCode]);
 
-  // Initialize country input only once during hydration
+  // Initialize country input
   useEffect(() => {
-    if (formData.country && isHydrated && !countryInput) {
+    if (formData.country && !countryInput) {
       setCountryInput(formData.country);
       const matchingCountry = countriesData.find((country) => 
         country.name.toLowerCase() === formData.country.toLowerCase()
@@ -182,36 +141,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
         setSelectedCountry(matchingCountry);
       }
     }
-  }, [formData.country, isHydrated, countryInput]);
-
-  // Simple localStorage save with longer debounce
-  useEffect(() => {
-    if (!isHydrated) return;
-    
-    const timeoutId = setTimeout(() => {
-      try {
-        localStorage.setItem(FORM_DATA_KEY, JSON.stringify(formData));
-      } catch (error: any) {
-        if (error.name === 'QuotaExceededError') {
-          toast.error('Storage full - changes may not save');
-        }
-        console.error('localStorage save failed:', error);
-      }
-    }, 1000); // Increased from 300ms to 1000ms to reduce conflicts with user typing
-    
-    return () => clearTimeout(timeoutId);
-  }, [formData, isHydrated]);
-
-  // Cleanup function to clear localStorage
-  const clearLocalStorage = useCallback(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(FORM_DATA_KEY);
-      }
-    } catch (error) {
-      console.error('Failed to clear localStorage:', error);
-    }
-  }, [FORM_DATA_KEY]);
+  }, [formData.country, countryInput]);
 
 
 
@@ -445,9 +375,6 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
         await queryClient.invalidateQueries({ queryKey: ['student', authData.user.id] });
         await queryClient.invalidateQueries({ queryKey: ['students'] });
         
-        // Clear localStorage after successful account creation
-        clearLocalStorage();
-        
         toast.success("Account created! Please check your email to verify your account.");
         router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
       
@@ -476,7 +403,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
       setIsSubmitting(false);
       isCreatingAccount.current = false;
     }
-  }, [user, signUp, currentStep, formData, suggestedSkill, addStudent, updateStudentSkills, addSkill, router, queryClient, clearLocalStorage]);
+  }, [user, signUp, currentStep, formData, suggestedSkill, addStudent, updateStudentSkills, addSkill, router, queryClient]);
 
 
 
@@ -554,9 +481,6 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
       await queryClient.invalidateQueries({ queryKey: ['student', user.id] });
       await queryClient.invalidateQueries({ queryKey: ['students'] });
 
-      // Clear localStorage after successful profile completion
-      clearLocalStorage();
-
       toast.success("Profile completed successfully!");
       router.push("/");
     } catch (error) {
@@ -565,7 +489,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, student, formData, suggestedSkill, updateStudent, addStudent, updateStudentSkills, addSkill, router, queryClient, clearLocalStorage]);
+  }, [user, student, formData, suggestedSkill, updateStudent, addStudent, updateStudentSkills, addSkill, router, queryClient]);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length) {
@@ -672,8 +596,8 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
     );
   }
 
-  // Show loading state until hydrated
-  if (user && (studentLoading || studentSkillsLoading || !isHydrated)) {
+  // Show loading state only if actually loading
+  if (user && studentLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
