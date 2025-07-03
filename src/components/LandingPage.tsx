@@ -232,7 +232,7 @@ export function LandingPage() {
           </Button>
           
           <div className="mt-8 text-white/70 text-lg">
-            takes 6 minutes
+            takes 2 minutes
           </div>
         </div>
       </div>
