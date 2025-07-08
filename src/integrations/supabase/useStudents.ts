@@ -51,8 +51,6 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
     queryKey: ['students', options],
     queryFn: async (): Promise<PaginatedResponse<StudentWithSkills>> => {
       const { 
-        limit = 20, 
-        offset = 0, 
         filters = {},
         orderBy = 'created_at',
         orderDirection = 'desc'
@@ -63,7 +61,6 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         .from('students')
         .select('*', { count: 'exact' })
         .order(orderBy, { ascending: orderDirection === 'asc' })
-        .range(offset, offset + limit - 1)
 
       if (filters.country) {
         const sanitizedCountry = filters.country.trim().substring(0, 100)
@@ -179,7 +176,7 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
       return {
         data: studentsWithSkills,
         totalCount: count || 0,
-        hasMore: offset + limit < (count || 0)
+        hasMore: false
       }
     },
   })

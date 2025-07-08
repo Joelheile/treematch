@@ -1,4 +1,5 @@
 import { useAuth } from "@/app/auth/AuthProvider";
+import FloatingShareButton from "@/components/FloatingShareButton";
 import { StudentCard } from "@/components/StudentCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -44,8 +45,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import FloatingShareButton from "@/components/FloatingShareButton";
 // import ReferralCTA from "@/components/referrals/ReferralCTA";
 
 // Placeholder analytics hook since the original was undefined
@@ -148,7 +147,6 @@ export const StudentOverview = () => {
     refetch,
   } = useStudents({
     filters,
-    limit: 50,
     orderBy: "created_at",
     orderDirection: "desc",
   });
@@ -797,7 +795,9 @@ export const StudentOverview = () => {
                 />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-gray-900">Treematch</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+                  Treematch
+                </h1>
                 <p className="text-gray-500 text-sm hidden sm:block">
                   Connect with Stanford students
                 </p>
@@ -822,14 +822,18 @@ export const StudentOverview = () => {
                 </Button>
               </Link>
               <Link href="/edit">
-                <Button className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium ${
-                  isOnboardingComplete 
-                    ? "bg-red-600 hover:bg-red-700 text-white" 
-                    : "bg-orange-600 hover:bg-orange-700 text-white"
-                }`}>
+                <Button
+                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium ${
+                    isOnboardingComplete
+                      ? "bg-red-600 hover:bg-red-700 text-white"
+                      : "bg-orange-600 hover:bg-orange-700 text-white"
+                  }`}
+                >
                   <Edit className="w-4 h-4" />
                   <span className="hidden sm:inline">
-                    {isOnboardingComplete ? "Edit Profile" : "Complete Onboarding"}
+                    {isOnboardingComplete
+                      ? "Edit Profile"
+                      : "Complete Onboarding"}
                   </span>
                   <span className="sm:hidden">
                     {isOnboardingComplete ? "Edit" : "Complete"}
