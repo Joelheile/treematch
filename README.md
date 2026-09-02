@@ -2,6 +2,8 @@
 
 Find every student in Stanford Summer Session by skills, courses and interests.
 
+Built together in our first week at Stanford by [Joël Heil Escobar](https://github.com/Joelheile), [Simon Gneuß](https://github.com/Simonstorms), [Nicholas Rodrigues](https://github.com/NicholasRodrigues) and [Leonard Darsow](https://github.com/tripleprisma), to connect with the others and make friendships simpler.
+
 **Live:** https://treematch.vercel.app · **License:** MIT
 
 ![TreeMatch landing page](docs/landing.jpg)
@@ -12,7 +14,7 @@ Stanford Summer Session puts hundreds of students from all over the world on one
 
 TreeMatch is a directory of the whole session. You fill in a profile in two minutes: what you build, which courses you take, what you want out of the summer, your socials. Then you search everyone else by skill, course or country, like the ones you want to meet, and write to them over email or LinkedIn.
 
-We built it in the first two weeks of the 2025 session: [Simon](https://www.linkedin.com/in/simon-gneuss/), [Joel](https://www.linkedin.com/in/joel-heil-escobar/), [Nicholas](https://www.linkedin.com/in/nicholas-rodrigues-/) and [Leonard](https://www.linkedin.com/in/leonarddarsow/). The first commit on June 22 was a swipe-to-match prototype. It became a searchable directory the same week. Around 60 students joined over the summer.
+The four of us built it in the first two weeks of the 2025 session. The first commit on June 22 was a swipe-to-match prototype. It became a searchable directory the same week. Around 60 students joined over the summer.
 
 ## What it does
 
