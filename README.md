@@ -1,28 +1,49 @@
 # TreeMatch
 
-A directory of every student in Stanford Summer Session. Students create a profile with their skills, courses and socials, then find each other by search and filters.
+Find every student in Stanford Summer Session by skills, courses and interests.
 
-Live: https://treematch.vercel.app
+**Live:** https://treematch.vercel.app · **License:** MIT
 
-Built in summer 2025 by Joel, Leonard, Simon and Nicholas during Stanford Summer Session.
+![TreeMatch landing page](docs/landing.jpg)
 
-## Features
+## Why we built it
 
-- Sign up with a Stanford email, magic link or password
-- Onboarding flow: name, university, courses, skills, interests, socials, avatar
-- Student directory with search and filters for country, skills, courses and social links
-- Like students and filter for the ones you liked
-- Referral links with a leaderboard
-- Contact card export and share button
+Stanford Summer Session puts hundreds of students from all over the world on one campus for eight weeks. You meet your dorm and the people in your two classes. Everyone else stays a face in the dining hall. Eight weeks is not enough time to meet everyone, so you want to find the few people who matter to you fast.
 
-## Stack
+TreeMatch is a directory of the whole session. You fill in a profile in two minutes: what you build, which courses you take, what you want out of the summer, your socials. Then you search everyone else by skill, course or country, like the ones you want to meet, and write to them over email or LinkedIn.
 
-- Next.js 14 App Router, TypeScript
-- Supabase for auth, Postgres, storage and row level security
-- Tailwind CSS and shadcn/ui
-- React Query
-- PostHog for analytics, optional
-- Jest and React Testing Library
+We built it in the first two weeks of the 2025 session: [Simon](https://www.linkedin.com/in/simon-gneuss/), [Joel](https://www.linkedin.com/in/joel-heil-escobar/), [Nicholas](https://www.linkedin.com/in/nicholas-rodrigues-/) and [Leonard](https://www.linkedin.com/in/leonarddarsow/). The first commit on June 22 was a swipe-to-match prototype. It became a searchable directory the same week. Around 60 students joined over the summer.
+
+## What it does
+
+![Student profile in TreeMatch](docs/profile.jpg)
+
+- Sign-up limited to `@stanford.edu` addresses, with password or magic link
+- Onboarding in seven steps: basics, photo, courses, skills, current project, goals, socials
+- Directory with search and filters for country, skills, courses, social links and "looking for an ENGR 145 team"
+- Like students, filter for the ones you liked, see mutual likes
+- Referral links and a leaderboard to get the rest of the session on
+- Contact card export and a share button for the whole thing
+
+## How it is built
+
+| Part | Choice | Why |
+|---|---|---|
+| Framework | Next.js 14, App Router, TypeScript | Started on Vite. Moved to Next.js on day one for the auth callback route and middleware. Magic links need a server. |
+| Backend | Supabase: Auth, Postgres, Storage | One service for login, data and avatars. Nothing to host. Row level security keeps each student's writes to their own row. |
+| Data fetching | TanStack React Query | Profile and directory data are cached and invalidated after each onboarding step. |
+| UI | Tailwind CSS, shadcn/ui, Lucide | Fast to build, easy to keep consistent across four people. |
+| Forms | react-hook-form, zod | Validation on every onboarding step. |
+| Images | browser-image-compression | Avatars are compressed in the browser before upload, so storage stays small and pages load fast. |
+| Analytics | PostHog, optional | Where people drop out of onboarding. |
+| Tests | Jest, React Testing Library | Hooks and the login flow. |
+| Hosting | Vercel | Deploys on push. |
+
+## What we learned
+
+Most of the bug fixes in the history are auth: magic links, duplicate Supabase clients, row level security with server side rendering. If you build on Supabase, budget a full day for auth before anything else.
+
+We shipped on day two and fixed in production for two weeks. 276 commits from four people, a lot of them named "fix". For something that only had to live eight weeks, that was the right trade.
 
 ## Run it locally
 
@@ -84,14 +105,14 @@ src/
   lib/            Utilities and validation
   types/          Shared types
 supabase-migrations.sql   Schema, RLS policies, buckets, seed data
-fix-storage.sql           Storage bucket policies for avatar uploads
 supabase-hardening.sql    One-time security fixes for existing projects
+fix-storage.sql           Storage bucket policies for avatar uploads
 middleware.ts             Route protection
 ```
 
-## Deploying
+## Adapting it for your school
 
-The app runs on Vercel through the Git integration. Set the environment variables above in the Vercel project.
+The Stanford parts are small: the email domain check in `src/app/auth/login/page.tsx`, `src/components/onboarding/steps/EmailStep.tsx` and the `enforce_stanford_email` trigger, the course list in `src/components/onboarding/steps/CoursesStep.tsx`, and the colors in `tailwind.config.ts`. Change those and it works for any program.
 
 ## Security
 
