@@ -91,7 +91,7 @@ middleware.ts             Route protection
 
 ## Deploying
 
-The app runs on Vercel. Set the environment variables above in the Vercel project. The GitHub workflow in `.github/workflows/deploy-vercel.yml` triggers a deploy hook for pushes from non-admin collaborators; store the hook URL as a repository secret before enabling it.
+The app runs on Vercel through the Git integration. Set the environment variables above in the Vercel project.
 
 ## Security
 
