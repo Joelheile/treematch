@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "Triggering Vercel deployment..."
           response=$(curl -s -w "\n%{http_code}" -X POST \
-            "***REMOVED_VERCEL_DEPLOY_HOOK***")
+            "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}")
           
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | head -n -1)

@@ -1,10 +1,10 @@
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import LoginPage from '@/app/auth/login/page'
+import { toast } from 'sonner'
 
 const mockSignIn = jest.fn()
 const mockPush = jest.fn()
-const mockToast = jest.fn()
 const mockGet = jest.fn().mockReturnValue(null)
 
 jest.mock('@/app/auth/AuthProvider', () => ({
@@ -24,16 +24,11 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: mockGet }),
 }))
 
-jest.mock('@/components/ui/use-toast', () => ({
-  useToast: () => ({ toast: mockToast }),
+jest.mock('sonner', () => ({
+  toast: { error: jest.fn(), success: jest.fn() },
 }))
 
-jest.mock('@/lib/onboarding-storage', () => ({
-  OnboardingStorage: {
-    exists: jest.fn().mockReturnValue(false),
-    isExpired: jest.fn().mockReturnValue(true),
-  },
-}))
+const mockToast = jest.mocked(toast.error)
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -59,11 +54,9 @@ describe('LoginPage', () => {
     })
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        variant: 'destructive',
-        title: 'Invalid Email Domain',
-        description: 'Please use your Stanford email address (@stanford.edu)',
-      })
+      expect(mockToast).toHaveBeenCalledWith(
+        'Please use a valid Stanford email address (@stanford.edu)',
+      )
     })
   })
 

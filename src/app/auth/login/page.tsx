@@ -48,9 +48,10 @@ export default function LoginPage() {
       await signIn(email, password);
       toast.success("Welcome back!");
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Failed to sign in");
-      toast.error(err.message || "Failed to sign in");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to sign in";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

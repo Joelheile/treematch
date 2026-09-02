@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import type { User } from "@supabase/supabase-js";
+import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
 import { ChevronLeft } from "lucide-react";
 
 interface OnboardingNavigationProps {
@@ -8,8 +10,8 @@ interface OnboardingNavigationProps {
   totalSteps: number;
   isStepValid: boolean;
   isSubmitting: boolean;
-  user: any;
-  student: any;
+  user: User | null;
+  student?: StudentWithSkills | null;
   handleNext: () => void;
   handleBack: () => void;
 

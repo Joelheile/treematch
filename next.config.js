@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['zlggajmzyjrwojzhidlo.supabase.co'],
+    domains: [new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname],
   },
   async rewrites() {
     return [

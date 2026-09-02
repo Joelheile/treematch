@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from './client-ssr'
+import { supabase } from './client-ssr'
 import { Tables } from './types'
 
 export interface StudentWithSkills extends Tables<'students'> {
@@ -21,8 +21,6 @@ export interface StudentFilters {
 }
 
 export interface StudentSearchOptions {
-  limit?: number
-  offset?: number
   filters?: StudentFilters
   orderBy?: string
   orderDirection?: 'asc' | 'desc'
@@ -56,7 +54,6 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         orderDirection = 'desc'
       } = options
 
-      const supabase = createClient()
       let query = supabase
         .from('students')
         .select('*', { count: 'exact' })
@@ -149,29 +146,18 @@ export const useStudents = (options: StudentSearchOptions = {}) => {
         .select(`
           *,
           student_skills!left(
-            skills!inner(
-              id,
-              name,
-              is_global,
-              created_at
-            )
+            skills!inner(*)
           )
         `)
 
       if (studentsError) throw studentsError
 
-      // Transform the data to match expected format
-      const studentsWithSkills = (studentsData || []).map(student => {
-        const skills = (student as any).student_skills
-          ?.map((ss: any) => ss.skills)
-          ?.filter((skill: any) => skill) || []
-        
-        const { student_skills, ...cleanStudent } = student as any
-        return {
-          ...cleanStudent,
-          skills
-        }
-      }) as StudentWithSkills[]
+      const studentsWithSkills: StudentWithSkills[] = (studentsData ?? []).map(
+        ({ student_skills, ...student }) => ({
+          ...student,
+          skills: student_skills.flatMap((row) => (row.skills ? [row.skills] : [])),
+        }),
+      )
 
       return {
         data: studentsWithSkills,

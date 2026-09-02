@@ -168,11 +168,11 @@ export const StudentDetailPopup = ({
               )}
 
               {/* Courses under university */}
-              {(student as any).courses &&
-                (student as any).courses.length > 0 && (
+              {student.courses &&
+                student.courses.length > 0 && (
                   <div className="mb-3">
                     <div className="flex flex-wrap gap-1">
-                      {(student as any).courses.map(
+                      {student.courses.map(
                         (course: string, index: number) => (
                           <Badge
                             key={`${course}-${index}`}

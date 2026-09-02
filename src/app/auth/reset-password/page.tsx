@@ -30,8 +30,8 @@ export default function ResetPasswordPage() {
 
       if (error) throw error
       setSuccess(true)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send reset email")
     } finally {
       setLoading(false)
     }

@@ -41,8 +41,8 @@ export default function CheckEmailPage() {
 
       toast.success("Verification email sent! Please check your inbox.");
       setCountdown(60); // 60 second cooldown
-    } catch (error: any) {
-      toast.error(error.message || "Failed to resend email. Please try again.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to resend email. Please try again.");
     } finally {
       setIsResending(false);
     }

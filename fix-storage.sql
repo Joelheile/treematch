@@ -24,8 +24,5 @@ CREATE POLICY "Authenticated users can upload avatars" ON storage.objects FOR IN
 CREATE POLICY "Users can update their own avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "Users can delete their own avatars" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 
--- Create storage policies for temp-avatars bucket
+-- temp-avatars is read-only. It only holds profile images from before uploads moved behind login.
 CREATE POLICY "Public Access Temp Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'temp-avatars');
-CREATE POLICY "Anyone can upload temp avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'temp-avatars');
-CREATE POLICY "Anyone can update temp avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'temp-avatars');
-CREATE POLICY "Anyone can delete temp avatars" ON storage.objects FOR DELETE USING (bucket_id = 'temp-avatars'); 

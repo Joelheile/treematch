@@ -1,13 +1,23 @@
 import { renderHook } from '@testing-library/react'
 import { useCurrentStudent } from '@/hooks/useCurrentStudent'
 import { useAuth } from '@/app/auth/AuthProvider'
-import { useStudentByEmail } from '@/integrations/supabase/useStudentByEmail'
+import { useStudentByUserId } from '@/integrations/supabase/useStudentByUserId'
+import type { ServiceResponse } from '@/integrations/supabase/useStudentByUserId'
+import type { StudentWithSkills } from '@/integrations/supabase/useStudents'
+import type { Session, User } from '@supabase/supabase-js'
+import type { UseQueryResult } from '@tanstack/react-query'
 
 jest.mock('@/app/auth/AuthProvider')
-jest.mock('@/integrations/supabase/useStudentByEmail')
+jest.mock('@/integrations/supabase/useStudentByUserId')
 
 const mockUseAuth = jest.mocked(useAuth)
-const mockUseStudentByEmail = jest.mocked(useStudentByEmail)
+const mockUseStudentByUserId = jest.mocked(useStudentByUserId)
+
+const mockUser = { id: '123', email: 'test@example.com' } as User
+const mockSession = { user: mockUser } as Session
+
+type StudentQuery = UseQueryResult<ServiceResponse<StudentWithSkills>>
+const queryResult = (partial: Partial<StudentQuery>) => partial as StudentQuery
 
 describe('useCurrentStudent', () => {
   beforeEach(() => {
@@ -15,35 +25,33 @@ describe('useCurrentStudent', () => {
   })
 
   describe('when user is authenticated', () => {
-    it('should fetch student by email', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
+    it('should fetch student by user id', () => {
       const mockStudent = {
         id: '456',
         name: 'John Doe',
         email: 'test@example.com',
         isOnboarded: true,
-      }
+      } as StudentWithSkills
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
-        data: { data: mockStudent },
+      mockUseStudentByUserId.mockReturnValue(queryResult({
+        data: { data: mockStudent, error: null },
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
-      expect(mockUseStudentByEmail).toHaveBeenCalledWith('test@example.com', true)
+      expect(mockUseStudentByUserId).toHaveBeenCalledWith('123', true)
       expect(result.current.student).toEqual(mockStudent)
       expect(result.current.isOnboarded).toBe(true)
       expect(result.current.isLoading).toBe(false)
@@ -51,30 +59,28 @@ describe('useCurrentStudent', () => {
     })
 
     it('should determine onboarding status correctly when student exists', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
       const mockStudent = {
         id: '456',
         name: 'John Doe',
         email: 'test@example.com',
         isOnboarded: true,
-      }
+      } as StudentWithSkills
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
-        data: { data: mockStudent },
+      mockUseStudentByUserId.mockReturnValue(queryResult({
+        data: { data: mockStudent, error: null },
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -82,30 +88,28 @@ describe('useCurrentStudent', () => {
     })
 
     it('should return false for onboarding when student is not onboarded', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
       const mockStudent = {
         id: '456',
         name: 'John Doe',
         email: 'test@example.com',
         isOnboarded: false,
-      }
+      } as StudentWithSkills
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
-        data: { data: mockStudent },
+      mockUseStudentByUserId.mockReturnValue(queryResult({
+        data: { data: mockStudent, error: null },
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -113,24 +117,22 @@ describe('useCurrentStudent', () => {
     })
 
     it('should handle loading state', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
+      mockUseStudentByUserId.mockReturnValue(queryResult({
         data: undefined,
         isLoading: true,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -140,25 +142,23 @@ describe('useCurrentStudent', () => {
     })
 
     it('should handle error state', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
       const mockError = new Error('Database error')
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
+      mockUseStudentByUserId.mockReturnValue(queryResult({
         data: undefined,
         isLoading: false,
         error: mockError,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -168,25 +168,23 @@ describe('useCurrentStudent', () => {
     })
 
     it('should provide refetch function', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
       const mockRefetch = jest.fn()
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
+      mockUseStudentByUserId.mockReturnValue(queryResult({
         data: undefined,
         isLoading: false,
         error: null,
         refetch: mockRefetch,
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -203,19 +201,18 @@ describe('useCurrentStudent', () => {
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
+      mockUseStudentByUserId.mockReturnValue(queryResult({
         data: undefined,
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
-      expect(mockUseStudentByEmail).toHaveBeenCalledWith('', false)
+      expect(mockUseStudentByUserId).toHaveBeenCalledWith('', false)
       expect(result.current.student).toBeUndefined()
       expect(result.current.isOnboarded).toBe(false)
     })
@@ -228,15 +225,14 @@ describe('useCurrentStudent', () => {
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
+      mockUseStudentByUserId.mockReturnValue(queryResult({
         data: undefined,
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -246,24 +242,22 @@ describe('useCurrentStudent', () => {
 
   describe('when student data is null', () => {
     it('should return false for onboarding status', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
-        data: { data: null },
+      mockUseStudentByUserId.mockReturnValue(queryResult({
+        data: { data: null, error: null },
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
@@ -274,62 +268,31 @@ describe('useCurrentStudent', () => {
 
   describe('when student exists but isOnboarded is null', () => {
     it('should return false for onboarding status', () => {
-      const mockUser = { id: '123', email: 'test@example.com' }
       const mockStudent = {
         id: '456',
         name: 'John Doe',
         email: 'test@example.com',
         isOnboarded: null,
-      }
+      } as StudentWithSkills
 
       mockUseAuth.mockReturnValue({
         user: mockUser,
-        session: { user: mockUser },
+        session: mockSession,
         loading: false,
         signIn: jest.fn(),
         signUp: jest.fn(),
         signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
       })
 
-      mockUseStudentByEmail.mockReturnValue({
-        data: { data: mockStudent },
+      mockUseStudentByUserId.mockReturnValue(queryResult({
+        data: { data: mockStudent, error: null },
         isLoading: false,
         error: null,
         refetch: jest.fn(),
-      })
+      }))
 
       const { result } = renderHook(() => useCurrentStudent())
 
-      expect(result.current.isOnboarded).toBe(false)
-    })
-  })
-
-  describe('when user email is undefined', () => {
-    it('should handle undefined email gracefully', () => {
-      const mockUser = { id: '123', email: undefined }
-
-      mockUseAuth.mockReturnValue({
-        user: mockUser,
-        session: { user: mockUser },
-        loading: false,
-        signIn: jest.fn(),
-        signUp: jest.fn(),
-        signOut: jest.fn(),
-        signInWithGoogle: jest.fn(),
-      })
-
-      mockUseStudentByEmail.mockReturnValue({
-        data: undefined,
-        isLoading: false,
-        error: null,
-        refetch: jest.fn(),
-      })
-
-      const { result } = renderHook(() => useCurrentStudent())
-
-      expect(mockUseStudentByEmail).toHaveBeenCalledWith('', false)
-      expect(result.current.student).toBeUndefined()
       expect(result.current.isOnboarded).toBe(false)
     })
   })

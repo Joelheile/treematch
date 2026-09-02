@@ -30,7 +30,7 @@ export const useStudentSkillsFilter = () => {
       
       // Group by skill and count students
       const skillCounts = data?.reduce((acc, item) => {
-        const skill = (item as any).skills
+        const skill = item.skills
         if (skill && skill.is_global) {
           const existing = acc.find(s => s.id === skill.id)
           if (existing) {

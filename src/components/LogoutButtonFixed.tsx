@@ -14,7 +14,7 @@ export default function LogoutButtonFixed() {
     try {
       await signOut();
       window.location.href = "/auth/login";
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error signing out:", error);
       window.location.href = "/auth/login";
     } finally {

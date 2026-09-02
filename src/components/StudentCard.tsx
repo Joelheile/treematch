@@ -101,6 +101,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
         <button
           onClick={handleHeartClick}
           disabled={isToggling}
+          aria-label={isLiked(student.id) ? "Unlike" : "Like"}
           className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-colors duration-75 active:scale-95 ${
             isLiked(student.id)
               ? "bg-red-500 text-white hover:bg-red-600"
@@ -164,11 +165,11 @@ export const StudentCard = ({ student }: StudentCardProps) => {
               </p>
             )}
             {/* Courses under university */}
-            {(student as any).courses &&
-              (student as any).courses.length > 0 && (
+            {student.courses &&
+              student.courses.length > 0 && (
                 <div className="mb-2">
                   <div className="flex flex-wrap justify-center gap-1">
-                    {(student as any).courses.map(
+                    {student.courses.map(
                       (course: string, index: number) => (
                         <Badge
                           key={`${course}-${index}`}
@@ -197,17 +198,17 @@ export const StudentCard = ({ student }: StudentCardProps) => {
             </div>
           )}
           {/* Spacer */}
-          {student.coolest_thing && (student as any).goals && (
+          {student.coolest_thing && student.goals && (
             <div className="border-t border-gray-100 my-3"></div>
           )}
           {/* Summer Goals */}
-          {(student as any).goals && (
+          {student.goals && (
             <div>
               <h4 className="text-sm font-semibold text-gray-700 mb-2">
                 Why Stanford & Goals:
               </h4>
               <p className="text-sm text-gray-600 line-clamp-3">
-                {(student as any).goals}
+                {student.goals}
               </p>
             </div>
           )}
@@ -252,6 +253,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                       href={formatSocialUrl("instagram", student.instagram)}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Instagram"
                     >
                       <Instagram className="w-3 h-3" />
                     </a>
@@ -268,6 +270,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                       href={formatSocialUrl("linkedin", student.linkedin)}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="LinkedIn"
                     >
                       <Linkedin className="w-3 h-3" />
                     </a>
@@ -284,6 +287,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                       href={formatSocialUrl("github", student.github)}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="GitHub"
                     >
                       <Github className="w-3 h-3" />
                     </a>
@@ -300,6 +304,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                       href={`https://twitter.com/${student.twitter}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Twitter"
                     >
                       <Twitter className="w-3 h-3" />
                     </a>
@@ -320,6 +325,7 @@ export const StudentCard = ({ student }: StudentCardProps) => {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Website"
                     >
                       <ExternalLink className="w-3 h-3" />
                     </a>

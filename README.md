@@ -1,8 +1,30 @@
 # TreeMatch
 
-A Stanford student matching platform built with Next.js, TypeScript, Tailwind CSS, and Shadcn UI.
+A directory of every student in Stanford Summer Session. Students create a profile with their skills, courses and socials, then find each other by search and filters.
 
-## Getting Started
+Live: https://treematch.vercel.app
+
+Built in summer 2025 by Joel, Leonard, Simon and Nicholas during Stanford Summer Session.
+
+## Features
+
+- Sign up with a Stanford email, magic link or password
+- Onboarding flow: name, university, courses, skills, interests, socials, avatar
+- Student directory with search and filters for country, skills, courses and social links
+- Like students and filter for the ones you liked
+- Referral links with a leaderboard
+- Contact card export and share button
+
+## Stack
+
+- Next.js 14 App Router, TypeScript
+- Supabase for auth, Postgres, storage and row level security
+- Tailwind CSS and shadcn/ui
+- React Query
+- PostHog for analytics, optional
+- Jest and React Testing Library
+
+## Run it locally
 
 1. Install dependencies:
 
@@ -10,101 +32,71 @@ A Stanford student matching platform built with Next.js, TypeScript, Tailwind CS
 npm install
 ```
 
-2. Set up environment variables:
+2. Create a Supabase project and run `supabase-migrations.sql` in the SQL editor. It creates the tables, RLS policies, storage buckets and seed skills and courses. If avatar uploads fail, run `fix-storage.sql` too.
 
-Create a `.env.local` file in the root directory with your Supabase credentials:
+   Existing project from before September 2026: run `supabase-hardening.sql` once. It locks the old temp-avatars bucket and adds the server-side Stanford email check.
+
+3. Copy the env file and fill in your Supabase URL and anon key from Settings > API:
 
 ```bash
 cp env.example .env.local
 ```
 
-Then edit `.env.local` and add your actual Supabase URL and API key:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-```
-
-You can find these values in your Supabase project dashboard under Settings > API.
-
-3. Run the development server:
+4. Start the dev server:
 
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-## Migration from Vite to Next.js
+## Environment variables
 
-This project has been migrated from Vite + React Router to Next.js App Router for better performance and simpler routing. Key changes include:
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
+| `NEXT_PUBLIC_POSTHOG_KEY` | No | PostHog project key |
+| `NEXT_PUBLIC_POSTHOG_HOST` | No | PostHog host, defaults to EU |
+| `SUPABASE_PROJECT_ID` | No | Only for `npm run update-types` |
 
-- **Replaced Vite with Next.js App Router**: Simplified build process and better performance
-- **Removed React Router DOM**: Uses Next.js file-based routing instead
-- **Updated directory structure**: Moved from `src/pages/` to Next.js `app/` directory
-- **Fixed component imports**: Resolved client/server component boundaries
-- **Updated build scripts**: New Next.js build and development commands
+Never commit `.env.local`. The anon key is safe to ship to the browser, but all data access must stay behind the RLS policies in `supabase-migrations.sql`.
 
-## Tech Stack
+## Scripts
 
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: Shadcn UI
-- **State Management**: React Query + React Context
-- **Backend**: Supabase
+| Script | What it does |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm test` | Jest |
+| `npm run update-types` | Regenerate `src/integrations/supabase/types.ts` from your Supabase schema |
 
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-## Features
-
-- Student onboarding flow
-- Profile creation and management
-- Skill-based matching system
-- Project collaboration tools
-- Real-time notifications
-
-## Project Structure
+## Project structure
 
 ```
-treematch/
-├── app/                    # Next.js App Router pages
-│   ├── layout.tsx         # Root layout
-│   ├── page.tsx           # Home page
-│   ├── not-found.tsx      # 404 page
-│   ├── providers.tsx      # Client-side providers
-│   └── globals.css        # Global styles
-├── src/
-│   ├── components/        # React components
-│   ├── hooks/            # Custom hooks
-│   ├── lib/              # Utility functions
-│   ├── types/            # TypeScript types
-│   └── integrations/     # External service integrations
-└── public/               # Static assets
+src/
+  app/            Next.js routes: auth, welcome (onboarding), edit, meet, referrals, invite
+  components/     UI, onboarding steps, student cards, referral leaderboard
+  integrations/   Supabase clients and React Query hooks
+  hooks/          Shared hooks
+  lib/            Utilities and validation
+  types/          Shared types
+supabase-migrations.sql   Schema, RLS policies, buckets, seed data
+fix-storage.sql           Storage bucket policies for avatar uploads
+supabase-hardening.sql    One-time security fixes for existing projects
+middleware.ts             Route protection
 ```
+
+## Deploying
+
+The app runs on Vercel. Set the environment variables above in the Vercel project. The GitHub workflow in `.github/workflows/deploy-vercel.yml` triggers a deploy hook for pushes from non-admin collaborators; store the hook URL as a repository secret before enabling it.
 
 ## Security
 
-This application implements comprehensive security measures. See [SECURITY.md](./SECURITY.md) for detailed information about:
+See [SECURITY.md](./SECURITY.md) for the measures in place and how to report a vulnerability.
 
-- Authentication and authorization
-- Input validation and sanitization
-- Database security
-- File upload security
-- API security
-- Frontend security
-- Infrastructure security
+## License
 
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key | Yes |
-| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog analytics key | No |
-| `NEXT_PUBLIC_POSTHOG_HOST` | PostHog host URL | No |
+MIT, see [LICENSE](./LICENSE).

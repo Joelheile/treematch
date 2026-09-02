@@ -19,7 +19,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import OnboardingUI from "./OnboardingUI";
 import { FormData } from "./types";
 import { isValidPhone } from "@/lib/phone-validation";
-import { debounce } from "@/lib/utils";
 import Image from "next/image";
 import { createClient } from "@/integrations/supabase/client-ssr";
 import { validateReferralCode } from "@/lib/validation";
@@ -80,7 +79,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<{ name: string; code: string } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [tempAvatarPath, setTempAvatarPath] = useState<string>("");
+  const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
 
   // Steps for both authenticated and unauthenticated users
   const steps = user
@@ -195,6 +194,10 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
       if (!authData.user) {
         throw new Error("Failed to create user account");
       }
+
+      const profileImage = pendingAvatar
+        ? (await uploadAvatar.mutateAsync({ file: pendingAvatar, userId: authData.user.id })).url
+        : formData.profileImage;
       
       // Check if student already exists (this might be the 409 source)
       const supabase = createClient();
@@ -223,7 +226,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
           country: formData.country,
           university: formData.university,
           phone_number: formData.phoneNumber,
-          profile_image: formData.profileImage,
+          profile_image: profileImage,
           courses: formData.courses,
           goals: formData.summerGoals,
           coolest_thing: formData.coolestThing,
@@ -266,7 +269,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
            country: formData.country,
            university: formData.university,
            phone_number: formData.phoneNumber,
-           profile_image: formData.profileImage,
+           profile_image: profileImage,
            courses: formData.courses,
            goals: formData.summerGoals,
            coolest_thing: formData.coolestThing,
@@ -378,7 +381,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
         toast.success("Account created! Please check your email to verify your account.");
         router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error("Account creation error:", error);
       console.error("Error details:", {
         code: error?.code,
@@ -403,7 +406,7 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
       setIsSubmitting(false);
       isCreatingAccount.current = false;
     }
-  }, [user, signUp, currentStep, formData, suggestedSkill, addStudent, updateStudentSkills, addSkill, router, queryClient]);
+  }, [user, signUp, currentStep, formData, pendingAvatar, uploadAvatar, suggestedSkill, addStudent, updateStudentSkills, addSkill, router, queryClient]);
 
 
 
@@ -566,18 +569,23 @@ export default function OnboardingLogic({ referralCode }: OnboardingLogicProps) 
     const file = e.target.files?.[0];
     if (!file) return;
     
+    if (!user) {
+      setPendingAvatar(file);
+      setFormData((prev) => ({ ...prev, profileImage: URL.createObjectURL(file) }));
+      return;
+    }
+
     setIsUploadingImage(true);
     try {
-      const result = await uploadAvatar.mutateAsync({ file });
+      const result = await uploadAvatar.mutateAsync({ file, userId: user.id });
       setFormData((prev) => ({ ...prev, profileImage: result.url }));
-      setTempAvatarPath(result.path);
       toast.success("Profile photo uploaded!");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to upload image");
     } finally {
       setIsUploadingImage(false);
     }
-  }, [uploadAvatar]);
+  }, [uploadAvatar, user]);
 
   // Error state
   if (hasError) {

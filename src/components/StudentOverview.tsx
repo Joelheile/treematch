@@ -68,6 +68,11 @@ const OTHER_FILTERS = [
   },
 ];
 
+const hasCourse = (courses: string[] | null, needle: string) =>
+  (courses ?? []).some((course) =>
+    course.toLowerCase().includes(needle.toLowerCase())
+  );
+
 export const StudentOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
@@ -162,24 +167,18 @@ export const StudentOverview = () => {
 
     // Apply course filters
     if (selectedCourses.length > 0) {
-      filteredStudents = filteredStudents.filter((student) => {
-        const studentCourses = (student as any).courses || [];
-        return selectedCourses.some((selectedCourse) =>
-          studentCourses.some((course: string) =>
-            course.toLowerCase().includes(selectedCourse.toLowerCase())
-          )
-        );
-      });
+      filteredStudents = filteredStudents.filter((student) =>
+        selectedCourses.some((selectedCourse) =>
+          hasCourse(student.courses, selectedCourse)
+        )
+      );
     }
 
     // Apply ENGR145 without team filter
     if (showEngr145WithoutTeam) {
-      filteredStudents = filteredStudents.filter((student) => {
-        const studentCourses = (student as any).courses || [];
-        return studentCourses.some((course: string) =>
-          course.toLowerCase().includes("engr145")
-        );
-      });
+      filteredStudents = filteredStudents.filter((student) =>
+        hasCourse(student.courses, "engr145")
+      );
     }
 
     return filteredStudents;
@@ -202,11 +201,8 @@ export const StudentOverview = () => {
   const availableCourses = useMemo(() => {
     const courseSet = new Set<string>();
     allStudents.forEach((student) => {
-      const studentCourses = (student as any).courses || [];
-      studentCourses.forEach((course: string) => {
-        if (course && course.trim()) {
-          courseSet.add(course.trim());
-        }
+      (student.courses ?? []).forEach((course) => {
+        if (course.trim()) courseSet.add(course.trim());
       });
     });
     return Array.from(courseSet).sort();

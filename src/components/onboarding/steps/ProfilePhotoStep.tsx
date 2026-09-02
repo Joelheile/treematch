@@ -9,8 +9,6 @@ interface ProfilePhotoStepProps {
   formData: FormData;
   setFormData: (data: FormData | ((prev: FormData) => FormData)) => void;
   isUploadingImage: boolean;
-  user: any;
-  student: any;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -18,8 +16,6 @@ export default function ProfilePhotoStep({
   formData,
   setFormData,
   isUploadingImage,
-  user,
-  student,
   handleImageUpload,
 }: ProfilePhotoStepProps) {
   const handleImageError = (

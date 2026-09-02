@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAddStudent } from '@/integrations/supabase/useAddStudent'
 
 // Mock the entire supabase client
-jest.mock('@/integrations/supabase/client', () => ({
+jest.mock('@/integrations/supabase/client-ssr', () => ({
   supabase: {
     from: jest.fn(() => ({
       insert: jest.fn(() => ({
@@ -19,8 +19,8 @@ jest.mock('@/integrations/supabase/client', () => ({
 }))
 
 // Import the mocked supabase after mocking
-import { supabase } from '@/integrations/supabase/client'
-const mockSupabase = supabase as jest.Mocked<typeof supabase>
+import { supabase } from '@/integrations/supabase/client-ssr'
+const mockFrom = supabase.from as jest.Mock
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -60,9 +60,9 @@ describe('useAddStudent', () => {
         })),
       }))
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         insert: insertMock,
-      } as any)
+      })
 
       const wrapper = createWrapper()
       const { result } = renderHook(() => useAddStudent(), { wrapper })
@@ -81,7 +81,7 @@ describe('useAddStudent', () => {
         expect(result.current.isSuccess).toBe(true)
       })
 
-      expect(mockSupabase.from).toHaveBeenCalledWith('students')
+      expect(mockFrom).toHaveBeenCalledWith('students')
       expect(insertMock).toHaveBeenCalledWith(studentData)
       expect(result.current.data).toEqual(mockStudent)
     })
@@ -98,9 +98,9 @@ describe('useAddStudent', () => {
         })),
       }))
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         insert: insertMock,
-      } as any)
+      })
 
       const wrapper = createWrapper()
       const { result } = renderHook(() => useAddStudent(), { wrapper })
@@ -142,12 +142,12 @@ describe('useAddStudent', () => {
         error: null,
       })
 
-      mockSupabase.from.mockImplementation((table) => {
+      mockFrom.mockImplementation((table: string) => {
         if (table === 'students') {
-          return { insert: insertStudentMock } as any
+          return { insert: insertStudentMock }
         }
         if (table === 'student_skills') {
-          return { insert: insertSkillsMock } as any
+          return { insert: insertSkillsMock }
         }
       })
 
@@ -201,15 +201,15 @@ describe('useAddStudent', () => {
         }),
       }))
 
-      mockSupabase.from.mockImplementation((table) => {
+      mockFrom.mockImplementation((table: string) => {
         if (table === 'students') {
           return { 
             insert: insertStudentMock,
             delete: deleteMock,
-          } as any
+          }
         }
         if (table === 'student_skills') {
-          return { insert: insertSkillsMock } as any
+          return { insert: insertSkillsMock }
         }
       })
 
@@ -257,9 +257,9 @@ describe('useAddStudent', () => {
         })),
       }))
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         insert: insertMock,
-      } as any)
+      })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueryClientProvider client={queryClient}>

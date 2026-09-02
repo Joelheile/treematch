@@ -45,3 +45,7 @@ lerna-debug.log*
 *.pfx
 secrets/
 secrets.json
+# Local tooling
+.claude/settings.local.json
+tsconfig.tsbuildinfo
+supabase/.temp

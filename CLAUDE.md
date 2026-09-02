@@ -17,7 +17,7 @@ TreeMatch is a Stanford student matching platform built with Next.js 14, TypeScr
 ### Supabase Type Generation
 - `npm run update-types` - Generate TypeScript types from Supabase schema
   - Updates `src/integrations/supabase/types.ts`
-  - Uses project ID: zlggajmzyjrwojzhidlo
+  - Needs `SUPABASE_PROJECT_ID` set in the shell
 
 ## Application Architecture
 

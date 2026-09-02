@@ -1,6 +1,8 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import type { User } from "@supabase/supabase-js";
+import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 
@@ -19,8 +21,8 @@ interface BasicInfoStepProps {
   selectedCountry: Country | null;
   countrySuggestions: Country[];
   name: string;
-  user: any;
-  student: any;
+  user: User | null;
+  student?: StudentWithSkills | null;
   handleCountryInputChange: (value: string) => void;
   handleCountrySelect: (country: Country) => void;
   handleNameChange: (value: string) => void;

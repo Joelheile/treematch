@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from './client-ssr'
-import { Tables } from './types'
-
-type Student = Tables<'students'>
+import { supabase } from './client-ssr'
+import type { StudentWithSkills } from './useStudents'
 
 export interface ServiceResponse<T> {
   data: T | null
@@ -12,10 +10,7 @@ export interface ServiceResponse<T> {
 export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['student-by-user-id', userId],
-    queryFn: async (): Promise<ServiceResponse<Student>> => {
-      const supabase = createClient()
-      
-      // Fetch student data by ID
+    queryFn: async (): Promise<ServiceResponse<StudentWithSkills>> => {
       const { data: studentData, error: studentError } = await supabase
         .from('students')
         .select('*')
@@ -31,30 +26,16 @@ export const useStudentByUserId = (userId: string, enabled: boolean = true) => {
         return { data: null, error: null }
       }
 
-      // Fetch skills for this student
-      const { data: skillsData, error: skillsError } = await supabase
+      const { data: skillRows, error: skillsError } = await supabase
         .from('student_skills')
-        .select(`
-          skills (
-            id,
-            name,
-            is_global,
-            created_at
-          )
-        `)
+        .select('skills(*)')
         .eq('student_id', studentData.id)
 
-      if (skillsError) {
-        console.warn('Error fetching student skills:', skillsError)
-        // Continue without skills if there's an error
-      }
+      if (skillsError) throw skillsError
 
-      const skills = skillsData?.map(item => (item as any).skills).filter(Boolean) || []
-      
-      return { 
-        data: { ...studentData, skills } as Student, 
-        error: null 
-      }
+      const skills = skillRows.flatMap((row) => (row.skills ? [row.skills] : []))
+
+      return { data: { ...studentData, skills }, error: null }
     },
     enabled: enabled && !!userId,
     retry: 1,

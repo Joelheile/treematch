@@ -37,8 +37,8 @@ const TestComponent = () => {
   const handleSignIn = async () => {
     try {
       await signIn('test@example.com', 'password')
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
     }
   }
   
@@ -99,7 +99,7 @@ describe('AuthProvider', () => {
       error: null,
     })
     
-    const signInError = { message: 'Invalid credentials' }
+    const signInError = new Error('Invalid credentials')
     mockSupabase.auth.signInWithPassword.mockResolvedValue({
       data: { user: null, session: null },
       error: signInError,

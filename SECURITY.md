@@ -125,19 +125,9 @@ NEXT_PUBLIC_POSTHOG_HOST=your_posthog_host
    - Update security documentation
    - Learn from incident
 
-## Contact Information
-
-For security issues, please contact:
-- **Security Team**: security@treematch.com
-- **Emergency**: +1-XXX-XXX-XXXX
-
 ## Reporting Security Issues
 
-If you discover a security vulnerability, please:
-1. **Do not** disclose it publicly
-2. Email security@treematch.com
-3. Include detailed description and steps to reproduce
-4. Allow reasonable time for response
+If you find a vulnerability, open a private security advisory on GitHub (Security tab > Report a vulnerability) instead of a public issue. Include steps to reproduce.
 
 ## Compliance
 

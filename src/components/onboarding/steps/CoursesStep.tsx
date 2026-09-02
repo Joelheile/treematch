@@ -8,6 +8,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus } from "lucide-react";
 import { FormData } from "../types";
 
+const POPULAR_COURSES = [
+    { code: "CS229", name: "Machine Learning" },
+    { code: "ENGR145", name: "Technology Entrepreneurship" },
+    { code: "MS&E75", name: "Redefining Creativity: Designing Human Connections in an AI World" },
+    { code: "MS&E288", name: "Managing Innovation and Driving Adoption of Frontier Technologies" },
+    { code: "SYMSYS1", name: "Minds and Machines" },
+  ];
+
 interface CoursesStepProps {
   formData: FormData;
   setFormData: (data: FormData | ((prev: FormData) => FormData)) => void;
@@ -162,16 +170,9 @@ export default function CoursesStep({
   setFormData,
 }: CoursesStepProps) {
   const [courseInput, setCourseInput] = useState("");
-  const popularCourses = [
-    { code: "CS229", name: "Machine Learning" },
-    { code: "ENGR145", name: "Technology Entrepreneurship" },
-    { code: "MS&E75", name: "Redefining Creativity: Designing Human Connections in an AI World" },
-    { code: "MS&E288", name: "Managing Innovation and Driving Adoption of Frontier Technologies" },
-    { code: "SYMSYS1", name: "Minds and Machines" },
-  ];
   const suggestions = useMemo(() => {
     const q = courseInput.trim().toLowerCase();
-    if (!q) return popularCourses;
+    if (!q) return POPULAR_COURSES;
     return ALL_COURSES.filter(
       (c) =>
         c.catalog_number.toLowerCase().includes(q) ||

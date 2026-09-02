@@ -1,6 +1,8 @@
 "use client";
 
 import OnboardingNavigation from "./OnboardingNavigation";
+import type { User } from "@supabase/supabase-js";
+import type { StudentWithSkills } from "@/integrations/supabase/useStudents";
 import OnboardingSidebar from "./OnboardingSidebar";
 import {
   BasicInfoStep,
@@ -31,8 +33,8 @@ interface OnboardingUIProps {
   isStepValid: boolean;
   isSubmitting: boolean;
   isUploadingImage: boolean;
-  user: any;
-  student: any;
+  user: User | null;
+  student?: StudentWithSkills | null;
   handleCountryInputChange: (value: string) => void;
   handleCountrySelect: (country: Country) => void;
   handleNameChange: (value: string) => void;
@@ -87,6 +89,8 @@ export default function OnboardingUI({
         case 1:
           return (
             <BasicInfoStep
+              user={user}
+              student={student}
               formData={formData}
               setFormData={setFormData}
               countryInput={countryInput}
@@ -94,8 +98,6 @@ export default function OnboardingUI({
               selectedCountry={selectedCountry}
               countrySuggestions={countrySuggestions}
               name={name}
-              user={user}
-              student={student}
               handleCountryInputChange={handleCountryInputChange}
               handleCountrySelect={handleCountrySelect}
               handleNameChange={handleNameChange}
@@ -145,8 +147,6 @@ export default function OnboardingUI({
               formData={formData}
               setFormData={setFormData}
               isUploadingImage={isUploadingImage}
-              user={user}
-              student={student}
               handleImageUpload={handleImageUpload}
             />
           );
@@ -160,6 +160,8 @@ export default function OnboardingUI({
         case 1:
           return (
             <BasicInfoStep
+              user={user}
+              student={student}
               formData={formData}
               setFormData={setFormData}
               countryInput={countryInput}
@@ -167,8 +169,6 @@ export default function OnboardingUI({
               selectedCountry={selectedCountry}
               countrySuggestions={countrySuggestions}
               name={name}
-              user={user}
-              student={student}
               handleCountryInputChange={handleCountryInputChange}
               handleCountrySelect={handleCountrySelect}
               handleNameChange={handleNameChange}
@@ -207,8 +207,6 @@ export default function OnboardingUI({
               formData={formData}
               setFormData={setFormData}
               isUploadingImage={isUploadingImage}
-              user={user}
-              student={student}
               handleImageUpload={handleImageUpload}
             />
           );

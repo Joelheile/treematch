@@ -81,11 +81,8 @@ CREATE POLICY "Authenticated users can upload avatars" ON storage.objects FOR IN
 CREATE POLICY "Users can update their own avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "Users can delete their own avatars" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 
--- Create storage policies for temp-avatars bucket
+-- temp-avatars is read-only. It only holds profile images from before uploads moved behind login.
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'temp-avatars');
-CREATE POLICY "Anyone can upload temp avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'temp-avatars');
-CREATE POLICY "Anyone can update temp avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'temp-avatars');
-CREATE POLICY "Anyone can delete temp avatars" ON storage.objects FOR DELETE USING (bucket_id = 'temp-avatars');
 
 -- Insert default skills
 INSERT INTO skills (name, is_global, user_id) VALUES
@@ -254,3 +251,23 @@ USING (auth.uid() = liker_id);
 
 -- Remove current_project column from students table
 ALTER TABLE students DROP COLUMN IF EXISTS current_project;
+
+-- Only Stanford addresses may create an account. Runs for every signup path:
+-- password, magic link and OAuth all insert into auth.users.
+CREATE OR REPLACE FUNCTION public.enforce_stanford_email()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF NEW.email IS NULL OR lower(NEW.email) NOT LIKE '%@stanford.edu' THEN
+    RAISE EXCEPTION 'Only @stanford.edu email addresses can sign up';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS enforce_stanford_email ON auth.users;
+CREATE TRIGGER enforce_stanford_email
+  BEFORE INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_stanford_email();
