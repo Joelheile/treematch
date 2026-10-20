@@ -1,5 +1,4 @@
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import React from "react";
 import { ClientToasters } from "./client-toasters";
 import "./globals.css";
@@ -12,11 +11,12 @@ export const metadata: Metadata = {
     icon: "/logo.png",
     apple: "/logo.png",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -30,7 +30,6 @@ export default function RootLayout({
         <Providers>
           <ClientToasters />
           {children}
-          <SpeedInsights />
         </Providers>
       </body>
     </html>
